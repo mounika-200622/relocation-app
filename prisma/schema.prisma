@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  SEEKER
+  LISTER
+  BOTH
+}
+
+enum ListingType {
+  DORM
+  APARTMENT
+}
+
+enum RequestStatus {
+  OPEN
+  MATCHED
+  CLOSED
+}
+
+model User {
+  id                 Int               @id @default(autoincrement())
+  name               String
+  email              String            @unique
+  passwordHash       String
+  role               Role              @default(SEEKER)
+  createdAt          DateTime          @default(now())
+
+  listings           Listing[]         @relation("OwnerListings")
+  roommateRequests   RoommateRequest[]
+  itineraries        Itinerary[]
+  sentMessages       Message[]         @relation("SentMessages")
+  conversationsAsA   Conversation[]    @relation("UserA")
+  conversationsAsB   Conversation[]    @relation("UserB")
+}
+
+model Country {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  cities City[]
+}
+
+model City {
+  id         Int         @id @default(autoincrement())
+  name       String
+  country    Country     @relation(fields: [countryId], references: [id])
+  countryId  Int
+
+  listings   Listing[]
+  pois       POI[]
+  itineraries Itinerary[]
+
+  @@unique([name, countryId])
+}
+
+model Listing {
+  id            Int               @id @default(autoincrement())
+  owner         User              @relation("OwnerListings", fields: [ownerId], references: [id])
+  ownerId       Int
+  city          City              @relation(fields: [cityId], references: [id])
+  cityId        Int
+  type          ListingType
+  title         String
+  address       String
+  price         Float
+  isShareable   Boolean           @default(false)
+  photos        String            @db.Text   // store as JSON string array
+  createdAt     DateTime          @default(now())
+
+  roommateRequests RoommateRequest[]
+  conversations     Conversation[]
+  itineraryItems    ItineraryItem[]
+}
+
+model RoommateRequest {
+  id          Int           @id @default(autoincrement())
+  listing     Listing       @relation(fields: [listingId], references: [id])
+  listingId   Int
+  requester   User          @relation(fields: [requesterId], references: [id])
+  requesterId Int
+  status      RequestStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+}
+
+model Conversation {
+  id         Int        @id @default(autoincrement())
+  listing    Listing?   @relation(fields: [listingId], references: [id])
+  listingId  Int?
+  userA      User       @relation("UserA", fields: [userAId], references: [id])
+  userAId    Int
+  userB      User       @relation("UserB", fields: [userBId], references: [id])
+  userBId    Int
+  createdAt  DateTime   @default(now())
+
+  messages   Message[]
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId Int
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  senderId       Int
+  text           String       @db.Text
+  sentAt         DateTime     @default(now())
+}
+
+model POI {
+  id            Int             @id @default(autoincrement())
+  city          City            @relation(fields: [cityId], references: [id])
+  cityId        Int
+  name          String
+  category      String          // restaurant, hospital, supermarket, transport, etc.
+  address       String
+  lat           Float
+  lng           Float
+  priceLevel    Int?
+  lastSyncedAt  DateTime        @default(now())
+
+  itineraryItems ItineraryItem[]
+}
+
+model Itinerary {
+  id          Int             @id @default(autoincrement())
+  user        User            @relation(fields: [userId], references: [id])
+  userId      Int
+  city        City            @relation(fields: [cityId], references: [id])
+  cityId      Int
+  days        Int
+  peopleCount Int
+  budget      Float
+  createdAt   DateTime        @default(now())
+
+  items       ItineraryItem[]
+}
+
+model ItineraryItem {
+  id             Int        @id @default(autoincrement())
+  itinerary      Itinerary  @relation(fields: [itineraryId], references: [id])
+  itineraryId    Int
+  dayNumber      Int
+  poi            POI?       @relation(fields: [poiId], references: [id])
+  poiId          Int?
+  listing        Listing?   @relation(fields: [listingId], references: [id])
+  listingId      Int?
+  timeSlot       String?
+  estimatedCost  Float
+}
