@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -69,7 +70,7 @@ model Listing {
   address       String
   price         Float
   isShareable   Boolean           @default(false)
-  photos        String            @db.Text   // store as JSON string array
+  photos        String            @db.Text
   createdAt     DateTime          @default(now())
 
   roommateRequests RoommateRequest[]
@@ -115,7 +116,7 @@ model POI {
   city          City            @relation(fields: [cityId], references: [id])
   cityId        Int
   name          String
-  category      String          // restaurant, hospital, supermarket, transport, etc.
+  category      String
   address       String
   lat           Float
   lng           Float
