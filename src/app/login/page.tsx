@@ -22,14 +22,22 @@ export default function LoginPage() {
       redirect: false,
     });
 
-    setLoading(false);
-
     if (res?.error) {
+      setLoading(false);
       setError("Invalid email or password.");
       return;
     }
 
-    router.push("/choose-path");
+    const meRes = await fetch("/api/me");
+    const me = await meRes.json();
+
+    setLoading(false);
+
+    if (me.role === "BUSINESS") {
+      router.push("/my-listings");
+    } else {
+      router.push("/choose-path");
+    }
   };
 
   return (

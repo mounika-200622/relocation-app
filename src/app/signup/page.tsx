@@ -6,7 +6,12 @@ import Link from "next/link";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "USER",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +23,7 @@ export default function SignupPage() {
     const res = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, role: "BOTH" }),
+      body: JSON.stringify(form),
     });
 
     setLoading(false);
@@ -29,7 +34,7 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/choose-path");
+    router.push("/login");
   };
 
   return (
@@ -41,6 +46,37 @@ export default function SignupPage() {
             Join and start exploring where life takes you next.
           </p>
         </div>
+
+        {/* Account type toggle */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, role: "USER" })}
+            className={`rounded-lg py-3 text-sm font-medium border transition-colors ${
+              form.role === "USER"
+                ? "bg-indigo-500 border-indigo-400"
+                : "bg-slate-800 border-slate-700 text-slate-400"
+            }`}
+          >
+            I'm a User
+          </button>
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, role: "BUSINESS" })}
+            className={`rounded-lg py-3 text-sm font-medium border transition-colors ${
+              form.role === "BUSINESS"
+                ? "bg-indigo-500 border-indigo-400"
+                : "bg-slate-800 border-slate-700 text-slate-400"
+            }`}
+          >
+            I'm a Business
+          </button>
+        </div>
+        <p className="text-xs text-slate-500 text-center -mt-4 mb-6">
+          {form.role === "USER"
+            ? "Find housing, plan trips, and connect with roommates."
+            : "List apartments or dorms and manage your listings."}
+        </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>

@@ -1,15 +1,21 @@
 import Link from "next/link";
+import { Playfair_Display } from "next/font/google";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+  style: ["italic"],
+});
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-950 to-slate-900 text-white px-6">
       <div className="text-center max-w-xl">
-        <h1 className="text-5xl font-bold tracking-tight mb-4">
-          Relocate<span className="text-indigo-400">.</span>
+        <h1 className={`${playfair.className} text-7xl mb-6`}>
+          Nira<span className="text-indigo-400">.</span>
         </h1>
         <p className="text-slate-400 text-lg mb-10">
-          Find a place, find a roommate, find your way around —
-          wherever you're headed next.
+          Wherever you're headed, Nira gets you settled.
         </p>
         <div className="flex items-center justify-center gap-4">
           <Link

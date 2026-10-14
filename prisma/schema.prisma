@@ -8,9 +8,8 @@ datasource db {
 }
 
 enum Role {
-  SEEKER
-  LISTER
-  BOTH
+  USER
+  BUSINESS
 }
 
 enum ListingType {
@@ -24,12 +23,18 @@ enum RequestStatus {
   CLOSED
 }
 
+enum Preference {
+  ANYONE
+  FEMALE_ONLY
+  MALE_ONLY
+}
+
 model User {
   id                 Int               @id @default(autoincrement())
   name               String
   email              String            @unique
   passwordHash       String
-  role               Role              @default(SEEKER)
+  role               Role              @default(USER)
   createdAt          DateTime          @default(now())
 
   listings           Listing[]         @relation("OwnerListings")
@@ -60,18 +65,23 @@ model City {
 }
 
 model Listing {
-  id            Int               @id @default(autoincrement())
-  owner         User              @relation("OwnerListings", fields: [ownerId], references: [id])
-  ownerId       Int
-  city          City              @relation(fields: [cityId], references: [id])
-  cityId        Int
-  type          ListingType
-  title         String
-  address       String
-  price         Float
-  isShareable   Boolean           @default(false)
-  photos        String            @db.Text
-  createdAt     DateTime          @default(now())
+  id               Int               @id @default(autoincrement())
+  owner            User              @relation("OwnerListings", fields: [ownerId], references: [id])
+  ownerId          Int
+  city             City              @relation(fields: [cityId], references: [id])
+  cityId           Int
+  type             ListingType
+  title            String
+  address          String
+  price            Float
+  currency         String            @default("USD")
+  isShareable      Boolean           @default(false)
+  capacityMin      Int               @default(1)
+  capacityMax      Int               @default(1)
+  currentOccupants Int               @default(0)
+  preference       Preference        @default(ANYONE)
+  photos           String            @db.LongText
+  createdAt        DateTime          @default(now())
 
   roommateRequests RoommateRequest[]
   conversations     Conversation[]

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 const paths = [
   {
@@ -15,26 +18,33 @@ const paths = [
       "Tell us your dates, budget, and destination — we'll put together a day-by-day plan that fits.",
     cta: "Plan a trip",
   },
-  {
-    href: "/list-a-place",
-    title: "List a place for rent",
-    description:
-      "Have a room, dorm, or apartment available? List it and connect with people looking to move in.",
-    cta: "List my place",
-  },
 ];
 
 export default function ChoosePathPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-white px-6 py-16">
-      <div className="max-w-4xl mx-auto text-center mb-12">
+      <div className="max-w-3xl mx-auto text-center mb-12 relative">
+        <div className="absolute right-0 top-0 flex items-center gap-4">
+          <Link
+            href="/chat"
+            className="text-slate-400 hover:text-white transition-colors text-sm"
+          >
+            Messages
+          </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="text-slate-400 hover:text-white transition-colors text-sm"
+          >
+            Log out
+          </button>
+        </div>
         <h1 className="text-3xl font-bold mb-3">What brings you here?</h1>
         <p className="text-slate-400">
           You can always switch between these later.
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         {paths.map((path) => (
           <Link
             key={path.href}
