@@ -94,6 +94,11 @@ const PLACES: Record<string, string> = {
   // countries: a well-known landscape or landmark (a country article's own page image is its flag)
   "country:CH": "Lauterbrunnen", "country:IN": "Taj Mahal", "country:DE": "Brandenburg Gate", "country:VN": "Ha Long Bay", "country:US": "Golden Gate Bridge",
   "country:GB": "Tower Bridge", "country:SG": "Gardens by the Bay", "country:JP": "Mount Fuji", "country:FR": "Eiffel Tower", "country:AE": "Burj Khalifa", "country:TH": "Wat Arun",
+  "country:AU": "Sydney Opera House", "country:AT": "Hallstatt", "country:BR": "Christ the Redeemer (statue)", "country:CA": "Moraine Lake",
+  "country:CN": "Great Wall of China", "country:ID": "Borobudur", "country:IE": "Cliffs of Moher", "country:IT": "Colosseum",
+  "country:KR": "Bukchon Hanok Village", "country:MY": "Mount Kinabalu", "country:MX": "Chichen Itza", "country:NL": "Kinderdijk",
+  "country:NZ": "Milford Sound", "country:PH": "Chocolate Hills", "country:PL": "Wawel Castle", "country:PT": "Belém Tower",
+  "country:ZA": "Table Mountain", "country:ES": "Sagrada Família", "country:SE": "Gamla stan", "country:TR": "Cappadocia",
 };
 
 async function places(existing: Record<string, Credit>): Promise<Record<string, Credit>> {
