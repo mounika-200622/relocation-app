@@ -5,7 +5,7 @@ business: **`NiraDemo#2026`** (admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.en
 
 | # | As | Steps | Expected |
 |---|---|---|---|
-| 1 | Visitor | Open `/`, type "Zür" in *Where*, pick Zürich, budget 1000, Search | Redirect to login (search needs an account), then results in Zürich ≤ 1000 |
+| 1 | Visitor | Open `/`, type "Zür" in *Where*, pick Zürich, budget 1000, Search | Results in Zürich ≤ 1000 without logging in; the heart asks you to log in |
 | 2 | Visitor | Open `/listings/1` | Public page with gallery, facts, map, roommates and essentials; *Message owner* sends you to login |
 | 3 | Visitor | Sign up as a person with a 5-char password | Inline error "at least 8 characters"; no account created |
 | 4 | New user | Sign up properly | Lands on 3-step onboarding; *Skip for now* reaches `/choose-path` |
@@ -33,3 +33,10 @@ business: **`NiraDemo#2026`** (admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.en
 | 26 | any | Toggle light/dark, reload | Theme persists, no flash |
 | 27 | phone | Open via LAN IP or the Android app | Bottom tab bar, all flows above work |
 | 28 | any | `/chat/abc`, `/listings/999999`, `/api/listings/abc` | 404 page, 404 page, `{"error":"Invalid id."}` with 400 |
+| 29 | anna@nira.app | `/relocate/home` → *Use my location* (or *or pick a city* → Bengaluru) | "You're here: Bengaluru" over a city photo; 112/108/100 tap-to-call; SIM from ₹229; Open Uber · Ola · Rapido · Namma Yatri; EUR → INR live rate and converter; *Exchange money nearby* |
+| 30 | anna | *Essentials around you* → Food | Restaurants and cafés near the point with ₹ price estimates, distance and Google Maps links |
+| 31 | anna | Roommates tab | "People moving to Bengaluru": Lucas Martin with a compatibility score |
+| 32 | visitor | `/guide` → India, Vietnam | Real landmark photos; SIM operators, buses/metro, *Taxis, ride-hailing & sharing* (India: Uber, Ola…; Vietnam: Grab, Be, Xanh SM) |
+| 33 | visitor | Footer → *Photo credits* | `/credits` lists author and licence for every photo |
+| 34 | phone app | Navigate two pages, press Back; open a text field | Back returns to the previous page (app stays open); bottom tab bar hides while the keyboard is up |
+| 35 | phone app | Turn Wi-Fi off, open the app | "Can't reach the Nira server" page with steps and *Try again* |

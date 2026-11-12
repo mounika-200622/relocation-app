@@ -2,7 +2,9 @@
 
 Nira is a full-stack app: the Next.js server talks to MySQL and MongoDB. A phone therefore
 runs the **Nira app shell** (Capacitor, in `android/`) that opens your running Nira server.
-Everything works on the phone: login, search, maps, chat, roommates, guide, trips, admin.
+Everything works on the phone: login, search, maps, chat, roommates, guide, trips, admin — plus
+**native GPS** (the `@capacitor/geolocation` plugin) for the "You're here" panel, and the
+hardware **Back** button goes to the previous page (`@capacitor/app`).
 
 There are two ways to use it on a phone:
 
@@ -44,9 +46,30 @@ On the phone in Chrome: open `http://<laptop-ip>:3000` → menu ⋮ → **Add to
 (Chrome only offers the full "Install app" prompt on HTTPS; over plain HTTP on the LAN
 "Add to Home screen" still gives a full-screen icon.)
 
-## 2b. Android app with Android Studio
+## 2b. Android app over Wi-Fi — one command (recommended)
 
-Prerequisites: Android Studio (with SDK), JDK 21.
+Prerequisites: Android Studio (with SDK), JDK 21 (`JAVA_HOME`). With the server running
+(`npm run start:lan`):
+
+```bash
+npm run android:wifi
+```
+
+This finds the laptop's Wi-Fi IP, syncs Capacitor with `NIRA_SERVER_URL=http://<ip>:3000`,
+builds the debug APK and copies it to **`Nira-debug.apk`** in the project folder. Send that file
+to the phone (WhatsApp/Drive/USB), open it and allow "install unknown apps" once. To install over
+USB/adb instead:
+
+```bash
+npm run android:wifi -- --install
+```
+
+No cable is needed afterwards: the phone only has to be on the same Wi-Fi as the laptop. The
+address is baked into the APK, so **re-run the command if the laptop moves to another network**.
+If the server can't be reached the app shows a "Can't reach the Nira server" page (bundled
+`mobile/www/offline.html`) with the steps and a **Try again** button, instead of a blank screen.
+
+## 2c. Android app with Android Studio (manual)
 
 ```bash
 set NIRA_SERVER_URL=http://192.168.2.100:3000
@@ -85,7 +108,9 @@ If Nira is deployed (e.g. `https://nira.example.com`), set `NIRA_SERVER_URL` to 
 
 | Symptom | Fix |
 |---|---|
-| App shows "Can't reach the Nira server" | The laptop IP changed or the server isn't running with `:lan`. Re-run `npx cap sync android` with the new `NIRA_SERVER_URL`. |
+| App shows "Can't reach the Nira server" | Phone Wi-Fi off / on mobile data, the laptop IP changed, or the server isn't running with `:lan`. Join the same Wi-Fi, run `npm run start:lan`, and re-run `npm run android:wifi` if the IP changed. |
+| "Couldn't get your location" | Turn on Location in the phone's quick settings and allow it for Nira — or tap **or pick a city**. |
+| Gradle: "Unsupported class file major version 69" | Gradle is using Java 25 (Android Studio's bundled JBR). Point `JAVA_HOME` at JDK 21. |
 | Page loads but buttons do nothing (dev mode) | Add the laptop IP to `NIRA_DEV_ORIGINS` and restart `npm run dev:lan`. |
 | Login works, logout goes to a blank page | Remove `NEXTAUTH_URL` from `.env`. |
 | Phone can't connect at all | Windows firewall: allow Node.js on Private networks; both devices on the same Wi-Fi (not guest network). |

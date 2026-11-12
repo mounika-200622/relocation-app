@@ -5,8 +5,11 @@
 Nira is a full-stack platform for people **moving to a new country** and for people **planning a
 trip**. Find a room and the right people to share it with, see the pharmacy and tram stop around
 the corner, follow a step-by-step settling-in guide, chat safely inside the app, and generate trip
-plans that never go over budget. Switzerland is the best-covered destination; nothing is
-hard-coded to it — every country, region and city comes from the database.
+plans that never go over budget. Open it in a new country and it **detects where you are** and
+tells you what to do first: which SIM to buy, which ride app works there (Uber in India, Grab in
+Vietnam), how the buses work, today's exchange rate from your home currency and the nearest
+exchange office. Switzerland and India (Bengaluru) are the best-covered destinations; nothing is
+hard-coded — every country, region and city comes from the database.
 
 DBMS Level 3 project · Next.js 16 · TypeScript · **MySQL 8** (Prisma 6) · **MongoDB 7** · Tailwind CSS 4 · Leaflet/OpenStreetMap · Android via Capacitor
 
@@ -23,11 +26,16 @@ DBMS Level 3 project · Next.js 16 · TypeScript · **MySQL 8** (Prisma 6) · **
 
 ## Features
 
-**Three roles.** `USER` (moving or travelling), `BUSINESS` (dorms, landlords, agencies) and `ADMIN`.
-After login a user picks **Relocate** or **Trip** mode and can switch any time.
+**Three roles.** At sign-up you choose **"I'm moving or travelling"** (`USER`) or **"I rent out
+places"** (`BUSINESS`: dorms, landlords, agencies); `ADMIN` accounts come from the seed. After
+login a user picks **Relocate** or **Trip** mode and can switch any time.
 
 | | |
 |---|---|
+| **"You're here" (location)** | One tap (native GPS in the Android app, browser location on the web, or pick a city by hand) finds the nearest city with the `fn_distance_km` function and shows a local briefing over a real photo of the city: tap-to-call emergency numbers, the cheapest SIM, ride apps with deep links (Open Uber, Ola, Rapido, Namma Yatri, Grab, Gojek, Careem …), public-transport day pass, homes nearby, essentials, the guide and a trip. |
+| **Money** | Users set their **home country**; Nira shows today's rate and a converter from the home currency to the local one (open.er-api.com, cached in MySQL) and links to the nearest **exchange offices, banks and ATMs** on a live map. |
+| **31 country guides** | SIM operators, bus/metro/rail and taxi & ride-hailing apps for 29+ countries (India: Jio, Airtel, Vi, BSNL · Namma Metro, BMTC · Uber, Ola, Rapido, Namma Yatri; Vietnam: Viettel · Grab, Be, Xanh SM; and many more), each with a real landmark photo. |
+| **Real photos** | Every country, demo city and listing uses freely licensed photos from Wikimedia Commons, credited on the photo and on the public [/credits](src/app/credits/page.tsx) page (`scripts/fetch-photos.ts`). |
 | **Housing search** | Country → region → city cascade, type, price, open spots, gender rule, move-in date, bedrooms, amenities, furnished, keywords (FULLTEXT); sort by newest, price or distance; 12 per page; filters live in the URL; "within budget" badges from your profile; map view with price pins. |
 | **Listing pages** | Photo mosaic + lightbox, facts, amenities, house rules, price insight ("cheaper than 72 % of places in Zürich" – window function), map, owner card, message owner, save, people looking to share, nearby essentials, report. |
 | **Roommates** | Post a request on any shareable place (one open request per person, enforced by the DB); compatibility score 0–100 (TypeScript + SQL view); top matches; owners accept in a locking transaction that fills the place and closes the rest. |
@@ -37,7 +45,7 @@ After login a user picks **Relocate** or **Trip** mode and can switch any time.
 | **Trip planner** | City, days, people, budget, style, pace, interests and a budget split → day-by-day plan (stay, meals, sights, transport) clustered by distance, with a live budget meter, swap/add/remove, regenerate, duplicate, print and a read-only share link. |
 | **Business dashboard** | Listings, views (14-day chart), inquiries, open requests; create/edit with geocoding and a draggable pin; photo upload, reorder, cover, captions; archive, mark rented (stored procedure). |
 | **Admin** | Users (search, deactivate, verify, roles), listing moderation, reports queue, guide and cost content CRUD, audit log, Mongo message stats. |
-| **Everywhere** | Dark/light theme, responsive with a native-style bottom tab bar on phones, accessible forms and focus states, skeletons, empty states, error pages, toasts, installable PWA, Android app. |
+| **Everywhere** | Pink ombré design in dark and light themes, responsive with a native-style bottom tab bar on phones (hidden while typing), accessible forms and focus states, skeletons, empty states, error pages, toasts, installable PWA, Android app. |
 
 ## Tech stack
 
@@ -156,6 +164,8 @@ Password for every seeded person and business: **`NiraDemo#2026`**
 | User | `aarav@nira.app` | ETH student moving to Zürich: saved places, requests, chats, a trip |
 | User | `priya@nira.app` | PhD student, Zürich, women-only roommate preference |
 | User | `lena@nira.app`, `mateo@nira.app`, `amara@nira.app`, `rohan@nira.app` | Zürich seekers |
+| User | `anna@nira.app` | **Bengaluru demo:** moving from Germany (EUR → INR converter), matches with Lucas, saved Bengaluru homes |
+| User | `lucas@nira.app` | IISc exchange student moving to Bengaluru from France |
 | User | `sofia@nira.app`, `chloe@nira.app` (Lausanne) · `yuki@nira.app`, `ethan@nira.app` (Geneva) · `noah@nira.app` (Basel) · `mia@nira.app` (Berlin) | |
 | Business | `hello@alpinestudent.ch` | Verified; Zürich and Lausanne |
 | Business | `rent@lakeview-residences.ch`, `team@helvetiaflats.ch` | Verified |
@@ -164,8 +174,8 @@ Password for every seeded person and business: **`NiraDemo#2026`**
 
 ## Database highlights
 
-- **37 tables in 3NF**, 53 foreign keys with reasoned ON DELETE rules, **27 CHECK constraints**,
-  112 indexes incl. composite and FULLTEXT — [data dictionary](docs/data-dictionary.md) ·
+- **38 tables in 3NF**, 55 foreign keys with reasoned ON DELETE rules, **28 CHECK constraints**,
+  117 indexes incl. composite and FULLTEXT — [data dictionary](docs/data-dictionary.md) ·
   [ER diagram](docs/er-diagram.md) · [normalization](docs/normalization.md) · [DDL](docs/schema.sql)
 - **Views** `v_listing_summary` (powers search) and `v_roommate_compatibility` (powers top matches)
 - **Stored function** `fn_distance_km` (Haversine, used for "nearest" and place radius search)
@@ -179,15 +189,23 @@ Password for every seeded person and business: **`NiraDemo#2026`**
 
 ## Run on a phone / Android
 
-Full guide: [docs/android.md](docs/android.md). Short version (phone and laptop on the same Wi-Fi):
+Full guide: [docs/android.md](docs/android.md). Phone and laptop on the **same Wi-Fi**, no cable:
 
 ```bash
-npm run dev:lan
+npm run start:lan
 ```
 
-- **Any phone:** open `http://<laptop-ip>:3000` in Chrome → ⋮ → *Add to Home screen*.
-- **Android app:** set `NIRA_SERVER_URL=http://<laptop-ip>:3000`, then `npx cap sync android`
-  and `npx cap open android` → Run ▶ in Android Studio (or `npm run android:apk` for an APK).
+```bash
+npm run android:wifi
+```
+
+`android:wifi` detects the laptop's Wi-Fi address, builds the app pointing at it and copies
+**`Nira-debug.apk`** to the project folder — send it to the phone and install it (add
+`-- --install` to install over USB/adb instead). Re-run it if the laptop joins another network.
+If the server can't be reached, the app shows a "can't connect" screen with a Try again button.
+
+- **Any phone, no app:** open `http://<laptop-ip>:3000` in Chrome → ⋮ → *Add to Home screen*.
+- **Android Studio:** `npx cap open android` → Run ▶.
 
 ## Scripts
 
@@ -202,7 +220,9 @@ npm run dev:lan
 | `npm run db:reset` | Drop, re-migrate and re-seed the database (asks Prisma for confirmation) |
 | `npm run mongo:local` | Local MongoDB without Docker |
 | `npm run photos:migrate` | Move v1 base64 photos into `ListingPhoto` |
+| `npm run android:wifi` | Build the Wi-Fi APK for this laptop's current IP (`-- --install` to install) |
 | `npm run android:sync` / `android:open` / `android:apk` | Capacitor Android workflow |
+| `npx tsx scripts/fetch-photos.ts` | Download the freely licensed Commons photos + credits |
 | `npx tsx scripts/poi-warm.ts` | Pre-fill the place cache for the demo cities |
 | `npx tsx scripts/docs/*.ts` | Regenerate the data dictionary, query samples and contributions |
 
@@ -222,7 +242,7 @@ Manual walkthrough: [docs/qa-checklist.md](docs/qa-checklist.md).
 
 ```
 prisma/
-  schema.prisma            relational model (37 tables)
+  schema.prisma            relational model (38 tables)
   migrations/              v1 + v2 schema, SQL objects, indexes
   seed.ts, seed/           locations, guide, costs, demo data, trips
 src/
@@ -259,7 +279,9 @@ two. Breakdown by area: [docs/contributions.md](docs/contributions.md).
   serverless hosts.
 - Live connections are implemented for Switzerland (provider interface ready for others).
 - The in-memory rate limiter is per process (use Redis when scaling out).
-- The Android app needs a reachable Nira server (LAN IP or a deployment).
+- The Android app needs a reachable Nira server (LAN IP or a deployment); the Wi-Fi APK has the
+  laptop's address built in, so rebuild it with `npm run android:wifi` on a new network.
+- Exchange rates are refreshed at most every few hours (free API); they are indicative.
 
 ## Documentation
 
@@ -269,4 +291,6 @@ two. Breakdown by area: [docs/contributions.md](docs/contributions.md).
 [Trip algorithm](docs/trip-algorithm.md) · [Matching algorithm](docs/matching-algorithm.md) ·
 [Android](docs/android.md) · [QA checklist](docs/qa-checklist.md) · [Contributions](docs/contributions.md)
 
-Map data © OpenStreetMap contributors (ODbL). Timetable data: transport.opendata.ch.
+Map data © OpenStreetMap contributors (ODbL). Timetable data: transport.opendata.ch. Exchange
+rates: open.er-api.com. Photos: Wikimedia Commons contributors under CC licences — see
+[docs/image-credits.md](docs/image-credits.md).

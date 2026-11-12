@@ -24,7 +24,10 @@ have a smaller version of the same problem: a plan that fits a budget.
 4. A database-driven, editable settling-in guide with a personal checklist (complete for
    Switzerland, generic for any country).
 5. Generate day-by-day trip plans that are mathematically guaranteed not to exceed the budget.
-6. Demonstrate a well-normalised relational design, advanced SQL objects and a justified
+6. Detect where the person is (GPS) and turn it into local next steps for that country: SIM
+   cards, buses/metro, taxi and ride-hailing apps, emergency numbers, today's exchange rate from
+   their home currency and the nearest exchange offices.
+7. Demonstrate a well-normalised relational design, advanced SQL objects and a justified
    NoSQL component, with security and integrity enforced at the database level.
 
 ## 3. Scope
@@ -34,7 +37,10 @@ search with pagination, map view and saved places; roommate requests with a tran
 accept; chat with read receipts, block and report; nearby essentials (OpenStreetMap Overpass,
 cached); Swiss guide content, checklist, SIM/transport/healthcare/banking/groceries/costs and a
 live Swiss timetable; trip planner with swap/regenerate/share/print; admin moderation and
-content editing; installable PWA and Android app.
+content editing; location-aware "You're here" briefing (nearest city via `fn_distance_km`) with
+SIM, transport, ride apps (`RideService`) and a home-currency converter (`ExchangeRate`);
+per-country SIM/transport/ride data for 29+ countries; freely licensed real photos with credits;
+installable PWA and an Android app that works over Wi-Fi (native GPS, Back button).
 
 **Out of scope:** payments and contracts, identity verification, real-time push (polling is
 used), automatic translation, menus/real prices for restaurants (estimates are used).
@@ -49,7 +55,9 @@ used), automatic translation, menus/real prices for restaurants (estimates are u
 | Search | Filters (location cascade, type, price, shareable, open spots, gender, date, bedrooms, amenities, furnished, keywords), sort incl. distance, 12 per page, state in URL, budget badge, map view. |
 | Roommates | One OPEN request per person per listing, compatibility score, top matches, owner accept/decline, withdraw. |
 | Chat | Either side can start, one conversation per pair+listing, unread counts, polling with `?after=`, read receipts, block/report. |
-| Essentials | 17 categories around a point, 0.5–5 km radius, price tiers and estimates, list + map, OSM/Google links. |
+| Location | GPS (native in the app) or a picked city → nearest city → briefing: emergency numbers, cheapest SIM, ride apps with deep links, transit day pass, homes nearby, essentials, guide, trip. |
+| Money | Home country on the profile; live rate + converter home → local currency; currency-exchange offices, banks and ATMs on the map. |
+| Essentials | 18 categories around a point (incl. currency exchange), 0.5–5 km radius, price tiers and estimates, list + map, OSM/Google links. |
 | Guide | Articles, checklist with progress, SIM plans, transport modes/passes, live connections, emergency numbers, banks, supermarkets, cost snapshot, full-text search, admin CRUD. |
 | Trips | Budget split, style/pace/interests, day plans with clustering, budget meter, swap/add/remove/regenerate/duplicate/share/print. |
 | Admin | Users (search, deactivate, verify, role), listing moderation, reports queue, content & cost CRUD, audit log, stats. |
@@ -57,23 +65,24 @@ used), automatic translation, menus/real prices for restaurants (estimates are u
 ## 5. Database design
 
 ### 5.1 ER diagram and relational schema
-- ER diagrams (Mermaid, all 37 tables + 2 collections): [er-diagram.md](er-diagram.md)
+- ER diagrams (Mermaid, all 38 tables + 2 collections): [er-diagram.md](er-diagram.md)
 - Relational schema / full DDL: [schema.sql](schema.sql) and `prisma/schema.prisma`
 - Data dictionary (every column, type, key, CHECK and index): [data-dictionary.md](data-dictionary.md)
 - Normalization and ON DELETE rules: [normalization.md](normalization.md)
 
-**Entities (37 tables) by area:** accounts (User, UserProfile, BusinessProfile, Language,
+**Entities (38 tables) by area:** accounts (User, UserProfile, BusinessProfile, Language,
 UserLanguage, PasswordResetToken) · locations (Country, Region, City) · listings (Listing,
 ListingPhoto, Amenity, ListingAmenity, SavedListing, ListingView) · social (RoommateRequest,
 Conversation, Block, Report) · places & prices (POI, PoiQueryCache, CostEstimate, ExchangeRate) ·
 guide (GuideArticle, ChecklistTemplate, UserChecklistProgress, SimProvider, SimPlan,
-TransportMode, TransportPass, EmergencyNumber, SupermarketChain, Bank) · trips (Itinerary,
+TransportMode, TransportPass, RideService, EmergencyNumber, SupermarketChain, Bank) · trips (Itinerary,
 ItineraryInterest, ItineraryItem) · AuditLog.
 
 **Key relationships:** User 1–1 UserProfile/BusinessProfile; User 1–N Listing; Country 1–N
 Region 1–N City 1–N Listing; Listing M–N Amenity (ListingAmenity); User M–N Listing via
 SavedListing and RoommateRequest; User–User via Conversation and Block; Itinerary 1–N
-ItineraryItem N–1 POI/Listing.
+ItineraryItem N–1 POI/Listing; Country 1–N RideService; Country 1–N UserProfile (home country,
+used for the currency converter).
 
 ### 5.2 Database choice and justification
 
@@ -87,13 +96,13 @@ relationally; only the bodies go to MongoDB.
 
 ## 6. SQL implementation
 
-**DDL** — 5 Prisma migrations in `prisma/migrations/` (CREATE/ALTER/DROP; the v2 migration
+**DDL** — 10 Prisma migrations in `prisma/migrations/` (CREATE/ALTER/DROP; the v2 migration
 renames v1's photo column to keep data and backfills ISO codes; it drops the unused v1 MySQL
 `Message` table). Raw-SQL migration `20261112090100_sql_objects` adds:
 
 | Object | Name | Used by |
 |---|---|---|
-| CHECK constraints (27) | `chk_listing_capacity`, `chk_listing_occupants`, `chk_itin_split`, … | every write |
+| CHECK constraints (28) | `chk_listing_capacity`, `chk_listing_occupants`, `chk_itin_split`, `chk_ride_link`, … | every write |
 | View | `v_listing_summary` | search, saved, dashboards, admin |
 | View | `v_roommate_compatibility` | "Top matches for you" |
 | Function | `fn_distance_km` (Haversine) | nearest sort, POI radius search, queries |
@@ -111,7 +120,7 @@ RANK/PERCENT_RANK/ROW_NUMBER/DENSE_RANK, FULLTEXT, view use, function, procedure
 demos, transactions with row locks, upsert, cascading delete, DDL demo, EXPLAIN).
 
 **Advanced concepts demonstrated (≥ 4 required):** transactions, views, stored procedure and
-functions, triggers, indexing (112 indexes incl. composite and FULLTEXT), full-text search,
+functions, triggers, indexing (117 indexes incl. composite and FULLTEXT), full-text search,
 NoSQL aggregation, window functions, CHECK constraints.
 
 ### Transactions in the application
@@ -224,7 +233,7 @@ full-text search and window functions) and a document store for append-only data
 together behind one web and mobile application, with the database itself enforcing the
 important rules (occupancy, uniqueness, budgets, audit trail).
 
-**Future work:** WebSockets/SSE instead of polling; semantic search over the guide with vector
+**Future work:** booking rides and SIMs inside the app through partner APIs; WebSockets/SSE instead of polling; semantic search over the guide with vector
 embeddings; translated guide content; verified identity and digital lease signing; price
 history charts from the audit log; deployment on a managed MySQL + MongoDB Atlas with
 background jobs refreshing the place cache; offline reading of the guide in the app.
