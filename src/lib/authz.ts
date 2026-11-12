@@ -25,7 +25,7 @@ export const PAGE_RULES: Rule[] = [
 ];
 
 /** Pages anyone can open without logging in (listing pages, the guide, shared trips). */
-const PUBLIC_PREFIXES = ["/share", "/listings", "/guide"];
+const PUBLIC_PREFIXES = ["/share", "/listings", "/guide", "/credits"];
 
 function matches(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(prefix + "/");

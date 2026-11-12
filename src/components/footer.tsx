@@ -16,7 +16,7 @@ export function Footer() {
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-subtle md:flex-row md:justify-between md:px-6">
           <span>© {new Date().getFullYear()} Nira · DBMS course project</span>
-          <span>Map data © OpenStreetMap contributors · Timetables: transport.opendata.ch · Prices are estimates</span>
+          <span>Map data © OpenStreetMap contributors · Timetables: transport.opendata.ch · Prices are estimates · <Link href="/credits" className="underline-offset-2 hover:underline">Photo credits</Link></span>
         </div>
       </div>
     </footer>
