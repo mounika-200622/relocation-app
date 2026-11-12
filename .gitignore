@@ -41,3 +41,16 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# local agent/editor tooling (not part of the app)
+/.agents/
+/.claude/
+/.windsurf/
+skills-lock.json
+
+# user uploads (served from /public/uploads in dev only)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# env files: only the example is committed
+!.env.example
