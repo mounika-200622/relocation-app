@@ -5,12 +5,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Chip, Field, Input, Segmented, Select, Switch, Textarea } from "@/components/ui/field";
 import { LocationPicker, type LocationValue } from "@/components/location-picker";
+import { HomeCountryPicker } from "@/components/home-country-picker";
 import { api } from "@/lib/client";
 
 export type ProfileData = {
   name: string;
   occupation: "STUDENT" | "PROFESSIONAL" | "OTHER";
   organization: string;
+  homeCountryId: number | null;
   destinationCityId: number | null;
   budgetMonthly: string;
   budgetCurrency: string;
@@ -27,7 +29,7 @@ export type ProfileData = {
 };
 
 export const EMPTY_PROFILE: ProfileData = {
-  name: "", occupation: "STUDENT", organization: "", destinationCityId: null, budgetMonthly: "", budgetCurrency: "", moveInDate: "", bio: "",
+  name: "", occupation: "STUDENT", organization: "", homeCountryId: null, destinationCityId: null, budgetMonthly: "", budgetCurrency: "", moveInDate: "", bio: "",
   gender: "UNDISCLOSED", smoking: "NON_SMOKER", hasPets: false, okWithPets: true, socialStyle: "BALANCED", sleepSchedule: "FLEXIBLE", roommateGender: "ANYONE", languages: [],
 };
 
@@ -97,6 +99,7 @@ export function ProfileForm({ initial, onSaved, step, submitLabel = "Save profil
       {show(1) && (
         <section className="space-y-5">
           {step === undefined && <h2 className="text-lg font-semibold">Your move</h2>}
+          <HomeCountryPicker value={p.homeCountryId} onChange={(id) => set("homeCountryId", id)} />
           <LocationPicker initialCityId={p.destinationCityId} onChange={setLoc} onCity={(c) => c && !p.budgetCurrency && set("budgetCurrency", c.currency)} labels={{ city: "Destination city" }} />
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Monthly housing budget">{(a) => <Input {...a} inputMode="decimal" value={p.budgetMonthly} onChange={(e) => set("budgetMonthly", e.target.value.replace(/[^\d.]/g, ""))} placeholder="1000" />}</Field>

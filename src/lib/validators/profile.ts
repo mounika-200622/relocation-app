@@ -5,6 +5,7 @@ export const userProfileSchema = z.object({
   name: cleanText(80).pipe(z.string().min(2, "Name must be at least 2 characters.")).optional(),
   occupation: z.enum(["STUDENT", "PROFESSIONAL", "OTHER"]),
   organization: cleanText(120).optional().nullable(),
+  homeCountryId: optionalId.nullable(),
   destinationCityId: optionalId.nullable(),
   budgetMonthly: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
   budgetCurrency: currency.nullable().optional(),

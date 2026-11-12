@@ -10,6 +10,7 @@ export async function loadProfileData(userId: number): Promise<ProfileData> {
     name: u.name,
     occupation: p?.occupation ?? "STUDENT",
     organization: p?.organization ?? "",
+    homeCountryId: p?.homeCountryId ?? null,
     destinationCityId: p?.destinationCityId ?? null,
     budgetMonthly: p?.budgetMonthly ? String(num(p.budgetMonthly)) : "",
     budgetCurrency: p?.budgetCurrency ?? "",
