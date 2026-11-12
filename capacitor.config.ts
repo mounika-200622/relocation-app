@@ -1,4 +1,6 @@
 import type { CapacitorConfig } from "@capacitor/cli";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 /**
  * Android app shell for Nira.
@@ -12,6 +14,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
  */
 const serverUrl = process.env.NIRA_SERVER_URL ?? "http://10.0.2.2:3000";
 
+// The bundled "can't connect" page (offline.html) reads this to offer a working "Try again" button.
+writeFileSync(join(__dirname, "mobile", "www", "server.js"), `window.NIRA_SERVER = ${JSON.stringify(serverUrl)};\n`);
+
 const config: CapacitorConfig = {
   appId: "app.nira.relocation",
   appName: "Nira",
@@ -20,6 +25,7 @@ const config: CapacitorConfig = {
     url: serverUrl,
     cleartext: serverUrl.startsWith("http://"), // allow plain HTTP only for local development
     androidScheme: "https",
+    errorPath: "offline.html", // shown instead of a blank screen when the server can't be reached
   },
   plugins: {
     // light status-bar icons on the dark theme; insets reach CSS as env(safe-area-inset-*)

@@ -41,8 +41,9 @@ if (!serverUrl) {
 console.log(`Phone app will load ${serverUrl}  (start the server with: npm run start:lan)`);
 
 const run = (cmd, cwd = process.cwd()) => execSync(cmd, { stdio: "inherit", cwd, env: { ...process.env, NIRA_SERVER_URL: serverUrl } });
-const gradlew = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
 const android = join(process.cwd(), "android");
+// full path: Windows shells do not always search the working directory
+const gradlew = `"${join(android, process.platform === "win32" ? "gradlew.bat" : "gradlew")}"`;
 
 run("npx cap sync android");
 run(`${gradlew} assembleDebug`, android);

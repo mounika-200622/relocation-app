@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Nira · can't connect</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(120% 80% at 50% 0%, #3b0a2a 0%, #0e0810 60%); color: #fdf2f8; font-family: system-ui, sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+    main { max-width: 340px; }
+    h1 { font-family: Georgia, serif; font-style: italic; font-size: 56px; margin: 0 0 8px; }
+    h1 span { background: linear-gradient(135deg, #f9a8d4, #ec4899 50%, #a21caf); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    p { color: #d8b4c8; line-height: 1.6; margin: 10px 0; }
+    ol { text-align: left; color: #d8b4c8; line-height: 1.7; padding-left: 20px; }
+    code { color: #fdf2f8; background: #ffffff14; padding: 1px 6px; border-radius: 6px; word-break: break-all; }
+    button { margin-top: 18px; border: 0; border-radius: 999px; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #f472b6, #ec4899 50%, #a21caf); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Nira<span>.</span></h1>
+    <p>Can't reach the Nira server<span id="where"></span>.</p>
+    <ol>
+      <li>Turn on <b>Wi-Fi</b> on this phone and join the <b>same network</b> as the laptop.</li>
+      <li>On the laptop, run <code>npm run start:lan</code>.</li>
+      <li>If the laptop changed networks, rebuild with <code>npm run android:wifi</code>.</li>
+    </ol>
+    <button id="retry" type="button">Try again</button>
+  </main>
+  <script src="server.js"></script>
+  <script>
+    var url = window.NIRA_SERVER || "";
+    if (url) document.getElementById("where").textContent = " at " + url;
+    document.getElementById("retry").addEventListener("click", function () {
+      if (url) window.location.href = url; else window.location.reload();
+    });
+  </script>
+</body>
+</html>
