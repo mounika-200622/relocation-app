@@ -2,7 +2,7 @@
 
 Generated from `information_schema` of the migrated database (`npx tsx scripts/docs/data-dictionary.ts`).
 
-**37 tables**, 53 foreign keys, 27 CHECK constraints, 112 indexes, 2 views.
+**38 tables**, 55 foreign keys, 28 CHECK constraints, 117 indexes, 2 views.
 
 Key: **PK** primary key · **FK → T.c (rule)** foreign key with its ON DELETE rule · **UQ** part of a unique key · **IDX** indexed.
 
@@ -34,6 +34,7 @@ Key: **PK** primary key · **FK → T.c (rule)** foreign key with its ON DELETE 
 - [PoiQueryCache](#poiquerycache) — Which (area, category) place queries were fetched and when (7-day freshness).
 - [Region](#region) — States / cantons / provinces of a country.
 - [Report](#report) — Reports of users or listings, reviewed by admins.
+- [RideService](#rideservice) — 
 - [RoommateRequest](#roommaterequest) — A USER asking to share a shareable listing (OPEN → MATCHED/CLOSED/WITHDRAWN).
 - [SavedListing](#savedlisting) — M:N – a user's favourite listings.
 - [SimPlan](#simplan) — Plans of a SIM provider.
@@ -146,11 +147,13 @@ Cities, linked to country and (optionally) region.
 | id | `int` | no |  | **PK**, auto_increment |
 | name | `varchar(120)` | no |  | IDX |
 | countryId | `int` | no |  | FK → Country.id (RESTRICT) |
-| lat | `double` | yes |  |  |
+| lat | `double` | yes |  | IDX |
 | lng | `double` | yes |  |  |
 | regionId | `int` | yes |  | FK → Region.id (SET NULL) |
+| photoCredit | `varchar(300)` | yes |  |  |
+| photoUrl | `varchar(300)` | yes |  |  |
 
-**Indexes:** `City_countryId_name_idx` (countryId,name) · `City_countryId_regionId_name_key` (countryId,regionId,name) unique · `City_name_idx` (name) · `City_regionId_name_idx` (regionId,name) · `PRIMARY` (id) unique
+**Indexes:** `City_countryId_name_idx` (countryId,name) · `City_countryId_regionId_name_key` (countryId,regionId,name) unique · `City_lat_lng_idx` (lat,lng) · `City_name_idx` (name) · `City_regionId_name_idx` (regionId,name) · `PRIMARY` (id) unique
 
 ## Conversation
 
@@ -208,6 +211,8 @@ Countries with ISO code, currency and coordinates.
 | lat | `double` | yes |  |  |
 | lng | `double` | yes |  |  |
 | phoneCode | `varchar(20)` | yes |  |  |
+| photoCredit | `varchar(300)` | yes |  |  |
+| photoUrl | `varchar(300)` | yes |  |  |
 
 **Indexes:** `Country_isoCode_key` (isoCode) unique · `Country_name_key` (name) unique · `PRIMARY` (id) unique
 
@@ -423,6 +428,7 @@ Photos of a listing (URL + storage key + order).
 | position | `smallint` | no | 0 |  |
 | caption | `varchar(140)` | yes |  |  |
 | createdAt | `datetime(3)` | no | CURRENT_TIMESTAMP(3) |  |
+| credit | `varchar(300)` | yes |  |  |
 
 **Indexes:** `ListingPhoto_listingId_position_idx` (listingId,position) · `PRIMARY` (id) unique
 
@@ -465,7 +471,7 @@ Cached OpenStreetMap / Google places with derived price tier.
 | id | `int` | no |  | **PK**, auto_increment |
 | cityId | `int` | yes |  | FK → City.id (SET NULL) |
 | name | `varchar(200)` | no |  |  |
-| category | `enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING')` | no |  | IDX |
+| category | `enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','CURRENCY_EXCHANGE','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING')` | no |  | IDX |
 | address | `varchar(255)` | yes |  |  |
 | lat | `double` | no |  | IDX |
 | lng | `double` | no |  |  |
@@ -492,7 +498,7 @@ Which (area, category) place queries were fetched and when (7-day freshness).
 |---|---|---|---|---|
 | id | `int` | no |  | **PK**, auto_increment |
 | areaKey | `varchar(64)` | no |  | IDX |
-| category | `enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING')` | no |  |  |
+| category | `enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','CURRENCY_EXCHANGE','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING')` | no |  |  |
 | resultCount | `int` | no | 0 |  |
 | fetchedAt | `datetime(3)` | no | CURRENT_TIMESTAMP(3) |  |
 
@@ -531,6 +537,27 @@ Reports of users or listings, reviewed by admins.
 | resolvedAt | `datetime(3)` | yes |  |  |
 
 **Indexes:** `PRIMARY` (id) unique · `Report_listingId_idx` (listingId) · `Report_reportedUserId_idx` (reportedUserId) · `Report_reporterId_idx` (reporterId) · `Report_resolvedById_idx` (resolvedById) · `Report_status_createdAt_idx` (status,createdAt)
+
+## RideService
+
+
+
+| Column | Type | Null | Default | Keys / constraints |
+|---|---|---|---|---|
+| id | `int` | no |  | **PK**, auto_increment |
+| countryId | `int` | no |  | FK → Country.id (CASCADE) |
+| name | `varchar(80)` | no |  |  |
+| kind | `enum('RIDE_HAILING','TAXI','BIKE_SHARE','SCOOTER')` | no |  |  |
+| website | `varchar(200)` | yes |  |  |
+| deepLink | `varchar(400)` | yes |  |  |
+| phone | `varchar(30)` | yes |  |  |
+| notes | `varchar(300)` | yes |  |  |
+| position | `smallint` | no | 0 |  |
+
+**Indexes:** `PRIMARY` (id) unique · `RideService_countryId_kind_idx` (countryId,kind) · `RideService_countryId_name_key` (countryId,name) unique
+
+**CHECK constraints:**
+- `chk_ride_link`: `((deepLink is null) or (deepLink like _utf8mb4\'http%\') or (deepLink like _utf8mb4\'%://%\'))`
 
 ## RoommateRequest
 
@@ -726,8 +753,9 @@ Relocation profile of a USER (1:1): destination, budget, lifestyle used for matc
 | sleepSchedule | `enum('EARLY_BIRD','FLEXIBLE','NIGHT_OWL')` | no | FLEXIBLE |  |
 | roommateGender | `enum('ANYONE','FEMALE_ONLY','MALE_ONLY')` | no | ANYONE |  |
 | updatedAt | `datetime(3)` | no | CURRENT_TIMESTAMP(3) |  |
+| homeCountryId | `int` | yes |  | FK → Country.id (SET NULL) |
 
-**Indexes:** `PRIMARY` (userId) unique · `UserProfile_destinationCityId_idx` (destinationCityId)
+**Indexes:** `PRIMARY` (userId) unique · `UserProfile_destinationCityId_idx` (destinationCityId) · `UserProfile_homeCountryId_idx` (homeCountryId)
 
 **CHECK constraints:**
 - `chk_profile_budget`: `((budgetMonthly is null) or (budgetMonthly >= 0))`

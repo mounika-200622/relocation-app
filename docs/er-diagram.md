@@ -22,6 +22,7 @@ erDiagram
     Region |o--o{ City : groups
     City ||--o{ Listing : "located in"
     City |o--o{ UserProfile : "destination of"
+    Country |o--o{ UserProfile : "home country of"
     Listing ||--o{ ListingPhoto : has
     Listing ||--o{ ListingAmenity : offers
     Amenity ||--o{ ListingAmenity : "offered by"
@@ -42,6 +43,7 @@ erDiagram
         int userId PK,FK
         enum occupation
         int destinationCityId FK
+        int homeCountryId FK "for the currency converter"
         decimal budgetMonthly
         char budgetCurrency
         date moveInDate
@@ -78,6 +80,8 @@ erDiagram
         char isoCode UK
         varchar name UK
         char currency
+        varchar photoUrl "real photo (Wikimedia Commons)"
+        varchar photoCredit
     }
     Region {
         int id PK
@@ -92,6 +96,8 @@ erDiagram
         varchar name
         double lat
         double lng
+        varchar photoUrl
+        varchar photoCredit
     }
     Listing {
         int id PK
@@ -117,6 +123,7 @@ erDiagram
         varchar url
         varchar storageKey
         smallint position
+        varchar credit "author · licence · file"
     }
     Amenity {
         int id PK
@@ -216,6 +223,7 @@ erDiagram
     Country ||--o{ SimProvider : has
     SimProvider ||--o{ SimPlan : offers
     Country ||--o{ TransportMode : has
+    Country ||--o{ RideService : "taxis & ride apps"
     Country ||--o{ TransportPass : has
     City |o--o{ TransportPass : "city pass"
     Country ||--o{ EmergencyNumber : has
@@ -293,6 +301,13 @@ erDiagram
         int id PK
         int countryId FK
         enum mode
+    }
+    RideService {
+        int id PK
+        int countryId FK
+        varchar name "UK with countryId"
+        enum kind "RIDE_HAILING, TAXI, BIKE_SHARE, SCOOTER"
+        varchar deepLink "CHECK: needs website or deepLink"
     }
     TransportPass {
         int id PK

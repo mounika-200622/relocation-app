@@ -3,6 +3,18 @@
 --   mysqldump --no-data --routines --triggers --skip-comments nira_dev
 -- Apply the real thing with: npx prisma migrate deploy
 
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+DROP TABLE IF EXISTS `_prisma_migrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `_prisma_migrations` (
@@ -17,6 +29,7 @@ CREATE TABLE `_prisma_migrations` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Amenity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Amenity` (
@@ -27,6 +40,7 @@ CREATE TABLE `Amenity` (
   UNIQUE KEY `Amenity_code_key` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `AuditLog`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `AuditLog` (
@@ -41,6 +55,7 @@ CREATE TABLE `AuditLog` (
   KEY `AuditLog_tableName_rowId_changedAt_idx` (`tableName`,`rowId`,`changedAt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Bank`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Bank` (
@@ -58,6 +73,7 @@ CREATE TABLE `Bank` (
   CONSTRAINT `Bank_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Block`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Block` (
@@ -79,7 +95,7 @@ CREATE TABLE `Block` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_block_bi` BEFORE INSERT ON `block` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`nira`@`127.0.0.1`*/ /*!50003 TRIGGER `trg_block_bi` BEFORE INSERT ON `block` FOR EACH ROW BEGIN
   IF NEW.`blockerId` = NEW.`blockedId` THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A user cannot block themselves';
   END IF;
@@ -89,6 +105,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+DROP TABLE IF EXISTS `BusinessProfile`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `BusinessProfile` (
@@ -102,6 +119,7 @@ CREATE TABLE `BusinessProfile` (
   CONSTRAINT `BusinessProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ChecklistTemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ChecklistTemplate` (
@@ -122,6 +140,7 @@ CREATE TABLE `ChecklistTemplate` (
   CONSTRAINT `ChecklistTemplate_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `City`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `City` (
@@ -131,15 +150,19 @@ CREATE TABLE `City` (
   `lat` double DEFAULT NULL,
   `lng` double DEFAULT NULL,
   `regionId` int DEFAULT NULL,
+  `photoCredit` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `photoUrl` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `City_countryId_regionId_name_key` (`countryId`,`regionId`,`name`),
   KEY `City_regionId_name_idx` (`regionId`,`name`),
   KEY `City_countryId_name_idx` (`countryId`,`name`),
   KEY `City_name_idx` (`name`),
+  KEY `City_lat_lng_idx` (`lat`,`lng`),
   CONSTRAINT `City_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `City_regionId_fkey` FOREIGN KEY (`regionId`) REFERENCES `Region` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Conversation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Conversation` (
@@ -174,7 +197,7 @@ CREATE TABLE `Conversation` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_conversation_bi` BEFORE INSERT ON `conversation` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`nira`@`127.0.0.1`*/ /*!50003 TRIGGER `trg_conversation_bi` BEFORE INSERT ON `conversation` FOR EACH ROW BEGIN
   IF NEW.`userAId` >= NEW.`userBId` THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Conversation requires userAId < userBId';
   END IF;
@@ -184,6 +207,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+DROP TABLE IF EXISTS `CostEstimate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `CostEstimate` (
@@ -206,6 +230,7 @@ CREATE TABLE `CostEstimate` (
   CONSTRAINT `chk_cost_tier` CHECK ((`tier` between 0 and 4))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Country`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Country` (
@@ -217,11 +242,14 @@ CREATE TABLE `Country` (
   `lat` double DEFAULT NULL,
   `lng` double DEFAULT NULL,
   `phoneCode` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `photoCredit` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `photoUrl` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `Country_name_key` (`name`),
   UNIQUE KEY `Country_isoCode_key` (`isoCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `EmergencyNumber`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `EmergencyNumber` (
@@ -235,6 +263,7 @@ CREATE TABLE `EmergencyNumber` (
   CONSTRAINT `EmergencyNumber_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ExchangeRate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ExchangeRate` (
@@ -246,6 +275,7 @@ CREATE TABLE `ExchangeRate` (
   CONSTRAINT `chk_rate_positive` CHECK ((`rate` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `GuideArticle`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `GuideArticle` (
@@ -270,6 +300,7 @@ CREATE TABLE `GuideArticle` (
   CONSTRAINT `GuideArticle_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Itinerary`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Itinerary` (
@@ -306,6 +337,7 @@ CREATE TABLE `Itinerary` (
   CONSTRAINT `chk_itin_split` CHECK (((`pctStay` between 0 and 100) and (`pctFood` between 0 and 100) and (`pctActivities` between 0 and 100) and (`pctTransport` between 0 and 100) and ((((`pctStay` + `pctFood`) + `pctActivities`) + `pctTransport`) = 100)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ItineraryInterest`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ItineraryInterest` (
@@ -315,6 +347,7 @@ CREATE TABLE `ItineraryInterest` (
   CONSTRAINT `ItineraryInterest_itineraryId_fkey` FOREIGN KEY (`itineraryId`) REFERENCES `Itinerary` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ItineraryItem`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ItineraryItem` (
@@ -342,6 +375,7 @@ CREATE TABLE `ItineraryItem` (
   CONSTRAINT `chk_item_day` CHECK ((`dayNumber` >= 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Language`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Language` (
@@ -351,6 +385,7 @@ CREATE TABLE `Language` (
   UNIQUE KEY `Language_name_key` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Listing`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Listing` (
@@ -417,7 +452,7 @@ CREATE TABLE `Listing` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_listing_occupancy_bu` BEFORE UPDATE ON `listing` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`nira`@`127.0.0.1`*/ /*!50003 TRIGGER `trg_listing_occupancy_bu` BEFORE UPDATE ON `listing` FOR EACH ROW BEGIN
   IF NEW.`isShareable` AND NEW.`currentOccupants` >= NEW.`capacityMax` AND NEW.`status` = 'ACTIVE' THEN
     SET NEW.`status` = 'RENTED';
   ELSEIF NEW.`isShareable` AND OLD.`status` = 'RENTED' AND NEW.`status` = 'RENTED'
@@ -439,7 +474,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_listing_audit_au` AFTER UPDATE ON `listing` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`nira`@`127.0.0.1`*/ /*!50003 TRIGGER `trg_listing_audit_au` AFTER UPDATE ON `listing` FOR EACH ROW BEGIN
   IF NOT (OLD.`price` <=> NEW.`price`) OR NOT (OLD.`status` <=> NEW.`status`) THEN
     INSERT INTO `AuditLog` (`tableName`, `rowId`, `action`, `oldValue`, `newValue`, `changedAt`)
     VALUES ('Listing', NEW.`id`, 'UPDATE',
@@ -453,6 +488,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+DROP TABLE IF EXISTS `ListingAmenity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ListingAmenity` (
@@ -464,6 +500,7 @@ CREATE TABLE `ListingAmenity` (
   CONSTRAINT `ListingAmenity_listingId_fkey` FOREIGN KEY (`listingId`) REFERENCES `Listing` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ListingPhoto`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ListingPhoto` (
@@ -474,11 +511,13 @@ CREATE TABLE `ListingPhoto` (
   `position` smallint NOT NULL DEFAULT '0',
   `caption` varchar(140) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `credit` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ListingPhoto_listingId_position_idx` (`listingId`,`position`),
   CONSTRAINT `ListingPhoto_listingId_fkey` FOREIGN KEY (`listingId`) REFERENCES `Listing` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ListingView`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ListingView` (
@@ -495,6 +534,7 @@ CREATE TABLE `ListingView` (
   CONSTRAINT `ListingView_viewerId_fkey` FOREIGN KEY (`viewerId`) REFERENCES `User` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `PasswordResetToken`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `PasswordResetToken` (
@@ -510,13 +550,14 @@ CREATE TABLE `PasswordResetToken` (
   CONSTRAINT `PasswordResetToken_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `POI`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `POI` (
   `id` int NOT NULL AUTO_INCREMENT,
   `cityId` int DEFAULT NULL,
   `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category` enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','CURRENCY_EXCHANGE','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING') COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `lat` double NOT NULL,
   `lng` double NOT NULL,
@@ -538,18 +579,20 @@ CREATE TABLE `POI` (
   CONSTRAINT `chk_poi_tier` CHECK (((`priceTier` is null) or (`priceTier` between 1 and 4)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `PoiQueryCache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `PoiQueryCache` (
   `id` int NOT NULL AUTO_INCREMENT,
   `areaKey` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category` enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` enum('RESTAURANT','CAFE','FAST_FOOD','SUPERMARKET','CONVENIENCE','HOSPITAL','CLINIC','PHARMACY','DOCTOR','BANK','ATM','CURRENCY_EXCHANGE','TRANSIT','MOBILE_SHOP','LAUNDRY','GYM','UNIVERSITY','POST_OFFICE','POLICE','HOTEL','HOSTEL','GUEST_HOUSE','CAMP_SITE','ATTRACTION','MUSEUM','VIEWPOINT','GALLERY','HISTORIC','PARK','NIGHTLIFE','SHOPPING') COLLATE utf8mb4_unicode_ci NOT NULL,
   `resultCount` int NOT NULL DEFAULT '0',
   `fetchedAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`id`),
   UNIQUE KEY `PoiQueryCache_areaKey_category_key` (`areaKey`,`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Region`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Region` (
@@ -565,6 +608,7 @@ CREATE TABLE `Region` (
   CONSTRAINT `Region_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `Report`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Report` (
@@ -590,6 +634,27 @@ CREATE TABLE `Report` (
   CONSTRAINT `Report_resolvedById_fkey` FOREIGN KEY (`resolvedById`) REFERENCES `User` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `RideService`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `RideService` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `countryId` int NOT NULL,
+  `name` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kind` enum('RIDE_HAILING','TAXI','BIKE_SHARE','SCOOTER') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `website` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `deepLink` varchar(400) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `position` smallint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `RideService_countryId_name_key` (`countryId`,`name`),
+  KEY `RideService_countryId_kind_idx` (`countryId`,`kind`),
+  CONSTRAINT `RideService_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_ride_link` CHECK (((`deepLink` is null) or (`deepLink` like _utf8mb4'http%') or (`deepLink` like _utf8mb4'%://%')))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `RoommateRequest`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `RoommateRequest` (
@@ -622,7 +687,7 @@ CREATE TABLE `RoommateRequest` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_request_open_bi` BEFORE INSERT ON `roommaterequest` FOR EACH ROW SET NEW.`openRequesterId` = IF(NEW.`status` = 'OPEN', NEW.`requesterId`, NULL); */;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`nira`@`127.0.0.1`*/ /*!50003 TRIGGER `trg_request_open_bi` BEFORE INSERT ON `roommaterequest` FOR EACH ROW SET NEW.`openRequesterId` = IF(NEW.`status` = 'OPEN', NEW.`requesterId`, NULL); */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -637,12 +702,13 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_request_open_bu` BEFORE UPDATE ON `roommaterequest` FOR EACH ROW SET NEW.`openRequesterId` = IF(NEW.`status` = 'OPEN', NEW.`requesterId`, NULL); */;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`nira`@`127.0.0.1`*/ /*!50003 TRIGGER `trg_request_open_bu` BEFORE UPDATE ON `roommaterequest` FOR EACH ROW SET NEW.`openRequesterId` = IF(NEW.`status` = 'OPEN', NEW.`requesterId`, NULL); */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+DROP TABLE IF EXISTS `SavedListing`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `SavedListing` (
@@ -655,6 +721,7 @@ CREATE TABLE `SavedListing` (
   CONSTRAINT `SavedListing_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `SimPlan`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `SimPlan` (
@@ -675,6 +742,7 @@ CREATE TABLE `SimPlan` (
   CONSTRAINT `chk_simplan_price` CHECK ((`priceMonthly` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `SimProvider`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `SimProvider` (
@@ -693,6 +761,7 @@ CREATE TABLE `SimProvider` (
   CONSTRAINT `SimProvider_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `SupermarketChain`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `SupermarketChain` (
@@ -708,6 +777,7 @@ CREATE TABLE `SupermarketChain` (
   CONSTRAINT `chk_market_tier` CHECK ((`priceTier` between 1 and 4))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `TransportMode`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `TransportMode` (
@@ -725,6 +795,7 @@ CREATE TABLE `TransportMode` (
   CONSTRAINT `TransportMode_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `TransportPass`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `TransportPass` (
@@ -746,6 +817,7 @@ CREATE TABLE `TransportPass` (
   CONSTRAINT `TransportPass_countryId_fkey` FOREIGN KEY (`countryId`) REFERENCES `Country` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `User`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `User` (
@@ -763,6 +835,7 @@ CREATE TABLE `User` (
   KEY `User_role_isActive_idx` (`role`,`isActive`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `UserChecklistProgress`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `UserChecklistProgress` (
@@ -775,6 +848,7 @@ CREATE TABLE `UserChecklistProgress` (
   CONSTRAINT `UserChecklistProgress_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `UserLanguage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `UserLanguage` (
@@ -786,6 +860,7 @@ CREATE TABLE `UserLanguage` (
   CONSTRAINT `UserLanguage_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `UserProfile`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `UserProfile` (
@@ -805,13 +880,18 @@ CREATE TABLE `UserProfile` (
   `sleepSchedule` enum('EARLY_BIRD','FLEXIBLE','NIGHT_OWL') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'FLEXIBLE',
   `roommateGender` enum('ANYONE','FEMALE_ONLY','MALE_ONLY') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ANYONE',
   `updatedAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `homeCountryId` int DEFAULT NULL,
   PRIMARY KEY (`userId`),
   KEY `UserProfile_destinationCityId_idx` (`destinationCityId`),
+  KEY `UserProfile_homeCountryId_idx` (`homeCountryId`),
   CONSTRAINT `UserProfile_destinationCityId_fkey` FOREIGN KEY (`destinationCityId`) REFERENCES `City` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `UserProfile_homeCountryId_fkey` FOREIGN KEY (`homeCountryId`) REFERENCES `Country` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `UserProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_profile_budget` CHECK (((`budgetMonthly` is null) or (`budgetMonthly` >= 0)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `v_listing_summary`;
+/*!50001 DROP VIEW IF EXISTS `v_listing_summary`*/;
 SET @saved_cs_client     = @@character_set_client;
 /*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `v_listing_summary` AS SELECT 
@@ -852,6 +932,8 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `photoCount`,
  1 AS `openRequests`*/;
 SET character_set_client = @saved_cs_client;
+DROP TABLE IF EXISTS `v_roommate_compatibility`;
+/*!50001 DROP VIEW IF EXISTS `v_roommate_compatibility`*/;
 SET @saved_cs_client     = @@character_set_client;
 /*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `v_roommate_compatibility` AS SELECT 
@@ -862,6 +944,7 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `cityId`,
  1 AS `score`*/;
 SET character_set_client = @saved_cs_client;
+/*!50003 DROP FUNCTION IF EXISTS `fn_distance_km` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -892,6 +975,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP FUNCTION IF EXISTS `fn_spots_left` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -910,6 +994,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `sp_mark_listing_rented` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -975,3 +1060,13 @@ DELIMITER ;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+

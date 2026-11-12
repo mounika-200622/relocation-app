@@ -35,13 +35,13 @@ WHERE status = 'ACTIVE' AND isShareable = TRUE AND spotsLeft > 0
 ORDER BY openRequests DESC, price
 LIMIT 5;
 -- Result:
--- | id | cityName | type         | price | currency | spotsLeft | photoCount | openRequests | ownerVerified |
--- |----|----------|--------------|-------|----------|-----------|------------|--------------|---------------|
--- | 5  | Zürich   | DORM         | 750   | CHF      | 1         | 4          | 3            | 1             |
--- | 1  | Zürich   | SHARED_ROOM  | 830   | CHF      | 2         | 3          | 3            | 1             |
--- | 2  | Zürich   | PRIVATE_ROOM | 900   | CHF      | 1         | 4          | 3            | 1             |
--- | 4  | Zürich   | APARTMENT    | 2360  | CHF      | 1         | 3          | 3            | 1             |
--- | 41 | Berlin   | SHARED_ROOM  | 540   | EUR      | 2         | 3          | 0            | 1             |
+-- | id | cityName  | type         | price | currency | spotsLeft | photoCount | openRequests | ownerVerified |
+-- |----|-----------|--------------|-------|----------|-----------|------------|--------------|---------------|
+-- | 5  | Zürich    | DORM         | 750   | CHF      | 1         | 5          | 3            | 1             |
+-- | 1  | Zürich    | SHARED_ROOM  | 830   | CHF      | 2         | 4          | 3            | 1             |
+-- | 2  | Zürich    | PRIVATE_ROOM | 900   | CHF      | 1         | 5          | 3            | 1             |
+-- | 4  | Zürich    | APARTMENT    | 2360  | CHF      | 1         | 4          | 3            | 1             |
+-- | 44 | Bengaluru | APARTMENT    | 48420 | INR      | 3         | 5          | 2            | 1             |
 
 -- ---------------------------------------------------------------------------
 -- Q3. Cities with at least 3 active listings and their price statistics
@@ -151,11 +151,12 @@ ORDER BY score DESC;
 -- Result:
 -- | slug              | title                               | score |
 -- |-------------------|-------------------------------------|-------|
--- | health-insurance  | How Swiss health insurance works    | 1.179 |
--- | first-week        | Your first week in Switzerland      | 0.687 |
--- | find-a-doctor     | Doctors, pharmacies and emergencies | 0.065 |
--- | renting-a-home    | Renting a flat or a room            | 0.065 |
--- | permits-and-admin | Permits, registration and admin     | 0.065 |
+-- | health-insurance  | How Swiss health insurance works    | 2.538 |
+-- | first-week        | Your first week in Switzerland      | 1.541 |
+-- | healthcare        | Healthcare in India                 | 0.544 |
+-- | find-a-doctor     | Doctors, pharmacies and emergencies | 0.181 |
+-- | renting-a-home    | Renting a flat or a room            | 0.181 |
+-- | permits-and-admin | Permits, registration and admin     | 0.181 |
 
 -- ---------------------------------------------------------------------------
 -- Q9. Business dashboard: views, inquiries and open requests per owner
@@ -174,12 +175,12 @@ ORDER BY views DESC;
 -- Result:
 -- | owner                 | listings | views | inquiries | open_requests |
 -- |-----------------------|----------|-------|-----------|---------------|
--- | Alpine Student Living | 17       | 160   | 3         | 12            |
--- | Helvetia Flats        | 10       | 100   | 0         | 0             |
--- | LakeView Residences   | 7        | 78    | 0         | 0             |
--- | Campus Nest           | 4        | 56    | 0         | 0             |
--- | CityNest Global       | 6        | 54    | 0         | 0             |
--- | Ticino Homes          | 2        | 12    | 0         | 0             |
+-- | Alpine Student Living | 17       | 466   | 3         | 12            |
+-- | Helvetia Flats        | 10       | 241   | 0         | 0             |
+-- | LakeView Residences   | 7        | 183   | 0         | 0             |
+-- | CityNest Global       | 6        | 156   | 0         | 2             |
+-- | Campus Nest           | 4        | 100   | 0         | 0             |
+-- | Ticino Homes          | 2        | 55    | 0         | 0             |
 
 -- ---------------------------------------------------------------------------
 -- Q10. Top roommate matches for one person
@@ -218,7 +219,7 @@ LIMIT 5;
 -- | 16 | Chloé Dubois |
 -- | 18 | Ethan Chen   |
 -- | 11 | Lena Müller  |
--- | 12 | Mateo García |
+-- | 22 | Lucas Martin |
 
 -- ---------------------------------------------------------------------------
 -- Q12. Listings that have ALL of: Wi-Fi, washing machine, balcony
@@ -314,10 +315,16 @@ GROUP BY i.id, i.title, it.kind, i.budget, i.currency
 ORDER BY i.id, spent DESC
 LIMIT 8;
 -- Result:
--- | trip                | kind      | items | spent | budget | currency |
--- |---------------------|-----------|-------|-------|--------|----------|
--- | Zurich long weekend | FOOD      | 9     | 411   | 1800   | CHF      |
--- | Zurich long weekend | TRANSPORT | 3     | 69    | 1800   | CHF      |
+-- | trip                       | kind      | items | spent | budget | currency |
+-- |----------------------------|-----------|-------|-------|--------|----------|
+-- | Zürich long weekend        | STAY      | 1     | 540   | 1800   | CHF      |
+-- | Zürich long weekend        | FOOD      | 9     | 411   | 1800   | CHF      |
+-- | Zürich long weekend        | TRANSPORT | 3     | 69    | 1800   | CHF      |
+-- | Zürich long weekend        | ACTIVITY  | 12    | 0     | 1800   | CHF      |
+-- | Geneva on a student budget | STAY      | 1     | 115   | 450    | CHF      |
+-- | Geneva on a student budget | FOOD      | 6     | 54    | 450    | CHF      |
+-- | Geneva on a student budget | TRANSPORT | 2     | 23    | 450    | CHF      |
+-- | Geneva on a student budget | ACTIVITY  | 4     | 12    | 450    | CHF      |
 
 -- ---------------------------------------------------------------------------
 -- Q17. Closest pharmacy to each seeded Swiss city centre
@@ -331,10 +338,11 @@ SELECT city, pharmacy, km FROM (
 ) ranked
 WHERE rn = 1;
 -- Result:
--- | city   | pharmacy            | km   |
--- |--------|---------------------|------|
--- | Genève | Pharmacie Populaire | 0.24 |
--- | Zürich | Amavita             | 0.08 |
+-- | city     | pharmacy            | km   |
+-- |----------|---------------------|------|
+-- | Genève   | Pharmacie Populaire | 0.24 |
+-- | Lausanne | Pharmacie Populaire | 0.13 |
+-- | Zürich   | Amavita             | 0.08 |
 
 -- ---------------------------------------------------------------------------
 -- Q18. Trigger: a price change is written to AuditLog automatically
