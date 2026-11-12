@@ -13,6 +13,7 @@ import { seedReference } from "./seed/reference";
 import { seedSwissGuide } from "./seed/guide-ch";
 import { seedCosts } from "./seed/costs";
 import { seedDemo } from "./seed/demo";
+import { seedTrips } from "./seed/trips";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +30,7 @@ async function main() {
   await step("Swiss guide", () => seedSwissGuide(prisma));
   await step("cost estimates", () => seedCosts(prisma));
   await step("demo data", () => seedDemo(prisma));
+  await step("sample trips", () => seedTrips(prisma));
 }
 
 main()
