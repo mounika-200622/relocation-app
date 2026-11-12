@@ -26,13 +26,16 @@ export const PAGE_RULES: Rule[] = [
 
 /** Pages anyone can open without logging in (listing pages, the guide, shared trips). */
 const PUBLIC_PREFIXES = ["/share", "/listings", "/guide", "/credits"];
+/** Exact pages that are public even though their sub-pages are not: anyone can search homes,
+ *  but /relocate/home (the personal dashboard) still needs a USER account. */
+const PUBLIC_EXACT = ["/relocate"];
 
 function matches(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(prefix + "/");
 }
 
 export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PREFIXES.some((p) => matches(pathname, p));
+  return PUBLIC_EXACT.includes(pathname) || PUBLIC_PREFIXES.some((p) => matches(pathname, p));
 }
 
 export type AccessDecision = "allow" | "login" | "forbidden";

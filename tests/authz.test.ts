@@ -3,7 +3,7 @@ import { canManageListing, homeFor, isParticipant, pageAccess, safeCallbackUrl }
 
 describe("pageAccess", () => {
   it("sends anonymous visitors of protected pages to login", () => {
-    expect(pageAccess("/relocate", null)).toBe("login");
+    expect(pageAccess("/relocate/home", null)).toBe("login");
     expect(pageAccess("/chat/12", null)).toBe("login");
     expect(pageAccess("/admin", undefined)).toBe("login");
   });
@@ -12,6 +12,8 @@ describe("pageAccess", () => {
     expect(pageAccess("/listings/5", null)).toBe("allow");
     expect(pageAccess("/guide/ch", null)).toBe("allow");
     expect(pageAccess("/share/abc", null)).toBe("allow");
+    // searching homes is open to visitors (the hero search and "Explore homes" tab land here)
+    expect(pageAccess("/relocate", null)).toBe("allow");
   });
   it("enforces business-only pages", () => {
     expect(pageAccess("/business", "USER")).toBe("forbidden");
@@ -19,7 +21,7 @@ describe("pageAccess", () => {
     expect(pageAccess("/list-a-place", "USER")).toBe("forbidden");
   });
   it("enforces user-only pages", () => {
-    expect(pageAccess("/relocate", "BUSINESS")).toBe("forbidden");
+    expect(pageAccess("/relocate/home", "BUSINESS")).toBe("forbidden");
     expect(pageAccess("/trip/new", "USER")).toBe("allow");
   });
   it("enforces admin-only pages", () => {
