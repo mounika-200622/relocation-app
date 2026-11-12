@@ -10,12 +10,13 @@ import { Badge, SectionTitle } from "@/components/ui/misc";
 import { Checklist } from "./checklist";
 import { ConnectionSearch } from "./connections";
 import { CurrencyConverter } from "@/components/currency-converter";
+import { PhotoCredit } from "@/components/photo-credit";
 
 type Props = { params: Promise<{ country: string }>; searchParams: Promise<{ city?: string }> };
 
 async function getCountry(iso: string) {
   if (!/^[a-z]{2}$/i.test(iso)) return null;
-  return prisma.country.findUnique({ where: { isoCode: iso.toUpperCase() }, select: { id: true, name: true, isoCode: true, flag: true, currency: true } });
+  return prisma.country.findUnique({ where: { isoCode: iso.toUpperCase() }, select: { id: true, name: true, isoCode: true, flag: true, currency: true, photoUrl: true, photoCredit: true } });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -62,12 +63,16 @@ export default async function CountryGuide({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 md:px-6">
       <header className="relative overflow-hidden rounded-[2rem] border border-line bg-elev p-8 md:p-12">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {country.photoUrl && <img src={country.photoUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-35" />}
+        {country.photoUrl && <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-elev)] via-[var(--bg-elev)]/80 to-transparent" />}
         <div className="absolute inset-0" style={{ background: "radial-gradient(60% 90% at 100% 0%, rgb(236 72 153 / 0.28), transparent)" }} />
         <div className="relative">
           <Link href="/guide" className="text-sm text-muted hover:text-fg">← All countries</Link>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{country.flag} Settling in <span className="font-display italic">{country.name}</span></h1>
           <p className="mt-3 max-w-2xl text-muted">{articles.length ? "Everything for your first weeks, in the order you need it." : "We're still writing the full guide for this country — here's what we already have."}{city && <> Showing extras for <b className="text-fg">{city.name}</b>.</>}</p>
           {lastUpdated && <p className="mt-3 text-xs text-subtle">Last updated {formatDate(lastUpdated)} · prices are indicative</p>}
+          <PhotoCredit credit={country.photoCredit} className="mt-2 block" />
         </div>
       </header>
 

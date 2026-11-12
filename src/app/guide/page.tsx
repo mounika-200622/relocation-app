@@ -15,8 +15,8 @@ export default async function GuideIndex({ searchParams }: { searchParams: Promi
   const { q } = await searchParams;
   const session = await auth();
   // countries that have any guide content, with how much (GROUP BY + HAVING)
-  const countries = await prisma.$queryRaw<{ id: number; name: string; isoCode: string; flag: string | null; articles: bigint; checklist: bigint }[]>`
-    SELECT c.id, c.name, c.isoCode, c.flag,
+  const countries = await prisma.$queryRaw<{ id: number; name: string; isoCode: string; flag: string | null; photoUrl: string | null; articles: bigint; checklist: bigint }[]>`
+    SELECT c.id, c.name, c.isoCode, c.flag, c.photoUrl,
            (SELECT COUNT(*) FROM GuideArticle a WHERE a.countryId = c.id) AS articles,
            (SELECT COUNT(*) FROM ChecklistTemplate t WHERE t.countryId = c.id) AS checklist
     FROM Country c
@@ -77,8 +77,9 @@ export default async function GuideIndex({ searchParams }: { searchParams: Promi
       <h2 className="mt-10 text-xl font-semibold tracking-tight">Choose a country</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {countries.map((c) => (
-          <Link key={c.id} href={`/guide/${c.isoCode.toLowerCase()}`} className="card flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:border-line-strong">
-            <span className="text-3xl">{c.flag}</span>
+          <Link key={c.id} href={`/guide/${c.isoCode.toLowerCase()}`} className="card flex items-center gap-4 p-4 transition hover:-translate-y-0.5 hover:border-line-strong">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {c.photoUrl ? <img src={c.photoUrl} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" /> : <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-soft text-3xl">{c.flag}</span>}
             <span className="flex-1">
               <span className="block font-semibold">{c.name}</span>
               <span className="text-xs text-subtle">{Number(c.articles) ? `${Number(c.articles)} articles · ${Number(c.checklist)} checklist steps` : "SIM cards, transport, ride apps & emergency numbers"}</span>

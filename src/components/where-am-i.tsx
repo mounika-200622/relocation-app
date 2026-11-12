@@ -7,6 +7,7 @@ import { getPosition, hasLocationConsent, rememberLocationConsent, PositionError
 import { formatMoney } from "@/lib/format";
 import type { LocalBriefing } from "@/lib/locate";
 import { CurrencyConverter } from "@/components/currency-converter";
+import { PhotoCredit } from "@/components/photo-credit";
 import { cn } from "@/lib/cn";
 
 const UBER_HERE = "https://m.uber.com/ul/?action=setPickup&pickup=my_location";
@@ -68,7 +69,11 @@ export function WhereAmI({ className, compact }: { className?: string; compact?:
 
   return (
     <section className={cn("overflow-hidden rounded-3xl border border-line bg-elev", className)} aria-label="Where you are">
-      <div className="relative p-6" style={{ background: "radial-gradient(80% 140% at 0% 0%, rgb(236 72 153 / 0.28), transparent)" }}>
+      <div className="relative overflow-hidden p-6" style={{ background: "radial-gradient(80% 140% at 0% 0%, rgb(236 72 153 / 0.28), transparent)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {b.photo && <img src={b.photo.url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />}
+        {b.photo && <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-elev)] via-[var(--bg-elev)]/75 to-transparent" />}
+        <div className="relative">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-accent"><LocateFixed className="h-3.5 w-3.5" /> You&apos;re here</p>
@@ -76,6 +81,7 @@ export function WhereAmI({ className, compact }: { className?: string; compact?:
               {b.country.flag} {b.city.name}, <span className="font-display italic">{b.country.name}</span>
             </h2>
             <p className="mt-1 text-sm text-muted">{b.city.region ? `${b.city.region} · ` : ""}Currency {b.country.currency}</p>
+            {b.photo && <PhotoCredit credit={b.photo.credit} className="mt-1 block" />}
           </div>
           <button onClick={locate} className="rounded-xl p-2 text-subtle hover:bg-soft hover:text-fg" aria-label="Refresh my location"><RefreshCw className="h-4 w-4" /></button>
         </div>
@@ -89,6 +95,7 @@ export function WhereAmI({ className, compact }: { className?: string; compact?:
             ))}
           </div>
         )}
+        </div>
       </div>
 
       <div className={cn("grid gap-px bg-line", compact ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3")}>

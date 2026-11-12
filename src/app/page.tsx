@@ -10,20 +10,21 @@ import { ProductCollage } from "@/components/landing/product-collage";
 import { LinkButton } from "@/components/ui/button";
 import { Footer } from "@/components/footer";
 import { WhereAmI } from "@/components/where-am-i";
+import { PhotoCredit } from "@/components/photo-credit";
 
 export const dynamic = "force-dynamic";
 
-type Destination = { id: number; name: string; country: string; flag: string | null; listings: bigint; minPrice: Prisma.Decimal; currency: string; cover: string | null };
+type Destination = { id: number; name: string; country: string; flag: string | null; listings: bigint; minPrice: Prisma.Decimal; currency: string; cover: string | null; photo: string | null; credit: string | null };
 
 async function getData() {
   // GROUP BY + HAVING: cities that actually have active listings, with their cheapest price
   const destinations = await prisma.$queryRaw<Destination[]>`
-    SELECT c.id, c.name, co.name AS country, co.flag, COUNT(l.id) AS listings, MIN(l.price) AS minPrice, MIN(l.currency) AS currency,
+    SELECT c.id, c.name, co.name AS country, co.flag, c.photoUrl AS photo, c.photoCredit AS credit, COUNT(l.id) AS listings, MIN(l.price) AS minPrice, MIN(l.currency) AS currency,
            (SELECT p.url FROM ListingPhoto p JOIN Listing l2 ON l2.id = p.listingId WHERE l2.cityId = c.id ORDER BY p.position LIMIT 1) AS cover
     FROM City c
     JOIN Country co ON co.id = c.countryId
     JOIN Listing l ON l.cityId = c.id AND l.status = 'ACTIVE'
-    GROUP BY c.id, c.name, co.name, co.flag
+    GROUP BY c.id, c.name, co.name, co.flag, c.photoUrl, c.photoCredit
     HAVING COUNT(l.id) >= 1
     ORDER BY listings DESC, c.name
     LIMIT 8`.catch(() => []);
@@ -110,7 +111,7 @@ export default async function Home() {
               {destinations.slice(0, 3).map((d) => (
                 <div key={d.id} className="overflow-hidden rounded-2xl border border-line bg-soft">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {d.cover && <img src={d.cover} alt="" className="aspect-[4/3] w-full object-cover" />}
+                  {(d.photo ?? d.cover) && <img src={(d.photo ?? d.cover)!} alt={d.name} className="aspect-[4/3] w-full object-cover" />}
                   <div className="p-2.5 text-xs"><div className="font-semibold">{d.name}</div><div className="text-subtle">from {formatMoney(Number(d.minPrice), d.currency)}</div></div>
                 </div>
               ))}
@@ -136,12 +137,13 @@ export default async function Home() {
             {destinations.map((d) => (
               <Link key={d.id} href={`/relocate?cityId=${d.id}&city=${encodeURIComponent(`${d.name}, ${d.country}`)}`} className="group relative w-[70vw] shrink-0 snap-start overflow-hidden rounded-3xl sm:w-[45vw] md:w-auto">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {d.cover && <img src={d.cover} alt="" className="aspect-[3/4] w-full object-cover transition duration-700 group-hover:scale-105" />}
+                {(d.photo ?? d.cover) && <img src={(d.photo ?? d.cover)!} alt={d.name} className="aspect-[3/4] w-full object-cover transition duration-700 group-hover:scale-105" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <div className="text-xs opacity-80">{d.flag} {d.country}</div>
                   <div className="text-2xl font-semibold">{d.name}</div>
                   <div className="mt-1 text-sm opacity-85">{Number(d.listings)} places · from {formatMoney(Number(d.minPrice), d.currency)}</div>
+                  {d.photo && <PhotoCredit credit={d.credit} light className="mt-2 block truncate" />}
                 </div>
               </Link>
             ))}

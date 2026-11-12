@@ -16,9 +16,9 @@ export default async function TripsPage() {
   const trips = await prisma.itinerary.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, days: true, peopleCount: true, budget: true, currency: true, startDate: true, city: { select: { name: true, country: { select: { name: true, flag: true } } } }, items: { select: { estimatedCost: true, kind: true } } },
+    select: { id: true, title: true, days: true, peopleCount: true, budget: true, currency: true, startDate: true, city: { select: { name: true, photoUrl: true, country: { select: { name: true, flag: true, photoUrl: true } } } }, items: { select: { estimatedCost: true, kind: true } } },
   });
-  const covers = ["/samples/home-04.svg", "/samples/home-10.svg", "/samples/home-13.svg", "/samples/home-16.svg"];
+  const fallback = "/photos/places/country-ch.jpg";
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 md:px-6">
       <PageHeader eyebrow="Trip planner" title="My trips" description="Day-by-day plans that never go over budget." actions={<LinkButton href="/trip/new"><Plus className="h-4 w-4" /> Plan a trip</LinkButton>} />
@@ -27,14 +27,14 @@ export default async function TripsPage() {
         <EmptyState icon={<Plane className="h-6 w-6" />} title="No trips yet" action={<LinkButton href="/trip/new">Plan your first trip</LinkButton>}>Pick a city, a budget and what you like — we&apos;ll build the days.</EmptyState>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {trips.map((t, i) => {
+          {trips.map((t) => {
             const budget = num(t.budget) ?? 0;
             const spent = t.items.reduce((s, x) => s + (num(x.estimatedCost) ?? 0), 0);
             return (
               <Link key={t.id} href={`/trip/${t.id}`} className="group overflow-hidden rounded-3xl border border-line bg-elev transition hover:-translate-y-1 hover:shadow-2xl">
                 <div className="relative h-40 overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={covers[i % covers.length]} alt="" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+                  <img src={t.city.photoUrl ?? t.city.country.photoUrl ?? fallback} alt="" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   <div className="absolute bottom-3 left-4 text-white"><div className="text-xs opacity-80">{t.city.country.flag} {t.city.country.name}</div><div className="text-xl font-semibold">{t.city.name}</div></div>
                 </div>

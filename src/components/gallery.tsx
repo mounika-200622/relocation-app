@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Grid2x2, X } from "lucide-react";
+import { PhotoCredit } from "@/components/photo-credit";
 
-type Photo = { id: number; url: string; caption: string | null };
+type Photo = { id: number; url: string; caption: string | null; credit?: string | null };
 
 /** Mosaic (1 large + 4 small) with a full-screen, keyboard-driven lightbox. */
 export function Gallery({ photos, title }: { photos: Photo[]; title: string }) {
@@ -48,6 +49,7 @@ export function Gallery({ photos, title }: { photos: Photo[]; title: string }) {
             <img src={p.url} alt={p.caption ?? `${title} photo ${i + 2}`} className="h-full w-full object-cover transition hover:brightness-90" />
           </button>
         ))}
+        {photos[0]!.credit && <PhotoCredit credit={photos[0]!.credit} light className="pointer-events-auto absolute bottom-3 left-4 max-w-[60%] truncate rounded bg-black/40 px-2 py-1" />}
         {photos.length > 1 && (
           <button onClick={() => setIndex(0)} className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3.5 py-2 text-sm font-medium text-black shadow">
             <Grid2x2 className="h-4 w-4" /> Show all {photos.length} photos
@@ -71,7 +73,8 @@ export function Gallery({ photos, title }: { photos: Photo[]; title: string }) {
               </>
             )}
           </div>
-          {photos[index]!.caption && <p className="pb-6 text-center text-sm opacity-80">{photos[index]!.caption}</p>}
+          {photos[index]!.caption && <p className="pb-2 text-center text-sm opacity-80">{photos[index]!.caption}</p>}
+          <p className="pb-6 text-center"><PhotoCredit credit={photos[index]!.credit} light /></p>
         </div>
       )}
     </>

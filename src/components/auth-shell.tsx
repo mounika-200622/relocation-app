@@ -25,7 +25,7 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
       </div>
       <div className="relative hidden overflow-hidden lg:block">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/samples/home-07.svg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="/photos/places/country-ch.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-pink-950/40" />
         <div className="absolute inset-x-0 bottom-0 p-12 text-white">
           <p className="font-display text-3xl italic leading-snug">&ldquo;{q.text}&rdquo;</p>

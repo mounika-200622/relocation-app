@@ -31,7 +31,7 @@ async function load(idRaw: string) {
       billsEstimate: true, petsAllowed: true, smokingAllowed: true, guestsAllowed: true, isShareable: true, capacityMin: true, capacityMax: true,
       currentOccupants: true, genderPreference: true, createdAt: true, cityId: true,
       city: { select: { name: true, region: { select: { name: true } }, country: { select: { name: true, isoCode: true, rideServices: { where: { deepLink: { not: null } }, orderBy: { position: "asc" }, select: { name: true, deepLink: true } } } } } },
-      photos: { orderBy: [{ position: "asc" }, { id: "asc" }], select: { id: true, url: true, caption: true } },
+      photos: { orderBy: [{ position: "asc" }, { id: "asc" }], select: { id: true, url: true, caption: true, credit: true } },
       amenities: { select: { amenity: { select: { code: true, label: true } } } },
       owner: { select: { name: true, createdAt: true, businessProfile: { select: { displayName: true, description: true, isVerified: true } }, _count: { select: { listings: true } } } },
     },

@@ -34,7 +34,8 @@ export async function nearestCity(lat: number, lng: number) {
 export async function localBriefing(lat: number, lng: number, homeCountryId: number | null = null) {
   const city = await nearestCity(lat, lng);
   if (!city) return null;
-  const country = await prisma.country.findUniqueOrThrow({ where: { id: city.countryId }, select: { id: true, name: true, isoCode: true, flag: true, currency: true } });
+  const country = await prisma.country.findUniqueOrThrow({ where: { id: city.countryId }, select: { id: true, name: true, isoCode: true, flag: true, currency: true, photoUrl: true, photoCredit: true } });
+  const cityPhoto = await prisma.city.findUnique({ where: { id: city.id }, select: { photoUrl: true, photoCredit: true } });
   const box = boundingBox({ lat, lng }, 15);
 
   const [articles, checklist, emergency, sims, rides, listings, meal, transportDay, home] = await Promise.all([
@@ -57,6 +58,7 @@ export async function localBriefing(lat: number, lng: number, homeCountryId: num
   return {
     position: { lat, lng },
     city: { id: city.id, name: city.name, region: city.regionName, lat: city.lat, lng: city.lng, distanceKm: Math.round(city.km * 10) / 10 },
+    photo: cityPhoto?.photoUrl ? { url: cityPhoto.photoUrl, credit: cityPhoto.photoCredit } : country.photoUrl ? { url: country.photoUrl, credit: country.photoCredit } : null,
     country,
     home,
     guide: { articles, checklist },

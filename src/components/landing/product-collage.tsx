@@ -11,7 +11,7 @@ export function ProductCollage() {
       <div className="absolute left-[4%] top-6 w-[290px] -rotate-[4deg] rounded-3xl border border-line bg-elev p-3 shadow-2xl animate-fade-up">
         <div className="relative overflow-hidden rounded-2xl">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/samples/home-03.svg" alt="" className="aspect-[4/3] w-full object-cover" />
+          <img src="/photos/homes/home-26.jpg" alt="" className="aspect-[4/3] w-full object-cover" />
           <span className="absolute left-3 top-3 rounded-full bg-success px-2.5 py-1 text-[11px] font-semibold text-white">Within budget</span>
           <Heart className="absolute right-3 top-3 h-5 w-5 fill-[#ff385c] text-[#ff385c]" />
         </div>

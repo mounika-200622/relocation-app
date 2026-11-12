@@ -16,8 +16,8 @@ export default async function ChoosePathPage() {
       <p className="mt-4 text-muted animate-fade-up">You can switch between the two any time from the top bar.</p>
       <WhereAmI className="mt-8" />
       <div className="mt-6 grid gap-5 md:grid-cols-2">
-        <PathCard href="/relocate/home" icon={<Compass className="h-6 w-6" />} title="I'm moving to a new country" text="Housing, roommates, nearby essentials and a step-by-step settling-in guide." img="/samples/home-02.svg" />
-        <PathCard href="/trip" icon={<Plane className="h-6 w-6" />} title="I'm planning a trip" text="A day-by-day itinerary — stay, food, sights and transport — that fits your budget." img="/samples/home-09.svg" />
+        <PathCard href="/relocate/home" icon={<Compass className="h-6 w-6" />} title="I'm moving to a new country" text="Housing, roommates, nearby essentials and a step-by-step settling-in guide." img="/photos/homes/home-24.jpg" />
+        <PathCard href="/trip" icon={<Plane className="h-6 w-6" />} title="I'm planning a trip" text="A day-by-day itinerary — stay, food, sights and transport — that fits your budget." img="/photos/places/country-ch.jpg" />
       </div>
     </div>
   );
