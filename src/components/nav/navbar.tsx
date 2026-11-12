@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme";
 import { buttonClass } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/misc";
 import { cn } from "@/lib/cn";
-import { activeHref, modeFromPath, navFor, type Mode } from "@/components/nav/nav-config";
+import { activeHref, navFor, type Mode } from "@/components/nav/nav-config";
 import { useUnread } from "@/components/nav/unread";
 import { NotificationsPanel } from "@/components/nav/notifications-panel";
 
@@ -25,7 +25,9 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>(modeFromPath(pathname));
+  const [picked, setPicked] = useState<Mode>("relocate");
+  // the URL decides inside trip/relocate sections; elsewhere keep what the user picked
+  const mode: Mode = pathname.startsWith("/trip") ? "trip" : ["/relocate", "/roommates", "/essentials", "/saved"].some((p) => pathname.startsWith(p)) ? "relocate" : picked;
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,12 +36,6 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    // the URL decides the mode inside /trip; elsewhere keep what the user picked
-    if (pathname.startsWith("/trip")) setMode("trip");
-    else if (pathname.startsWith("/relocate") || pathname.startsWith("/roommates") || pathname.startsWith("/essentials")) setMode("relocate");
-  }, [pathname]);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -54,7 +50,7 @@ export function Navbar() {
   const items = navFor(role, mode);
   const current = activeHref(pathname, items);
   const switchMode = (m: Mode) => {
-    setMode(m);
+    setPicked(m);
     router.push(m === "trip" ? "/trip" : "/relocate/home");
   };
 
