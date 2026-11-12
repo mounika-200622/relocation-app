@@ -23,7 +23,6 @@ export function SearchFilters({ initial, budget, total }: { initial: Flat; budge
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Flat>(initial);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
-  useEffect(() => setDraft(initial), [initial]);
   useEffect(() => {
     fetch("/api/amenities").then((r) => (r.ok ? r.json() : [])).then(setAmenities).catch(() => {});
   }, []);

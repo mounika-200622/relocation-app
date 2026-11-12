@@ -41,6 +41,7 @@ export function OnboardingWizard({ initial, name, next }: { initial: ProfileData
         <p className="mt-2 text-muted">{STEPS[step].sub}</p>
         <div className="mt-8">
           <ProfileForm
+            key={step}
             initial={data}
             step={step}
             submitLabel={step < 2 ? "Continue" : "Finish"}

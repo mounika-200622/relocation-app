@@ -43,7 +43,7 @@ export default async function RelocateSearchPage({ searchParams }: { searchParam
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-6 md:px-6">
-      <SearchFilters initial={flat} budget={budget} total={result.total} />
+      <SearchFilters key={JSON.stringify(flat)} initial={flat} budget={budget} total={result.total} />
 
       {usingProfile && (
         <p className="mt-4 text-sm text-muted">

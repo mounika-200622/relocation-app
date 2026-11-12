@@ -25,7 +25,6 @@ export function ContentEditor({ entities, def }: { entities: { key: string; labe
   const hasCountry = def.fields.some((f) => f.type === "country");
 
   const load = useCallback(() => {
-    setRows(null);
     api<{ rows: Row[] }>(`/api/admin/content/${def.key}${countryId ? `?countryId=${countryId}` : ""}`).then((r) => setRows(r.rows)).catch((e) => toast.error((e as Error).message));
   }, [def.key, countryId]);
 

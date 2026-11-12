@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Chip, Field, Input, Segmented, Select, Switch, Textarea } from "@/components/ui/field";
@@ -38,7 +38,6 @@ export function ProfileForm({ initial, onSaved, step, submitLabel = "Save profil
   const [p, setP] = useState<ProfileData>(initial);
   const [loc, setLoc] = useState<LocationValue | undefined>(undefined);
   const [saving, setSaving] = useState(false);
-  useEffect(() => setP(initial), [initial]);
   const set = <K extends keyof ProfileData>(k: K, v: ProfileData[K]) => setP((s) => ({ ...s, [k]: v }));
   const show = (n: 0 | 1 | 2) => step === undefined || step === n;
 

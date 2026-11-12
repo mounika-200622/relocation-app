@@ -28,10 +28,7 @@ export function CitySearch({
       return;
     }
     const term = q.trim();
-    if (term.length < 2) {
-      setHits([]);
-      return;
-    }
+    if (term.length < 2) return;
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       setLoading(true);
@@ -99,7 +96,7 @@ export function CitySearch({
         />
         {loading && <span className="absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 animate-ping rounded-full bg-accent/60" />}
       </div>
-      {open && hits.length > 0 && (
+      {open && q.trim().length >= 2 && hits.length > 0 && (
         <ul id={`${id}-list`} role="listbox" className="absolute left-0 right-0 top-full z-50 mt-3 min-w-[18rem] overflow-hidden rounded-2xl border border-line bg-elev p-1.5 shadow-2xl animate-fade-up">
           {hits.map((c, i) => (
             <li
