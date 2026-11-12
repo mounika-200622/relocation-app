@@ -15,7 +15,7 @@ const INTERESTS = [["CULTURE", "🏛 Culture"], ["FOOD", "🍜 Food"], ["NATURE"
 const CATS: [keyof Split, string, string][] = [["stay", "Stay", "bg-accent-strong"], ["food", "Food", "bg-warm"], ["activities", "Activities", "bg-success"], ["transport", "Transport", "bg-sky-500"]];
 const STEPS = ["Fetching places from OpenStreetMap…", "Pricing stays, meals and sights…", "Grouping each day by distance…", "Balancing the budget…"];
 
-export function TripForm() {
+export function TripForm({ initialCityId = null }: { initialCityId?: number | null }) {
   const router = useRouter();
   const [cityId, setCityId] = useState<number | null>(null);
   const [city, setCity] = useState<CityMeta | null>(null);
@@ -67,7 +67,7 @@ export function TripForm() {
     <form onSubmit={submit} className="space-y-6">
       <section className="card space-y-5 p-6 md:p-7">
         <h2 className="text-lg font-semibold">Where & when</h2>
-        <LocationPicker required onChange={(l) => setCityId(l.cityId)} onCity={(c) => { setCity(c); if (c && !f.currency) setF((s) => ({ ...s, currency: c.currency })); }} />
+        <LocationPicker required initialCityId={initialCityId} onChange={(l) => setCityId(l.cityId)} onCity={(c) => { setCity(c); if (c && !f.currency) setF((s) => ({ ...s, currency: c.currency })); }} />
         <div className="grid gap-4 sm:grid-cols-3">
           <Stepper label="Days" value={f.days} min={1} max={30} onChange={(days) => setF({ ...f, days })} />
           <Stepper label="People" value={f.people} min={1} max={20} onChange={(people) => setF({ ...f, people })} />

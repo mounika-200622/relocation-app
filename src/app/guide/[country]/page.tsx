@@ -36,7 +36,7 @@ export default async function CountryGuide({ params, searchParams }: Props) {
   const profile = session?.user ? await prisma.userProfile.findUnique({ where: { userId: session.user.id }, select: { destinationCityId: true, destinationCity: { select: { countryId: true } } } }) : null;
   const cityId = cityParam ? Number(cityParam) : profile?.destinationCity?.countryId === country.id ? profile.destinationCityId : null;
 
-  const [articles, checklist, done, sims, modes, passes, emergency, markets, banks, costs, city] = await Promise.all([
+  const [articles, checklist, done, sims, modes, passes, emergency, markets, banks, costs, city, rides] = await Promise.all([
     prisma.guideArticle.findMany({ where: { countryId: country.id }, orderBy: [{ position: "asc" }], select: { slug: true, title: true, summary: true, category: true, updatedAt: true } }),
     prisma.checklistTemplate.findMany({ where: { countryId: country.id }, orderBy: { position: "asc" } }),
     session?.user ? prisma.userChecklistProgress.findMany({ where: { userId: session.user.id, item: { countryId: country.id } }, select: { itemId: true } }) : [],
@@ -48,12 +48,13 @@ export default async function CountryGuide({ params, searchParams }: Props) {
     prisma.bank.findMany({ where: { countryId: country.id }, orderBy: { name: "asc" } }),
     costSnapshot(cityId, country.id),
     cityId ? prisma.city.findUnique({ where: { id: cityId }, select: { name: true, lat: true, lng: true } }) : null,
+    prisma.rideService.findMany({ where: { countryId: country.id }, orderBy: [{ position: "asc" }, { name: "asc" }] }),
   ]);
   const doneIds = new Set(done.map((d) => d.itemId));
   const lastUpdated = articles.reduce<Date | null>((m, a) => (!m || a.updatedAt > m ? a.updatedAt : m), null);
   const hasTransit = country.isoCode === "CH" || country.isoCode === "LI";
   const nav = [
-    ["checklist", "First week", checklist.length], ["costs", "Costs", costs.length], ["sim", "SIM cards", sims.length], ["transport", "Transport", modes.length + passes.length],
+    ["checklist", "First week", checklist.length], ["costs", "Costs", costs.length], ["sim", "SIM cards", sims.length], ["transport", "Transport", modes.length + passes.length + rides.length],
     ["health", "Healthcare", 1], ["money", "Money", banks.length], ["groceries", "Groceries", markets.length], ["articles", "All articles", articles.length],
   ].filter(([, , n]) => Number(n) > 0) as [string, string, number][];
 
@@ -144,7 +145,7 @@ export default async function CountryGuide({ params, searchParams }: Props) {
             </section>
           )}
 
-          {(modes.length > 0 || hasTransit) && (
+          {(modes.length > 0 || hasTransit || rides.length > 0) && (
             <section id="transport" className="scroll-mt-24 space-y-6">
               <SectionTitle>Getting around</SectionTitle>
               {hasTransit && <ConnectionSearch country={country.isoCode} defaultFrom={city?.name} />}
@@ -164,6 +165,27 @@ export default async function CountryGuide({ params, searchParams }: Props) {
                   );
                 })}
               </div>
+              {rides.length > 0 && (
+                <div>
+                  <h3 className="mb-3 font-semibold">Taxis, ride-hailing & sharing</h3>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {rides.map((r) => (
+                      <div key={r.id} className="card p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold">{r.name}</span>
+                          <Badge>{titleCase(r.kind)}</Badge>
+                        </div>
+                        {r.notes && <p className="mt-1.5 text-sm text-muted">{r.notes}</p>}
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                          {r.name === "Uber" && <a href="https://m.uber.com/ul/?action=setPickup&pickup=my_location" target="_blank" rel="noreferrer" className="rounded-lg bg-fg px-2.5 py-1 font-semibold text-bg">Open app</a>}
+                          {r.website && <a href={r.website} target="_blank" rel="noreferrer" className="rounded-lg border border-line px-2.5 py-1 hover:bg-soft">Website</a>}
+                          {r.phone && <a href={`tel:${r.phone.replace(/s/g, "")}`} className="rounded-lg border border-line px-2.5 py-1 hover:bg-soft">Call {r.phone}</a>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {passes.length > 0 && (
                 <div className="card overflow-x-auto">
                   <table className="w-full min-w-[560px] text-sm">

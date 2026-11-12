@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { LISTING_TYPE_LABEL, PREFERENCE_LABEL, formatDate, formatMoney, num } from "@/lib/format";
 import { priceRankInCity } from "@/lib/listings";
 import { getRate } from "@/lib/fx";
+import { rideLink } from "@/lib/locate";
 import { requestsForListing } from "@/lib/roommates";
 import { Gallery } from "@/components/gallery";
 import { SaveButton } from "@/components/save-button";
@@ -29,7 +30,7 @@ async function load(idRaw: string) {
       currency: true, bedrooms: true, bathrooms: true, sizeSqm: true, furnished: true, availableFrom: true, minStayMonths: true, utilitiesIncluded: true,
       billsEstimate: true, petsAllowed: true, smokingAllowed: true, guestsAllowed: true, isShareable: true, capacityMin: true, capacityMax: true,
       currentOccupants: true, genderPreference: true, createdAt: true, cityId: true,
-      city: { select: { name: true, region: { select: { name: true } }, country: { select: { name: true, isoCode: true } } } },
+      city: { select: { name: true, region: { select: { name: true } }, country: { select: { name: true, isoCode: true, rideServices: { where: { deepLink: { not: null } }, orderBy: { position: "asc" }, select: { name: true, deepLink: true } } } } } },
       photos: { orderBy: [{ position: "asc" }, { id: "asc" }], select: { id: true, url: true, caption: true } },
       amenities: { select: { amenity: { select: { code: true, label: true } } } },
       owner: { select: { name: true, createdAt: true, businessProfile: { select: { displayName: true, description: true, isVerified: true } }, _count: { select: { listings: true } } } },
@@ -190,6 +191,19 @@ export default async function ListingPage({ params }: Props) {
             </div>
             <p className="mt-4 text-center text-xs text-subtle">Never pay before viewing. Keep all contact inside Nira.</p>
           </div>
+          {l.lat !== null && l.lng !== null && l.city.country.rideServices.length > 0 && (
+            <div className="mt-4 rounded-2xl border border-line p-4">
+              <div className="text-sm font-medium">Get there</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {l.city.country.rideServices.map((r) => (
+                  <a key={r.name} href={rideLink(r.deepLink!, { lat: l.lat!, lng: l.lng!, name: l.address })} target="_blank" rel="noreferrer" className="rounded-lg bg-fg px-3 py-1.5 text-xs font-semibold text-bg">
+                    {r.name} to this place
+                  </a>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-subtle">Opens the app with this address as the destination.</p>
+            </div>
+          )}
           <Link href={`/guide/${l.city.country.isoCode.toLowerCase()}`} className="mt-4 block rounded-2xl border border-line p-4 text-sm text-muted hover:border-line-strong hover:text-fg">
             New to {l.city.country.name}? Read the settling-in guide →
           </Link>

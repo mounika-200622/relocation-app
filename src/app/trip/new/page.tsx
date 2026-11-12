@@ -5,12 +5,14 @@ import { TripForm } from "./trip-form";
 
 export const metadata: Metadata = { title: "Plan a trip" };
 
-export default async function NewTripPage() {
+export default async function NewTripPage({ searchParams }: { searchParams: Promise<{ cityId?: string }> }) {
   await pageUser(["USER", "ADMIN"]);
+  const raw = Number((await searchParams).cityId);
+  const initialCityId = Number.isSafeInteger(raw) && raw > 0 ? raw : null;
   return (
     <div className="mx-auto max-w-4xl px-4 pb-16 pt-8">
       <PageHeader eyebrow="Trip planner" title={<>Plan a trip that <span className="font-display italic">fits your budget</span></>} description="We pull real places from OpenStreetMap, price them with local cost data and build each day around where you sleep." />
-      <TripForm />
+      <TripForm initialCityId={initialCityId} />
     </div>
   );
 }
