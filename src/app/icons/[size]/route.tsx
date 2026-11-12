@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 const SIZES = new Set([192, 512]);
-const BG = "linear-gradient(135deg, #1e1b4b, #08090d)";
+const BG = "linear-gradient(135deg, #831843, #0e0810)";
 
 /**
  * PNG app art rendered on demand and cached:
@@ -16,9 +16,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ size: st
   if (raw === "splash") {
     return new ImageResponse(
       (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#08090d" }}>
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0e0810" }}>
           <div style={{ display: "flex", color: "#eef0f7", fontSize: 220, fontStyle: "italic", fontWeight: 700, fontFamily: "serif" }}>
-            Nira<span style={{ color: "#8b8ef8" }}>.</span>
+            Nira<span style={{ color: "#fda4af" }}>.</span>
           </div>
           <div style={{ marginTop: 24, color: "#a1a9bc", fontSize: 44 }}>Wherever you&apos;re headed.</div>
         </div>
@@ -35,7 +35,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ size: st
       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: foreground ? "transparent" : BG }}>
         {/* adaptive-icon foregrounds must keep the glyph inside the central 66% safe zone */}
         <div style={{ display: "flex", alignItems: "flex-end", color: "#eef0f7", fontSize: size * (foreground ? 0.4 : 0.6), fontStyle: "italic", fontWeight: 700, fontFamily: "serif", lineHeight: 1 }}>
-          N<span style={{ color: "#8b8ef8" }}>.</span>
+          N<span style={{ color: "#fda4af" }}>.</span>
         </div>
       </div>
     ),

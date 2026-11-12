@@ -58,7 +58,7 @@ export function HeroSearch() {
           ))}
         </select>
       </label>
-      <button type="submit" className="flex h-14 items-center justify-center gap-2 rounded-full bg-accent-strong px-6 font-semibold text-white shadow-[0_10px_30px_-8px_rgb(99_102_241/0.8)] transition hover:brightness-110 md:h-14 md:w-14 md:px-0 lg:w-auto lg:px-6">
+      <button type="submit" className="flex h-14 items-center justify-center gap-2 rounded-full bg-ombre px-6 font-semibold text-white shadow-[0_10px_30px_-8px_rgb(236_72_153/0.8)] transition hover:brightness-110 md:h-14 md:w-14 md:px-0 lg:w-auto lg:px-6">
         <Search className="h-5 w-5" /> <span className="md:hidden lg:inline">Search</span>
       </button>
     </form>

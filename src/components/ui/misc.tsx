@@ -24,7 +24,7 @@ export function Skeleton({ className }: { className?: string }) {
   return <div aria-hidden className={cn("skeleton", className)} />;
 }
 
-const AVATAR_HUES = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#8b5cf6", "#ef4444", "#84cc16"];
+const AVATAR_HUES = ["#ec4899", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#8b5cf6", "#ef4444", "#84cc16"];
 
 export function Avatar({ name, size = 36, className }: { name: string; size?: number; className?: string }) {
   const hue = AVATAR_HUES[[...name].reduce((s, c) => s + c.charCodeAt(0), 0) % AVATAR_HUES.length];

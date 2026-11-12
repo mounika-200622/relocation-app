@@ -85,7 +85,7 @@ export default async function Home() {
             eyebrow="Moving to a new country"
             title="Find a home, find your people."
             points={["Search rooms, dorms and flats with real filters", "Roommate matches scored on budget, dates and lifestyle", "A first-week checklist for your exact city"]}
-            tone="from-indigo-500/25 via-indigo-500/5"
+            tone="from-pink-500/30 via-fuchsia-500/10"
           />
           <JourneyCard
             href={role === "USER" ? "/trip/new" : "/signup"}
@@ -170,7 +170,7 @@ export default async function Home() {
       {/* ───────── CTA ───────── */}
       <section className="mx-auto mt-28 max-w-7xl px-4 md:px-6">
         <div className="relative overflow-hidden rounded-[2rem] border border-line bg-elev px-6 py-16 text-center md:px-16">
-          <div className="absolute inset-0" style={{ background: "radial-gradient(50% 80% at 50% 120%, rgb(99 102 241 / 0.35), transparent)" }} />
+          <div className="absolute inset-0" style={{ background: "radial-gradient(50% 80% at 50% 120%, rgb(236 72 153 / 0.4), transparent)" }} />
           <h2 className="relative mx-auto max-w-2xl text-3xl font-semibold tracking-tight md:text-5xl">
             Your new city is waiting. <span className="font-display italic text-accent">Let&apos;s go.</span>
           </h2>

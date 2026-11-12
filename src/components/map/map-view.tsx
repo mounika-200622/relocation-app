@@ -52,7 +52,7 @@ export default function MapView({
     <div className={className} style={{ height }}>
       <MapContainer center={start} zoom={14} scrollWheelZoom={false} style={{ height: "100%", width: "100%", borderRadius: "inherit" }} attributionControl>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' maxZoom={19} />
-        {radiusM && center && <Circle center={center} radius={radiusM} pathOptions={{ color: "#6366f1", weight: 1.5, fillOpacity: 0.06 }} />}
+        {radiusM && center && <Circle center={center} radius={radiusM} pathOptions={{ color: "#ec4899", weight: 1.5, fillOpacity: 0.06 }} />}
         {markers.map((m) => (
           <Marker
             key={m.id}

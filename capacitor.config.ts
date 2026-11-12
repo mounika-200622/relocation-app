@@ -26,7 +26,7 @@ const config: CapacitorConfig = {
     SystemBars: { insetsHandling: "css", style: "DARK", initialViewportFitValueHint: "cover" },
   },
   android: {
-    backgroundColor: "#08090d",
+    backgroundColor: "#0e0810",
     allowMixedContent: false,
   },
 };

@@ -4,49 +4,54 @@
    Dark is the default identity (ink + indigo). Light mode flips the tokens.
    Components only ever use the semantic names below. */
 :root {
-  --bg: #08090d;
-  --bg-elev: #10121a;
-  --bg-soft: #161925;
-  --bg-hover: #1c2030;
-  --line: rgb(255 255 255 / 0.07);
-  --line-strong: rgb(255 255 255 / 0.13);
-  --fg: #eef0f7;
-  --fg-muted: #a1a9bc;
-  --fg-subtle: #6c7489;
-  --accent: #8b8ef8;
-  --accent-strong: #6366f1;
-  --accent-soft: rgb(124 127 245 / 0.14);
+  --bg: #0e0810;
+  --bg-elev: #180f1b;
+  --bg-soft: #211526;
+  --bg-hover: #2c1c32;
+  --line: rgb(255 228 242 / 0.08);
+  --line-strong: rgb(255 228 242 / 0.15);
+  --fg: #fbf1f6;
+  --fg-muted: #c3aab9;
+  --fg-subtle: #8a7083;
+  --accent: #f472b6;
+  --accent-strong: #ec4899;
+  --accent-soft: rgb(236 72 153 / 0.16);
   --accent-fg: #ffffff;
-  --warm: #f5b971;
-  --success: #3ddc97;
+  --warm: #fdba74;
+  --success: #4ade80;
   --warning: #fbbf24;
   --danger: #fb7185;
-  --ring: rgb(139 142 248 / 0.55);
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 50px -20px rgb(0 0 0 / 0.65);
-  --hero-glow: radial-gradient(60% 60% at 50% 0%, rgb(99 102 241 / 0.28), transparent 70%);
+  --ring: rgb(244 114 182 / 0.6);
+  --ombre: linear-gradient(120deg, #ff5fa2 0%, #ec4899 30%, #c06cf2 68%, #ff9a8b 100%);
+  --ombre-soft: linear-gradient(135deg, rgb(255 95 162 / 0.22), rgb(192 108 242 / 0.16) 55%, rgb(255 154 139 / 0.14));
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 50px -20px rgb(0 0 0 / 0.7);
+  --hero-glow: radial-gradient(55% 60% at 30% 0%, rgb(236 72 153 / 0.34), transparent 70%), radial-gradient(45% 55% at 80% 10%, rgb(192 108 242 / 0.26), transparent 70%);
   color-scheme: dark;
 }
 
 :root[data-theme="light"] {
-  --bg: #f6f6f9;
+  --bg: #fff6fa;
   --bg-elev: #ffffff;
-  --bg-soft: #eef0f6;
-  --bg-hover: #e6e8f1;
-  --line: rgb(15 23 42 / 0.08);
-  --line-strong: rgb(15 23 42 / 0.15);
-  --fg: #0d1222;
-  --fg-muted: #4a5368;
-  --fg-subtle: #8a92a6;
-  --accent: #5145e5;
-  --accent-strong: #4338ca;
-  --accent-soft: rgb(81 69 229 / 0.09);
-  --warm: #c2701a;
-  --success: #0f9f6e;
+  --bg-soft: #fdeef5;
+  --bg-hover: #fbe1ed;
+  --line: rgb(90 10 50 / 0.09);
+  --line-strong: rgb(90 10 50 / 0.16);
+  --fg: #2b0f20;
+  --fg-muted: #6e4b60;
+  --fg-subtle: #a9899b;
+  --accent: #db2777;
+  --accent-strong: #be185d;
+  --accent-soft: rgb(219 39 119 / 0.1);
+  --accent-fg: #ffffff;
+  --warm: #ea7a3c;
+  --success: #15a35b;
   --warning: #b7791f;
   --danger: #e11d48;
-  --ring: rgb(81 69 229 / 0.45);
-  --shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 18px 40px -22px rgb(15 23 42 / 0.25);
-  --hero-glow: radial-gradient(60% 60% at 50% 0%, rgb(99 102 241 / 0.16), transparent 70%);
+  --ring: rgb(219 39 119 / 0.45);
+  --ombre: linear-gradient(120deg, #ff4f97 0%, #db2777 30%, #a855f7 68%, #ff8a7a 100%);
+  --ombre-soft: linear-gradient(135deg, rgb(255 79 151 / 0.14), rgb(168 85 247 / 0.1) 55%, rgb(255 138 122 / 0.1));
+  --shadow: 0 1px 2px rgb(90 10 50 / 0.05), 0 18px 40px -22px rgb(90 10 50 / 0.28);
+  --hero-glow: radial-gradient(55% 60% at 30% 0%, rgb(236 72 153 / 0.18), transparent 70%), radial-gradient(45% 55% at 80% 10%, rgb(168 85 247 / 0.14), transparent 70%);
   color-scheme: light;
 }
 
@@ -117,8 +122,10 @@ body {
     animation: var(--animate-shimmer);
     border-radius: 0.75rem;
   }
+  .bg-ombre { background: var(--ombre); }
+  .bg-ombre-soft { background: var(--ombre-soft); }
   .text-gradient {
-    background: linear-gradient(120deg, var(--fg) 20%, var(--accent) 60%, var(--warm) 100%);
+    background: var(--ombre);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

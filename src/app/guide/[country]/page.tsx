@@ -62,7 +62,7 @@ export default async function CountryGuide({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 md:px-6">
       <header className="relative overflow-hidden rounded-[2rem] border border-line bg-elev p-8 md:p-12">
-        <div className="absolute inset-0" style={{ background: "radial-gradient(60% 90% at 100% 0%, rgb(99 102 241 / 0.25), transparent)" }} />
+        <div className="absolute inset-0" style={{ background: "radial-gradient(60% 90% at 100% 0%, rgb(236 72 153 / 0.28), transparent)" }} />
         <div className="relative">
           <Link href="/guide" className="text-sm text-muted hover:text-fg">← All countries</Link>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">{country.flag} Settling in <span className="font-display italic">{country.name}</span></h1>
