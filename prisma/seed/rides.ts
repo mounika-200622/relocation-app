@@ -68,6 +68,7 @@ const RIDES: Record<string, Ride[]> = {
     { name: "Uber", kind: "RIDE_HAILING", website: "https://www.uber.com/in/en/", deepLink: UBER, notes: "Cars, autos and moto in most big cities." },
     { name: "Ola", kind: "RIDE_HAILING", website: "https://www.olacabs.com/", notes: "Cars and auto-rickshaws." },
     { name: "Rapido", kind: "RIDE_HAILING", website: "https://www.rapido.bike/", notes: "Bike taxis and autos – often the cheapest option." },
+    { name: "Namma Yatri", kind: "TAXI", website: "https://nammayatri.in/", notes: "Driver-owned auto-rickshaw app from Bengaluru – fair metered fares." },
     { name: "Yulu", kind: "BIKE_SHARE", website: "https://www.yulu.bike/", notes: "E-bikes in Bengaluru and a few other cities." },
   ],
   JP: [
