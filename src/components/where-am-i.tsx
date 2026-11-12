@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/format";
 import type { LocalBriefing } from "@/lib/locate";
 import { CurrencyConverter } from "@/components/currency-converter";
 import { PhotoCredit } from "@/components/photo-credit";
+import { CitySearch, type CityHit } from "@/components/city-search";
 import { cn } from "@/lib/cn";
 
 const UBER_HERE = "https://m.uber.com/ul/?action=setPickup&pickup=my_location";
@@ -19,19 +20,36 @@ const UBER_HERE = "https://m.uber.com/ul/?action=setPickup&pickup=my_location";
 export function WhereAmI({ className, compact }: { className?: string; compact?: boolean }) {
   const [state, setState] = useState<{ status: "idle" | "locating" | "done" | "error"; briefing?: LocalBriefing; error?: string }>({ status: "idle" });
 
+  const [picking, setPicking] = useState(false);
+
+  const brief = useCallback(async (pos: { lat: number; lng: number }) => {
+    const res = await fetch(`/api/locate?lat=${pos.lat}&lng=${pos.lng}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Couldn't work out where you are.");
+    setState({ status: "done", briefing: data });
+  }, []);
+
   const locate = useCallback(async () => {
     setState({ status: "locating" });
     try {
       const pos = await getPosition();
       rememberLocationConsent();
-      const res = await fetch(`/api/locate?lat=${pos.lat}&lng=${pos.lng}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Couldn't work out where you are.");
-      setState({ status: "done", briefing: data });
+      await brief(pos);
     } catch (err) {
       setState({ status: "error", error: err instanceof PositionError || err instanceof Error ? err.message : "Couldn't get your location." });
     }
-  }, []);
+  }, [brief]);
+
+  // No GPS (location off, indoors, permission denied)? Pick the city by hand instead.
+  const pickCity = useCallback(async (c: CityHit) => {
+    if (c.lat === null || c.lng === null) return;
+    setState({ status: "locating" });
+    try {
+      await brief({ lat: c.lat, lng: c.lng });
+    } catch (err) {
+      setState({ status: "error", error: err instanceof Error ? err.message : "Couldn't load that city." });
+    }
+  }, [brief]);
 
   // If the person shared their location before, refresh it quietly on every visit.
   useEffect(() => {
@@ -42,20 +60,32 @@ export function WhereAmI({ className, compact }: { className?: string; compact?:
 
   if (state.status !== "done" || !state.briefing) {
     return (
-      <section className={cn("relative overflow-hidden rounded-3xl border border-line bg-elev p-6", className)} aria-live="polite">
-        <div className="absolute inset-0" style={{ background: "radial-gradient(70% 120% at 100% 0%, rgb(245 185 113 / 0.16), transparent)" }} />
+      <section className={cn("relative rounded-3xl border border-line bg-elev p-6", className)} aria-live="polite">
+        <div className="absolute inset-0 rounded-3xl" style={{ background: "radial-gradient(70% 120% at 100% 0%, rgb(236 72 153 / 0.18), transparent)" }} />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-warm/15 text-warm"><LocateFixed className="h-6 w-6" /></span>
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent/15 text-accent"><LocateFixed className="h-6 w-6" /></span>
           <div className="flex-1">
             <h2 className="font-semibold">Just arrived somewhere new?</h2>
             <p className="text-sm text-muted">
-              {state.status === "error" ? state.error : "Share your location and Nira shows what to do right here: SIM cards, rides, emergency numbers, places to stay and the local guide."}
+              {state.status === "error"
+                ? `${state.error} Turn on location in your phone's quick settings, or pick the city below.`
+                : "Share your location and Nira shows what to do right here: SIM cards, rides, emergency numbers, places to stay and the local guide."}
             </p>
           </div>
-          <button onClick={locate} disabled={state.status === "locating"} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-warm px-5 text-sm font-semibold text-black transition hover:brightness-105 disabled:opacity-60">
-            {state.status === "locating" ? <><Loader2 className="h-4 w-4 animate-spin" /> Finding you…</> : <><MapPin className="h-4 w-4" /> Use my location</>}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button onClick={locate} disabled={state.status === "locating"} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ombre px-5 text-sm font-semibold text-white shadow-lg shadow-accent/20 transition hover:brightness-110 disabled:opacity-60">
+              {state.status === "locating" ? <><Loader2 className="h-4 w-4 animate-spin" /> Finding you…</> : <><MapPin className="h-4 w-4" /> Use my location</>}
+            </button>
+            {!picking && (
+              <button type="button" onClick={() => setPicking(true)} className="h-9 rounded-xl text-sm font-medium text-accent hover:underline">
+                or pick a city
+              </button>
+            )}
+          </div>
         </div>
+        {(picking || state.status === "error") && (
+          <CitySearch className="relative mt-4" placeholder="Which city are you in? e.g. Bengaluru" onSelect={pickCity} autoFocus={picking} />
+        )}
       </section>
     );
   }

@@ -20,7 +20,8 @@ export function CitySearch({
   const [active, setActive] = useState(0);
   const [loading, setLoading] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
-  const picked = useRef(false);
+  // A pre-filled label is an existing choice, not a query: don't pop the list open on page load.
+  const picked = useRef(Boolean(initialLabel));
 
   useEffect(() => {
     if (picked.current) {
