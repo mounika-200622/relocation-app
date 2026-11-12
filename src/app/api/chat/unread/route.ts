@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { json, requireUser, route } from "@/lib/api";
+import { requireUser, route } from "@/lib/api";
 import { unreadCounts } from "@/lib/mongo/chat";
 import { unreadNotificationCount } from "@/lib/mongo/notifications";
 

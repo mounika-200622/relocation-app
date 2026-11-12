@@ -109,5 +109,5 @@ export async function nearby(opts: { center: { lat: number; lng: number }; radiu
   const status = await ensureCached(opts.center, opts.radiusM, opts.categories, opts.cityId);
   const raw = await nearbyFromCache(opts.center, opts.radiusM, opts.categories);
   const items = await withPrices(raw, opts.cityId, opts.countryId);
-  return { items: items.map(({ tags: _t, ...rest }) => rest) as PoiResult[], stale: status.stale };
+  return { items: items.map(({ tags: _tags, ...rest }) => rest) as PoiResult[], stale: status.stale };
 }
