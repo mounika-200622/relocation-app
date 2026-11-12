@@ -42,6 +42,8 @@ export async function ensureCached(center: { lat: number; lng: number }, radiusM
   const fresh = new Set(cached.filter((c) => Date.now() - c.fetchedAt.getTime() < MAX_AGE_MS).map((c) => c.category));
   const missing = categories.filter((c) => !fresh.has(c));
   if (!missing.length) return { stale: false, fetched: 0 };
+  // POI_OFFLINE=1 (offline demos, seeding): never call the provider, serve the cache only
+  if (process.env.POI_OFFLINE === "1") return { stale: true, fetched: 0 };
 
   try {
     const provider = await getProvider();
