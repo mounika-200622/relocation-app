@@ -155,6 +155,13 @@ enum SimPlanKind {
   POSTPAID
 }
 
+enum RideKind {
+  RIDE_HAILING
+  TAXI
+  BIKE_SHARE
+  SCOOTER
+}
+
 enum TransportModeKind {
   TRAIN
   TRAM
@@ -340,6 +347,7 @@ model Country {
   emergencyNumbers EmergencyNumber[]
   supermarkets     SupermarketChain[]
   banks            Bank[]
+  rideServices     RideService[]
 }
 
 /// State / canton / province.
@@ -381,6 +389,8 @@ model City {
   @@index([countryId, name])
   /// global autocomplete: WHERE name LIKE 'Zur%'
   @@index([name])
+  /// "where am I?": bounding-box lookup of the nearest city to a GPS position
+  @@index([lat, lng])
 }
 
 // ───────────────────────────── Listings ─────────────────────────────
@@ -790,6 +800,25 @@ model EmergencyNumber {
   @@unique([countryId, service])
 }
 
+/// Taxi, ride-hailing and bike/scooter-share services per country. `deepLink` is a URL
+/// template with {lat}, {lng} and {name} placeholders that opens the provider's app
+/// with the destination filled in (booking happens in the provider's own app).
+model RideService {
+  id        Int      @id @default(autoincrement())
+  countryId Int
+  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name      String   @db.VarChar(80)
+  kind      RideKind
+  website   String?  @db.VarChar(200)
+  deepLink  String?  @db.VarChar(400)
+  phone     String?  @db.VarChar(30)
+  notes     String?  @db.VarChar(300)
+  position  Int      @default(0) @db.SmallInt
+
+  @@unique([countryId, name])
+  @@index([countryId, kind])
+}
+
 model SupermarketChain {
   id        Int     @id @default(autoincrement())
   countryId Int
@@ -820,31 +849,31 @@ model Bank {
 // ───────────────────────────── Trip planner ─────────────────────────────
 
 model Itinerary {
-  id             Int            @id @default(autoincrement())
-  userId         Int
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cityId         Int
-  city           City           @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  title          String         @db.VarChar(120)
-  startDate      DateTime?      @db.Date
-  days           Int            @db.SmallInt
-  peopleCount    Int            @db.SmallInt
-  roomsNeeded    Int            @default(1) @db.SmallInt
-  budget         Decimal        @db.Decimal(10, 2)
-  currency       String         @db.Char(3)
-  style          TripStyle      @default(BALANCED)
-  pace           TripPace       @default(NORMAL)
-  stayPreference StayPreference @default(ANY)
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cityId          Int
+  city            City           @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  title           String         @db.VarChar(120)
+  startDate       DateTime?      @db.Date
+  days            Int            @db.SmallInt
+  peopleCount     Int            @db.SmallInt
+  roomsNeeded     Int            @default(1) @db.SmallInt
+  budget          Decimal        @db.Decimal(10, 2)
+  currency        String         @db.Char(3)
+  style           TripStyle      @default(BALANCED)
+  pace            TripPace       @default(NORMAL)
+  stayPreference  StayPreference @default(ANY)
   /// Budget split in percent; a CHECK constraint enforces a sum of 100.
-  pctStay        Int            @default(40) @db.TinyInt
-  pctFood        Int            @default(30) @db.TinyInt
-  pctActivities  Int            @default(20) @db.TinyInt
-  pctTransport   Int            @default(10) @db.TinyInt
+  pctStay         Int            @default(40) @db.TinyInt
+  pctFood         Int            @default(30) @db.TinyInt
+  pctActivities   Int            @default(20) @db.TinyInt
+  pctTransport    Int            @default(10) @db.TinyInt
   /// Set when the minimum viable budget exceeds the budget (generator warning).
-  minViableBudget Decimal?      @db.Decimal(10, 2)
-  shareToken     String?        @unique @db.Char(32)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @default(now()) @updatedAt
+  minViableBudget Decimal?       @db.Decimal(10, 2)
+  shareToken      String?        @unique @db.Char(32)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
 
   interests ItineraryInterest[]
   items     ItineraryItem[]
