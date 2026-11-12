@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Do not generate AGENTS.md / CLAUDE.md into the repo on `next dev`.
+  agentRules: false,
 };
 
 export default nextConfig;
