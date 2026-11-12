@@ -25,6 +25,12 @@ export const DEFAULT_OVERPASS = "https://overpass-api.de/api/interpreter,https:/
 
 export class ProviderUnavailable extends Error {}
 
+/** Second source used when the primary provider fails (Overpass busy or down). */
+export async function getFallbackProvider(): Promise<PoiProvider> {
+  const { NominatimPlaceProvider } = await import("@/lib/poi/nominatim");
+  return new NominatimPlaceProvider();
+}
+
 export async function getProvider(): Promise<PoiProvider> {
   if (process.env.POI_PROVIDER === "google" && process.env.GOOGLE_PLACES_API_KEY) {
     const { GooglePlacesProvider } = await import("@/lib/poi/google");

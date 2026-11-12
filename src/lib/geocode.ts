@@ -6,7 +6,8 @@ const cache = new Map<string, { lat: number; lng: number; label: string } | null
 let chain: Promise<unknown> = Promise.resolve();
 let last = 0;
 
-function throttle<T>(fn: () => Promise<T>): Promise<T> {
+/** Serialises Nominatim calls to at most one per ~1.1 s (shared by geocoding and place search). */
+export function nominatimThrottle<T>(fn: () => Promise<T>): Promise<T> {
   const run = chain.then(async () => {
     const wait = Math.max(0, last + 1100 - Date.now());
     if (wait) await new Promise((r) => setTimeout(r, wait));
@@ -26,7 +27,7 @@ export async function geocode(query: string, countryIso?: string) {
   url.searchParams.set("limit", "1");
   if (countryIso) url.searchParams.set("countrycodes", countryIso.toLowerCase());
 
-  const result = await throttle(async () => {
+  const result = await nominatimThrottle(async () => {
     const res = await fetch(url, {
       headers: { "User-Agent": process.env.NOMINATIM_USER_AGENT || "Nira-Student-Project/1.0", "Accept-Language": "en" },
       signal: AbortSignal.timeout(8000),

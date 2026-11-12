@@ -2,10 +2,12 @@ import { Prisma, type PoiCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { areaKey, boundingBox } from "@/lib/geo";
 import { derivePriceTier, isFree, midpoint, type TierRange } from "@/lib/poi/price-tier";
-import { getProvider, type RawPoi } from "@/lib/poi/provider";
+import { getFallbackProvider, getProvider, type RawPoi } from "@/lib/poi/provider";
 import { costRanges } from "@/lib/costs";
 
 export const CACHE_DAYS = 7;
+const PRIMARY_COOLDOWN_MS = 10 * 60_000;
+let primaryDownUntil = 0;
 const MAX_AGE_MS = CACHE_DAYS * 86_400_000;
 
 export type PoiResult = {
@@ -46,8 +48,19 @@ export async function ensureCached(center: { lat: number; lng: number }, radiusM
   if (process.env.POI_OFFLINE === "1") return { stale: true, fetched: 0 };
 
   try {
-    const provider = await getProvider();
-    const rows = await provider.search(center, radiusM, missing);
+    let rows: RawPoi[];
+    if (Date.now() < primaryDownUntil) {
+      rows = await (await getFallbackProvider()).search(center, radiusM, missing);
+    } else {
+      try {
+        rows = await (await getProvider()).search(center, radiusM, missing);
+      } catch (primaryErr) {
+        // circuit breaker: don't make the next users wait for a server that just failed
+        primaryDownUntil = Date.now() + PRIMARY_COOLDOWN_MS;
+        console.warn("[poi] primary provider failed, using Nominatim for 10 min:", (primaryErr as Error).message);
+        rows = await (await getFallbackProvider()).search(center, radiusM, missing);
+      }
+    }
     await upsertPois(rows, cityId);
     const counts = new Map<PoiCategory, number>();
     for (const r of rows) counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
