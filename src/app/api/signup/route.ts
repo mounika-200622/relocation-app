@@ -1,25 +1,29 @@
-import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { conflict, enforceRateLimit, json, readJson, route } from "@/lib/api";
 import { signupSchema } from "@/lib/validators/auth";
 
-export async function POST(req: Request) {
-  const body = await req.json().catch(() => null);
-  const parsed = signupSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid input." }, { status: 400 });
-  }
-  const { name, email, password, role } = parsed.data;
+/** Creates a USER or BUSINESS account (never ADMIN – the schema rejects it). */
+export const POST = route(async (req) => {
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  enforceRateLimit(`signup:${ip}`, 10, 60 * 60_000);
+  const { name, email, password, role } = await readJson(req, signupSchema);
 
-  const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (existingUser) {
-    return NextResponse.json({ error: "An account with this email already exists." }, { status: 409 });
-  }
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (existing) throw conflict("An account with this email already exists. Try logging in instead.");
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, role },
+    data: {
+      name,
+      email,
+      passwordHash,
+      role,
+      // businesses get their public profile immediately; people fill theirs in during onboarding
+      ...(role === "BUSINESS" ? { onboardedAt: new Date(), businessProfile: { create: { displayName: name } } } : { profile: { create: {} } }),
+    },
     select: { id: true, name: true, email: true, role: true },
   });
-  return NextResponse.json(user, { status: 201 });
-}
+  return json(user, 201);
+});
