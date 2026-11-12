@@ -17,7 +17,7 @@
   --accent-strong: #ec4899;
   --accent-soft: rgb(236 72 153 / 0.16);
   --accent-fg: #ffffff;
-  --warm: #fdba74;
+  --warm: #fda4af;
   --success: #4ade80;
   --warning: #fbbf24;
   --danger: #fb7185;
@@ -43,7 +43,7 @@
   --accent-strong: #be185d;
   --accent-soft: rgb(219 39 119 / 0.1);
   --accent-fg: #ffffff;
-  --warm: #ea7a3c;
+  --warm: #e2557a;
   --success: #15a35b;
   --warning: #b7791f;
   --danger: #e11d48;
@@ -171,4 +171,12 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Phones: while the on-screen keyboard is up (a text field has focus) the bottom tab bar
+   would float above the keyboard and cover the form, so hide it until typing is done. */
+@media (max-width: 767px) {
+  body:has(:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), textarea):focus) .mobile-tabbar {
+    display: none;
+  }
 }

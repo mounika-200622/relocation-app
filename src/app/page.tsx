@@ -94,7 +94,7 @@ export default async function Home() {
             eyebrow="Planning a trip"
             title="A day-by-day plan that fits your budget."
             points={["Where to stay, eat and go — from live map data", "Budget split you control, never exceeded", "Swap any stop, share a read-only link"]}
-            tone="from-amber-500/20 via-amber-500/5"
+            tone="from-rose-400/20 via-rose-400/5"
           />
         </div>
       </section>

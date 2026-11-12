@@ -20,7 +20,7 @@ export function MobileTabBar() {
   const current = activeHref(pathname, tabs);
 
   return (
-    <nav aria-label="Primary" className="no-print md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/85 backdrop-blur-xl safe-bottom">
+    <nav aria-label="Primary" className="mobile-tabbar no-print md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/85 backdrop-blur-xl safe-bottom">
       <ul className="grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
         {tabs.map((t) => {
           const active = current === t.href;
