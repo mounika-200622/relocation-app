@@ -21,6 +21,10 @@ const config: CapacitorConfig = {
     cleartext: serverUrl.startsWith("http://"), // allow plain HTTP only for local development
     androidScheme: "https",
   },
+  plugins: {
+    // light status-bar icons on the dark theme; insets reach CSS as env(safe-area-inset-*)
+    SystemBars: { insetsHandling: "css", style: "DARK", initialViewportFitValueHint: "cover" },
+  },
   android: {
     backgroundColor: "#08090d",
     allowMixedContent: false,

@@ -11,7 +11,7 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
   const q = QUOTES[title.length % QUOTES.length]!;
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
-      <div className="flex flex-col px-5 py-6 sm:px-10">
+      <div className="safe-top flex flex-col px-5 py-6 sm:px-10">
         <div className="flex items-center justify-between">
           <Logo className="text-3xl" />
           <ThemeToggle className="grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-soft hover:text-fg" />

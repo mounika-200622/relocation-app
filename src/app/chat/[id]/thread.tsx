@@ -106,7 +106,7 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
   const showDayAt = messages.map((m, i) => i === 0 || messages[i - 1]!.sentAt.slice(0, 10) !== m.sentAt.slice(0, 10));
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-0 md:px-4 md:py-4">
+    <div className="mx-auto flex h-[calc(100dvh-4rem-env(safe-area-inset-top))] max-w-3xl flex-col px-0 md:px-4 md:py-4">
       <div className="flex h-full flex-col overflow-hidden border-line bg-elev md:rounded-3xl md:border">
         {/* header */}
         <div className="flex items-center gap-3 border-b border-line px-4 py-3">

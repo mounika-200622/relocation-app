@@ -57,7 +57,7 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "no-print sticky top-0 z-40 transition-all duration-300",
+        "no-print safe-top sticky top-0 z-40 transition-all duration-300",
         scrolled ? "bg-bg/75 backdrop-blur-xl border-b border-line" : "bg-transparent border-b border-transparent",
       )}
     >

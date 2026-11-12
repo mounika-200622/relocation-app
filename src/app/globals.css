@@ -140,6 +140,8 @@ body {
   .no-scrollbar { scrollbar-width: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  /* edge-to-edge phones / the Android app: keep content below the status bar */
+  .safe-top { padding-top: env(safe-area-inset-top); }
 }
 
 /* Leaflet sits inside rounded cards and must follow the theme */

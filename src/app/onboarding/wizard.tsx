@@ -25,7 +25,7 @@ export function OnboardingWizard({ initial, name, next }: { initial: ProfileData
   };
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-6">
+    <div className="safe-top mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-6">
       <div className="flex items-center justify-between">
         <Logo className="text-3xl" />
         <button onClick={() => finish(true)} className="text-sm text-muted hover:text-fg">Skip for now</button>

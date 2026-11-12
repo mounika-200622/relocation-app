@@ -15,7 +15,7 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
   if (!trip) notFound();
   return (
     <>
-      <div className="no-print border-b border-line">
+      <div className="no-print safe-top border-b border-line">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6">
           <Logo className="text-2xl" />
           <Link href="/signup" className="text-sm font-medium text-accent hover:underline">Plan your own trip →</Link>
