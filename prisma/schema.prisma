@@ -1,3 +1,14 @@
+// Nira – relational schema (MySQL 8).
+//
+// MySQL is the system of record for everything that has relationships, constraints
+// or needs transactions. Chat message bodies and in-app notifications live in MongoDB
+// (see src/lib/mongo/*): they are append-only, high-volume, schema-flexible documents
+// that are always read by a single key (conversation / user).
+//
+// Things Prisma cannot express (CHECK constraints, views, the stored function and
+// procedure, triggers, generated columns) are added with raw SQL inside
+// prisma/migrations/*/migration.sql. docs/schema.sql holds the full DDL.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,158 +18,883 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ───────────────────────────── Enums ─────────────────────────────
+
 enum Role {
   USER
   BUSINESS
+  ADMIN
+}
+
+enum OccupationType {
+  STUDENT
+  PROFESSIONAL
+  OTHER
+}
+
+enum Gender {
+  FEMALE
+  MALE
+  NON_BINARY
+  UNDISCLOSED
+}
+
+enum SmokingHabit {
+  NON_SMOKER
+  OUTSIDE_ONLY
+  SMOKER
+}
+
+enum SocialStyle {
+  QUIET
+  BALANCED
+  SOCIAL
+}
+
+enum SleepSchedule {
+  EARLY_BIRD
+  FLEXIBLE
+  NIGHT_OWL
 }
 
 enum ListingType {
   DORM
   APARTMENT
+  STUDIO
+  SHARED_ROOM
+  PRIVATE_ROOM
 }
 
-enum RequestStatus {
-  OPEN
-  MATCHED
-  CLOSED
+enum ListingStatus {
+  ACTIVE
+  RENTED
+  ARCHIVED
 }
 
+/// Who may live in a listing / who a seeker wants to live with.
 enum Preference {
   ANYONE
   FEMALE_ONLY
   MALE_ONLY
 }
 
-model User {
-  id                 Int               @id @default(autoincrement())
-  name               String
-  email              String            @unique
-  passwordHash       String
-  role               Role              @default(USER)
-  createdAt          DateTime          @default(now())
-
-  listings           Listing[]         @relation("OwnerListings")
-  roommateRequests   RoommateRequest[]
-  itineraries        Itinerary[]
-  sentMessages       Message[]         @relation("SentMessages")
-  conversationsAsA   Conversation[]    @relation("UserA")
-  conversationsAsB   Conversation[]    @relation("UserB")
+enum RequestStatus {
+  OPEN
+  MATCHED
+  CLOSED
+  WITHDRAWN
 }
 
+enum ReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+}
+
+enum PoiCategory {
+  RESTAURANT
+  CAFE
+  FAST_FOOD
+  SUPERMARKET
+  CONVENIENCE
+  HOSPITAL
+  CLINIC
+  PHARMACY
+  DOCTOR
+  BANK
+  ATM
+  TRANSIT
+  MOBILE_SHOP
+  LAUNDRY
+  GYM
+  UNIVERSITY
+  POST_OFFICE
+  POLICE
+  HOTEL
+  HOSTEL
+  GUEST_HOUSE
+  CAMP_SITE
+  ATTRACTION
+  MUSEUM
+  VIEWPOINT
+  GALLERY
+  HISTORIC
+  PARK
+  NIGHTLIFE
+  SHOPPING
+}
+
+enum CostCategory {
+  RENT_SHARED_ROOM
+  RENT_STUDIO
+  RENT_ONE_BEDROOM
+  GROCERIES_MONTH
+  TRANSPORT_MONTH
+  TRANSPORT_DAY
+  PHONE_MONTH
+  MEAL
+  COFFEE
+  STAY_NIGHT
+  ATTRACTION_ENTRY
+}
+
+enum GuideCategory {
+  BASICS
+  HOUSING
+  HEALTHCARE
+  MONEY
+  GROCERIES
+  TRANSPORT
+  SIM
+  LEGAL
+  CULTURE
+}
+
+enum SimPlanKind {
+  PREPAID
+  POSTPAID
+}
+
+enum TransportModeKind {
+  TRAIN
+  TRAM
+  BUS
+  METRO
+  BOAT
+  CABLE_CAR
+  BIKE
+  WALK
+}
+
+enum Audience {
+  EVERYONE
+  YOUTH
+  STUDENT
+  TOURIST
+  SENIOR
+}
+
+enum TripStyle {
+  BUDGET
+  BALANCED
+  COMFORT
+}
+
+enum TripPace {
+  RELAXED
+  NORMAL
+  PACKED
+}
+
+enum StayPreference {
+  ANY
+  HOSTEL
+  HOTEL
+  APARTMENT
+}
+
+enum Interest {
+  CULTURE
+  FOOD
+  NATURE
+  NIGHTLIFE
+  SHOPPING
+  ADVENTURE
+  FAMILY
+}
+
+enum TimeSlot {
+  STAY
+  MORNING
+  LUNCH
+  AFTERNOON
+  DINNER
+  EVENING
+}
+
+enum ItemKind {
+  STAY
+  FOOD
+  ACTIVITY
+  TRANSPORT
+}
+
+// ───────────────────────────── Accounts ─────────────────────────────
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(80)
+  email        String    @unique @db.VarChar(191)
+  passwordHash String    @db.VarChar(100)
+  role         Role      @default(USER)
+  isActive     Boolean   @default(true)
+  onboardedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+
+  profile          UserProfile?
+  businessProfile  BusinessProfile?
+  languages        UserLanguage[]
+  resetTokens      PasswordResetToken[]
+  listings         Listing[]               @relation("OwnerListings")
+  roommateRequests RoommateRequest[]
+  savedListings    SavedListing[]
+  listingViews     ListingView[]
+  checklist        UserChecklistProgress[]
+  itineraries      Itinerary[]
+  conversationsA   Conversation[]          @relation("ConversationUserA")
+  conversationsB   Conversation[]          @relation("ConversationUserB")
+  blocksMade       Block[]                 @relation("Blocker")
+  blocksReceived   Block[]                 @relation("Blocked")
+  reportsMade      Report[]                @relation("Reporter")
+  reportsReceived  Report[]                @relation("ReportedUser")
+  reportsResolved  Report[]                @relation("ReportResolver")
+
+  @@index([role, isActive])
+}
+
+/// Relocation profile of a USER (1:1). Drives roommate matching and budget filters.
+model UserProfile {
+  userId            Int            @id
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occupation        OccupationType @default(OTHER)
+  organization      String?        @db.VarChar(120)
+  destinationCityId Int?
+  destinationCity   City?          @relation(fields: [destinationCityId], references: [id], onDelete: SetNull)
+  budgetMonthly     Decimal?       @db.Decimal(10, 2)
+  budgetCurrency    String?        @db.Char(3)
+  moveInDate        DateTime?      @db.Date
+  bio               String?        @db.VarChar(600)
+  gender            Gender         @default(UNDISCLOSED)
+  smoking           SmokingHabit   @default(NON_SMOKER)
+  hasPets           Boolean        @default(false)
+  okWithPets        Boolean        @default(true)
+  socialStyle       SocialStyle    @default(BALANCED)
+  sleepSchedule     SleepSchedule  @default(FLEXIBLE)
+  roommateGender    Preference     @default(ANYONE)
+  updatedAt         DateTime       @default(now()) @updatedAt
+
+  @@index([destinationCityId])
+}
+
+model Language {
+  code  String         @id @db.VarChar(8)
+  name  String         @unique @db.VarChar(60)
+  users UserLanguage[]
+}
+
+/// M:N – which languages a user speaks.
+model UserLanguage {
+  userId       Int
+  languageCode String   @db.VarChar(8)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language     Language @relation(fields: [languageCode], references: [code], onDelete: Cascade)
+
+  @@id([userId, languageCode])
+  @@index([languageCode])
+}
+
+/// Public face of a BUSINESS account (1:1). Contact happens only through in-app chat.
+model BusinessProfile {
+  userId      Int       @id
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String    @db.VarChar(120)
+  description String?   @db.VarChar(1000)
+  isVerified  Boolean   @default(false)
+  verifiedAt  DateTime?
+  updatedAt   DateTime  @default(now()) @updatedAt
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ───────────────────────────── Locations ─────────────────────────────
+
 model Country {
-  id     Int     @id @default(autoincrement())
-  name   String  @unique
-  cities City[]
+  id        Int     @id @default(autoincrement())
+  isoCode   String  @unique @db.Char(2)
+  name      String  @unique @db.VarChar(100)
+  currency  String  @default("USD") @db.Char(3)
+  phoneCode String? @db.VarChar(20)
+  flag      String? @db.VarChar(16)
+  lat       Float?
+  lng       Float?
+
+  regions          Region[]
+  cities           City[]
+  costEstimates    CostEstimate[]
+  guideArticles    GuideArticle[]
+  checklistItems   ChecklistTemplate[]
+  simProviders     SimProvider[]
+  transportModes   TransportMode[]
+  transportPasses  TransportPass[]
+  emergencyNumbers EmergencyNumber[]
+  supermarkets     SupermarketChain[]
+  banks            Bank[]
+}
+
+/// State / canton / province.
+model Region {
+  id        Int     @id @default(autoincrement())
+  countryId Int
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  isoCode   String  @db.VarChar(10)
+  name      String  @db.VarChar(120)
+  lat       Float?
+  lng       Float?
+  cities    City[]
+
+  @@unique([countryId, isoCode])
+  @@index([countryId, name])
 }
 
 model City {
-  id         Int         @id @default(autoincrement())
-  name       String
-  country    Country     @relation(fields: [countryId], references: [id])
-  countryId  Int
+  id        Int     @id @default(autoincrement())
+  countryId Int
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  regionId  Int?
+  region    Region? @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  name      String  @db.VarChar(120)
+  lat       Float?
+  lng       Float?
 
-  listings   Listing[]
-  pois       POI[]
-  itineraries Itinerary[]
+  listings       Listing[]
+  pois           POI[]
+  itineraries    Itinerary[]
+  costEstimates  CostEstimate[]
+  guideArticles  GuideArticle[]
+  checklistItems ChecklistTemplate[]
+  passes         TransportPass[]
+  seekers        UserProfile[]
 
-  @@unique([name, countryId])
+  @@unique([countryId, regionId, name])
+  @@index([regionId, name])
+  @@index([countryId, name])
 }
+
+// ───────────────────────────── Listings ─────────────────────────────
 
 model Listing {
-  id               Int               @id @default(autoincrement())
-  owner            User              @relation("OwnerListings", fields: [ownerId], references: [id])
-  ownerId          Int
-  city             City              @relation(fields: [cityId], references: [id])
-  cityId           Int
-  type             ListingType
-  title            String
-  address          String
-  price            Float
-  currency         String            @default("USD")
-  isShareable      Boolean           @default(false)
-  capacityMin      Int               @default(1)
-  capacityMax      Int               @default(1)
-  currentOccupants Int               @default(0)
-  preference       Preference        @default(ANYONE)
-  photos           String            @db.LongText
-  createdAt        DateTime          @default(now())
+  id                Int           @id @default(autoincrement())
+  ownerId           Int
+  owner             User          @relation("OwnerListings", fields: [ownerId], references: [id], onDelete: Cascade)
+  cityId            Int
+  city              City          @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  type              ListingType
+  status            ListingStatus @default(ACTIVE)
+  title             String        @db.VarChar(140)
+  description       String?       @db.Text
+  address           String        @db.VarChar(255)
+  lat               Float?
+  lng               Float?
+  price             Decimal       @db.Decimal(10, 2)
+  deposit           Decimal       @default(0) @db.Decimal(10, 2)
+  currency          String        @default("USD") @db.Char(3)
+  bedrooms          Int           @default(1) @db.SmallInt
+  bathrooms         Int           @default(1) @db.SmallInt
+  sizeSqm           Int?          @db.SmallInt
+  furnished         Boolean       @default(false)
+  availableFrom     DateTime?     @db.Date
+  minStayMonths     Int           @default(1) @db.SmallInt
+  utilitiesIncluded Boolean       @default(false)
+  billsEstimate     Decimal?      @db.Decimal(10, 2)
+  petsAllowed       Boolean       @default(false)
+  smokingAllowed    Boolean       @default(false)
+  guestsAllowed     Boolean       @default(true)
+  isShareable       Boolean       @default(false)
+  capacityMin       Int           @default(1) @db.SmallInt
+  capacityMax       Int           @default(1) @db.SmallInt
+  currentOccupants  Int           @default(0) @db.SmallInt
+  genderPreference  Preference    @default(ANYONE) @map("preference")
+  /// v1 base64 JSON photos. Emptied by scripts/migrate-legacy-photos.ts.
+  legacyPhotos      String?       @db.LongText
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now()) @updatedAt
 
+  photos           ListingPhoto[]
+  amenities        ListingAmenity[]
+  savedBy          SavedListing[]
+  views            ListingView[]
   roommateRequests RoommateRequest[]
-  conversations     Conversation[]
-  itineraryItems    ItineraryItem[]
+  conversations    Conversation[]
+  itineraryItems   ItineraryItem[]
+  reports          Report[]
+
+  @@index([cityId, status, price])
+  @@index([ownerId, status])
+  @@index([status, createdAt])
+  @@index([type])
+  @@index([availableFrom])
+  @@index([lat, lng])
+  @@fulltext([title, description])
 }
+
+model ListingPhoto {
+  id         Int      @id @default(autoincrement())
+  listingId  Int
+  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  url        String   @db.VarChar(500)
+  /// Storage key used to delete the file (Cloudinary public id or local path).
+  storageKey String   @db.VarChar(255)
+  position   Int      @default(0) @db.SmallInt
+  caption    String?  @db.VarChar(140)
+  createdAt  DateTime @default(now())
+
+  @@index([listingId, position])
+}
+
+model Amenity {
+  id       Int              @id @default(autoincrement())
+  code     String           @unique @db.VarChar(40)
+  label    String           @db.VarChar(60)
+  listings ListingAmenity[]
+}
+
+/// M:N – amenities offered by a listing.
+model ListingAmenity {
+  listingId Int
+  amenityId Int
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Restrict)
+
+  @@id([listingId, amenityId])
+  @@index([amenityId])
+}
+
+/// M:N – a user's favourites.
+model SavedListing {
+  userId    Int
+  listingId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, listingId])
+  @@index([listingId])
+}
+
+/// One row per (listing, visitor, day) – counts unique daily views.
+model ListingView {
+  id        Int      @id @default(autoincrement())
+  listingId Int
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  viewerId  Int?
+  viewer    User?    @relation(fields: [viewerId], references: [id], onDelete: SetNull)
+  viewerKey String   @db.Char(64)
+  viewedOn  DateTime @db.Date
+  viewedAt  DateTime @default(now())
+
+  @@unique([listingId, viewerKey, viewedOn])
+  @@index([viewerId, viewedAt])
+}
+
+// ───────────────────────────── Roommates & social ─────────────────────────────
 
 model RoommateRequest {
-  id          Int           @id @default(autoincrement())
-  listing     Listing       @relation(fields: [listingId], references: [id])
-  listingId   Int
-  requester   User          @relation(fields: [requesterId], references: [id])
-  requesterId Int
-  status      RequestStatus @default(OPEN)
-  createdAt   DateTime      @default(now())
+  id              Int           @id @default(autoincrement())
+  listingId       Int
+  listing         Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  requesterId     Int
+  requester       User          @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  status          RequestStatus @default(OPEN)
+  message         String        @default("") @db.VarChar(600)
+  moveInDate      DateTime?     @db.Date
+  budgetShare     Decimal?      @db.Decimal(10, 2)
+  /// Kept equal to requesterId while OPEN and NULL otherwise by triggers (see migration).
+  /// UNIQUE(listingId, openRequesterId) => at most one OPEN request per user per listing.
+  openRequesterId Int?
+  decidedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
+
+  conversations Conversation[]
+
+  @@unique([listingId, openRequesterId])
+  @@index([listingId, status])
+  @@index([requesterId, status])
 }
 
+/// Conversation header lives in MySQL (participants, listing, uniqueness, blocks);
+/// message bodies live in MongoDB collection `messages`, keyed by this id.
 model Conversation {
-  id         Int        @id @default(autoincrement())
-  listing    Listing?   @relation(fields: [listingId], references: [id])
-  listingId  Int?
-  userA      User       @relation("UserA", fields: [userAId], references: [id])
-  userAId    Int
-  userB      User       @relation("UserB", fields: [userBId], references: [id])
-  userBId    Int
-  createdAt  DateTime   @default(now())
+  id                 Int              @id @default(autoincrement())
+  /// Always the smaller user id, so (userAId, userBId, contextKey) is unique per pair.
+  userAId            Int
+  userA              User             @relation("ConversationUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId            Int
+  userB              User             @relation("ConversationUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  listingId          Int?
+  listing            Listing?         @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  roommateRequestId  Int?
+  roommateRequest    RoommateRequest? @relation(fields: [roommateRequestId], references: [id], onDelete: SetNull)
+  /// listingId, or 0 when the chat is not about a listing (MySQL UNIQUE treats NULLs as distinct).
+  contextKey         Int              @default(0)
+  lastMessageAt      DateTime         @default(now())
+  lastMessagePreview String?          @db.VarChar(160)
+  lastSenderId       Int?
+  createdAt          DateTime         @default(now())
 
-  messages   Message[]
+  @@unique([userAId, userBId, contextKey])
+  @@index([userBId, lastMessageAt])
+  @@index([userAId, lastMessageAt])
+  @@index([listingId])
+  @@index([roommateRequestId])
 }
 
-model Message {
+model Block {
+  blockerId Int
+  blockedId Int
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model Report {
   id             Int          @id @default(autoincrement())
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  conversationId Int
-  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
-  senderId       Int
-  text           String       @db.Text
-  sentAt         DateTime     @default(now())
+  reporterId     Int
+  reporter       User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUserId Int?
+  reportedUser   User?        @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  listingId      Int?
+  listing        Listing?     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reason         String       @db.VarChar(60)
+  details        String?      @db.VarChar(1000)
+  status         ReportStatus @default(OPEN)
+  resolvedById   Int?
+  resolvedBy     User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  resolvedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([listingId])
+  @@index([resolvedById])
 }
 
+// ───────────────────────────── Places & prices ─────────────────────────────
+
+/// Cached OpenStreetMap feature (or Google place). Raw tags are kept only for display.
 model POI {
-  id            Int             @id @default(autoincrement())
-  city          City            @relation(fields: [cityId], references: [id])
-  cityId        Int
-  name          String
-  category      String
-  address       String
-  lat           Float
-  lng           Float
-  priceLevel    Int?
-  lastSyncedAt  DateTime        @default(now())
+  id           Int         @id @default(autoincrement())
+  /// "node/123", "way/456" or "google/<placeId>"
+  osmId        String      @unique @db.VarChar(64)
+  cityId       Int?
+  city         City?       @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  category     PoiCategory
+  name         String      @db.VarChar(200)
+  address      String?     @db.VarChar(255)
+  lat          Float
+  lng          Float
+  openingHours String?     @db.VarChar(255)
+  cuisine      String?     @db.VarChar(120)
+  website      String?     @db.VarChar(255)
+  /// 1 (cheap) .. 4 (expensive); derived in src/lib/poi/price-tier.ts
+  priceTier    Int?        @db.TinyInt
+  tags         Json?
+  lastSyncedAt DateTime    @default(now())
 
   itineraryItems ItineraryItem[]
+
+  @@index([cityId, category])
+  @@index([category, lat, lng])
+  @@index([lat, lng])
 }
 
-model Itinerary {
-  id          Int             @id @default(autoincrement())
-  user        User            @relation(fields: [userId], references: [id])
-  userId      Int
-  city        City            @relation(fields: [cityId], references: [id])
-  cityId      Int
-  days        Int
-  peopleCount Int
-  budget      Float
-  createdAt   DateTime        @default(now())
+/// Remembers which (area, category) Overpass queries were made and when.
+model PoiQueryCache {
+  id          Int         @id @default(autoincrement())
+  /// lat/lng rounded to ~1 km + radius, e.g. "47.37,8.54,1500"
+  areaKey     String      @db.VarChar(64)
+  category    PoiCategory
+  resultCount Int         @default(0)
+  fetchedAt   DateTime    @default(now())
 
-  items       ItineraryItem[]
+  @@unique([areaKey, category])
+}
+
+/// Indicative prices per country (and optionally city). tier = 0 when not tiered.
+model CostEstimate {
+  id        Int          @id @default(autoincrement())
+  countryId Int
+  country   Country      @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  cityId    Int?
+  city      City?        @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  category  CostCategory
+  tier      Int          @default(0) @db.TinyInt
+  minPrice  Decimal      @db.Decimal(10, 2)
+  maxPrice  Decimal      @db.Decimal(10, 2)
+  currency  String       @db.Char(3)
+  source    String?      @db.VarChar(200)
+  updatedAt DateTime     @default(now()) @updatedAt
+
+  @@unique([countryId, cityId, category, tier])
+  @@index([cityId, category])
+}
+
+model ExchangeRate {
+  base      String   @db.Char(3)
+  quote     String   @db.Char(3)
+  rate      Decimal  @db.Decimal(18, 8)
+  fetchedAt DateTime @default(now())
+
+  @@id([base, quote])
+}
+
+// ───────────────────────────── Settling-in guide ─────────────────────────────
+
+model GuideArticle {
+  id         Int           @id @default(autoincrement())
+  countryId  Int
+  country    Country       @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  cityId     Int?
+  city       City?         @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  category   GuideCategory
+  slug       String        @db.VarChar(120)
+  title      String        @db.VarChar(160)
+  summary    String        @db.VarChar(400)
+  body       String        @db.Text
+  sourceName String?       @db.VarChar(120)
+  sourceUrl  String?       @db.VarChar(300)
+  position   Int           @default(0) @db.SmallInt
+  updatedAt  DateTime      @default(now()) @updatedAt
+
+  @@unique([countryId, slug])
+  @@index([countryId, category, position])
+  @@index([cityId])
+  @@fulltext([title, summary, body])
+}
+
+model ChecklistTemplate {
+  id            Int           @id @default(autoincrement())
+  countryId     Int
+  country       Country       @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  cityId        Int?
+  city          City?         @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  category      GuideCategory
+  title         String        @db.VarChar(160)
+  description   String        @db.VarChar(600)
+  dueWithinDays Int?          @db.SmallInt
+  link          String?       @db.VarChar(300)
+  position      Int           @default(0) @db.SmallInt
+
+  progress UserChecklistProgress[]
+
+  @@unique([countryId, title])
+  @@index([countryId, position])
+  @@index([cityId])
+}
+
+/// M:N – which checklist items a user ticked.
+model UserChecklistProgress {
+  userId      Int
+  itemId      Int
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item        ChecklistTemplate @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  completedAt DateTime          @default(now())
+
+  @@id([userId, itemId])
+  @@index([itemId])
+}
+
+model SimProvider {
+  id              Int       @id @default(autoincrement())
+  countryId       Int
+  country         Country   @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name            String    @db.VarChar(80)
+  isMvno          Boolean   @default(false)
+  network         String?   @db.VarChar(80)
+  website         String?   @db.VarChar(200)
+  whereToBuy      String    @db.VarChar(300)
+  documentsNeeded String    @db.VarChar(300)
+  studentTip      String?   @db.VarChar(300)
+  touristTip      String?   @db.VarChar(300)
+  plans           SimPlan[]
+
+  @@unique([countryId, name])
+}
+
+model SimPlan {
+  id           Int         @id @default(autoincrement())
+  providerId   Int
+  provider     SimProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  name         String      @db.VarChar(100)
+  kind         SimPlanKind
+  priceMonthly Decimal     @db.Decimal(8, 2)
+  currency     String      @db.Char(3)
+  /// NULL = unlimited
+  dataGb       Decimal?    @db.Decimal(6, 1)
+  euRoaming    Boolean     @default(false)
+  notes        String?     @db.VarChar(300)
+
+  @@unique([providerId, name])
+  @@index([providerId, kind])
+}
+
+model TransportMode {
+  id          Int               @id @default(autoincrement())
+  countryId   Int
+  country     Country           @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  mode        TransportModeKind
+  title       String            @db.VarChar(100)
+  description String            @db.VarChar(1000)
+  howToBuy    String?           @db.VarChar(600)
+  apps        String?           @db.VarChar(200)
+  priceRange  String?           @db.VarChar(120)
+  position    Int               @default(0) @db.SmallInt
+
+  @@unique([countryId, mode])
+}
+
+model TransportPass {
+  id          Int      @id @default(autoincrement())
+  countryId   Int
+  country     Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  cityId      Int?
+  city        City?    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  name        String   @db.VarChar(100)
+  description String   @db.VarChar(600)
+  price       Decimal? @db.Decimal(8, 2)
+  currency    String   @db.Char(3)
+  validity    String   @db.VarChar(80)
+  audience    Audience @default(EVERYONE)
+  url         String?  @db.VarChar(300)
+
+  @@unique([countryId, name])
+  @@index([countryId, audience])
+  @@index([cityId])
+}
+
+model EmergencyNumber {
+  id        Int     @id @default(autoincrement())
+  countryId Int
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  service   String  @db.VarChar(60)
+  number    String  @db.VarChar(20)
+  notes     String? @db.VarChar(200)
+
+  @@unique([countryId, service])
+}
+
+model SupermarketChain {
+  id        Int     @id @default(autoincrement())
+  countryId Int
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name      String  @db.VarChar(80)
+  priceTier Int     @db.TinyInt
+  notes     String? @db.VarChar(300)
+  website   String? @db.VarChar(200)
+
+  @@unique([countryId, name])
+}
+
+model Bank {
+  id             Int      @id @default(autoincrement())
+  countryId      Int
+  country        Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name           String   @db.VarChar(80)
+  kind           String   @db.VarChar(40)
+  studentAccount Boolean  @default(false)
+  monthlyFee     Decimal? @db.Decimal(8, 2)
+  currency       String   @db.Char(3)
+  notes          String?  @db.VarChar(300)
+  website        String?  @db.VarChar(200)
+
+  @@unique([countryId, name])
+}
+
+// ───────────────────────────── Trip planner ─────────────────────────────
+
+model Itinerary {
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cityId         Int
+  city           City           @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  title          String         @db.VarChar(120)
+  startDate      DateTime?      @db.Date
+  days           Int            @db.SmallInt
+  peopleCount    Int            @db.SmallInt
+  roomsNeeded    Int            @default(1) @db.SmallInt
+  budget         Decimal        @db.Decimal(10, 2)
+  currency       String         @db.Char(3)
+  style          TripStyle      @default(BALANCED)
+  pace           TripPace       @default(NORMAL)
+  stayPreference StayPreference @default(ANY)
+  /// Budget split in percent; a CHECK constraint enforces a sum of 100.
+  pctStay        Int            @default(40) @db.TinyInt
+  pctFood        Int            @default(30) @db.TinyInt
+  pctActivities  Int            @default(20) @db.TinyInt
+  pctTransport   Int            @default(10) @db.TinyInt
+  /// Set when the minimum viable budget exceeds the budget (generator warning).
+  minViableBudget Decimal?      @db.Decimal(10, 2)
+  shareToken     String?        @unique @db.Char(32)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
+
+  interests ItineraryInterest[]
+  items     ItineraryItem[]
+
+  @@index([userId, createdAt])
+  @@index([cityId])
+}
+
+/// Multi-valued attribute pulled out for 1NF.
+model ItineraryInterest {
+  itineraryId Int
+  interest    Interest
+  itinerary   Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@id([itineraryId, interest])
 }
 
 model ItineraryItem {
-  id             Int        @id @default(autoincrement())
-  itinerary      Itinerary  @relation(fields: [itineraryId], references: [id])
-  itineraryId    Int
-  dayNumber      Int
-  poi            POI?       @relation(fields: [poiId], references: [id])
-  poiId          Int?
-  listing        Listing?   @relation(fields: [listingId], references: [id])
-  listingId      Int?
-  timeSlot       String?
-  estimatedCost  Float
+  id            Int       @id @default(autoincrement())
+  itineraryId   Int
+  itinerary     Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  dayNumber     Int       @db.SmallInt
+  timeSlot      TimeSlot
+  kind          ItemKind
+  position      Int       @default(0) @db.SmallInt
+  poiId         Int?
+  poi           POI?      @relation(fields: [poiId], references: [id], onDelete: SetNull)
+  listingId     Int?
+  listing       Listing?  @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  /// Display name kept so an item survives its POI being purged from the cache.
+  title         String    @db.VarChar(200)
+  estimatedCost Decimal   @db.Decimal(10, 2)
+  lat           Float?
+  lng           Float?
+  notes         String?   @db.VarChar(300)
+
+  @@index([itineraryId, dayNumber, position])
+  @@index([poiId])
+  @@index([listingId])
+}
+
+// ───────────────────────────── Audit ─────────────────────────────
+
+/// Written by trigger trg_listing_audit when a listing's price or status changes.
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  tableName String   @db.VarChar(64)
+  rowId     Int
+  action    String   @db.VarChar(20)
+  oldValue  Json?
+  newValue  Json?
+  changedAt DateTime @default(now())
+
+  @@index([tableName, rowId, changedAt])
 }
