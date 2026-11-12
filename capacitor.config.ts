@@ -1,5 +1,5 @@
 import type { CapacitorConfig } from "@capacitor/cli";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -14,8 +14,10 @@ import { join } from "node:path";
  */
 const serverUrl = process.env.NIRA_SERVER_URL ?? "http://10.0.2.2:3000";
 
-// The bundled "can't connect" page (offline.html) reads this to offer a working "Try again" button.
-writeFileSync(join(__dirname, "mobile", "www", "server.js"), `window.NIRA_SERVER = ${JSON.stringify(serverUrl)};\n`);
+// The bundled "can't connect" page gets the server URL inlined (no extra request that could hang
+// on an unreachable network), so its "Try again" button knows where to go.
+const offlineTemplate = readFileSync(join(__dirname, "mobile", "offline.template.html"), "utf8");
+writeFileSync(join(__dirname, "mobile", "www", "offline.html"), offlineTemplate.split("__NIRA_SERVER__").join(serverUrl.replace(/["<>\\]/g, "")));
 
 const config: CapacitorConfig = {
   appId: "app.nira.relocation",

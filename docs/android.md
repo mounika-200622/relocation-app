@@ -66,8 +66,11 @@ npm run android:wifi -- --install
 
 No cable is needed afterwards: the phone only has to be on the same Wi-Fi as the laptop. The
 address is baked into the APK, so **re-run the command if the laptop moves to another network**.
-If the server can't be reached the app shows a "Can't reach the Nira server" page (bundled
-`mobile/www/offline.html`) with the steps and a **Try again** button, instead of a blank screen.
+If the server can't be reached (phone on mobile data, server stopped), the app shows a "Can't
+reach the Nira server" page with the steps and a **Try again** button instead of a blank screen:
+Capacitor's `errorPath` covers connection errors, and `MainActivity` switches to it when the first
+page hasn't loaded after 15 s (mobile networks silently drop 192.168.x.x traffic). The page is
+generated at sync time from `mobile/offline.template.html` with the server URL filled in.
 
 ## 2c. Android app with Android Studio (manual)
 

@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Template: capacitor.config.ts writes mobile/www/offline.html from this file. -->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -12,6 +13,7 @@
     p { color: #d8b4c8; line-height: 1.6; margin: 10px 0; }
     ol { text-align: left; color: #d8b4c8; line-height: 1.7; padding-left: 20px; }
     code { color: #fdf2f8; background: #ffffff14; padding: 1px 6px; border-radius: 6px; word-break: break-all; }
+    button:disabled { opacity: .7; }
     button { margin-top: 18px; border: 0; border-radius: 999px; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #f472b6, #ec4899 50%, #a21caf); }
   </style>
 </head>
@@ -26,12 +28,26 @@
     </ol>
     <button id="retry" type="button">Try again</button>
   </main>
-  <script src="server.js"></script>
   <script>
-    var url = window.NIRA_SERVER || "";
+    // __NIRA_SERVER__ is replaced with the app's server URL by capacitor.config.ts at sync time
+    var url = "__NIRA_SERVER__";
     if (url) document.getElementById("where").textContent = " at " + url;
-    document.getElementById("retry").addEventListener("click", function () {
-      if (url) window.location.href = url; else window.location.reload();
+    var retry = document.getElementById("retry");
+    retry.addEventListener("click", function () {
+      if (!url) return window.location.reload();
+      // Check the server answers before leaving this page, so an unreachable network never
+      // turns into a blank screen again.
+      retry.disabled = true;
+      retry.textContent = "Checking…";
+      var ctrl = new AbortController();
+      var timer = setTimeout(function () { ctrl.abort(); }, 6000);
+      fetch(url, { mode: "no-cors", cache: "no-store", signal: ctrl.signal })
+        .then(function () { window.location.href = url; })
+        .catch(function () {
+          retry.disabled = false;
+          retry.textContent = "Still can't reach it – try again";
+        })
+        .finally(function () { clearTimeout(timer); });
     });
   </script>
 </body>
