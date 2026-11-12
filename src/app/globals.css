@@ -1,26 +1,165 @@
 @import "tailwindcss";
 
+/* ───────────────────────── Design tokens ─────────────────────────
+   Dark is the default identity (ink + indigo). Light mode flips the tokens.
+   Components only ever use the semantic names below. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #08090d;
+  --bg-elev: #10121a;
+  --bg-soft: #161925;
+  --bg-hover: #1c2030;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.13);
+  --fg: #eef0f7;
+  --fg-muted: #a1a9bc;
+  --fg-subtle: #6c7489;
+  --accent: #8b8ef8;
+  --accent-strong: #6366f1;
+  --accent-soft: rgb(124 127 245 / 0.14);
+  --accent-fg: #ffffff;
+  --warm: #f5b971;
+  --success: #3ddc97;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+  --ring: rgb(139 142 248 / 0.55);
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 50px -20px rgb(0 0 0 / 0.65);
+  --hero-glow: radial-gradient(60% 60% at 50% 0%, rgb(99 102 241 / 0.28), transparent 70%);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f6f9;
+  --bg-elev: #ffffff;
+  --bg-soft: #eef0f6;
+  --bg-hover: #e6e8f1;
+  --line: rgb(15 23 42 / 0.08);
+  --line-strong: rgb(15 23 42 / 0.15);
+  --fg: #0d1222;
+  --fg-muted: #4a5368;
+  --fg-subtle: #8a92a6;
+  --accent: #5145e5;
+  --accent-strong: #4338ca;
+  --accent-soft: rgb(81 69 229 / 0.09);
+  --warm: #c2701a;
+  --success: #0f9f6e;
+  --warning: #b7791f;
+  --danger: #e11d48;
+  --ring: rgb(81 69 229 / 0.45);
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 18px 40px -22px rgb(15 23 42 / 0.25);
+  --hero-glow: radial-gradient(60% 60% at 50% 0%, rgb(99 102 241 / 0.16), transparent 70%);
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-elev: var(--bg-elev);
+  --color-soft: var(--bg-soft);
+  --color-hover: var(--bg-hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-warm: var(--warm);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif;
+  --radius-xl2: 1.25rem;
+  --shadow-card: var(--shadow);
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to { background-position: 400px 0; }
+}
+
+html { -webkit-tap-highlight-color: transparent; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--accent-soft); color: var(--fg); }
+
+/* Visible focus for keyboard users only */
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
+
+/* Thin, quiet scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+
+@layer components {
+  .card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .hairline { border-color: var(--line); }
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-soft) 0px, var(--bg-hover) 120px, var(--bg-soft) 240px);
+    background-size: 800px 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 0.75rem;
+  }
+  .text-gradient {
+    background: linear-gradient(120deg, var(--fg) 20%, var(--accent) 60%, var(--warm) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+  .prose-nira { color: var(--fg-muted); line-height: 1.75; }
+  .prose-nira h2 { color: var(--fg); font-weight: 600; font-size: 1.15rem; margin: 1.75rem 0 0.5rem; }
+  .prose-nira p { margin: 0.75rem 0; }
+  .prose-nira ul { list-style: disc; padding-left: 1.25rem; margin: 0.75rem 0; }
+  .prose-nira li { margin: 0.3rem 0; }
+  .prose-nira strong { color: var(--fg); font-weight: 600; }
+  .prose-nira em { color: var(--fg); }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* Leaflet sits inside rounded cards and must follow the theme */
+.leaflet-container { background: var(--bg-soft); font-family: var(--font-sans); border-radius: inherit; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-elev); color: var(--fg); border: 1px solid var(--line); }
+.leaflet-control-attribution { font-size: 10px; }
+.nira-pin {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px;
+  background: var(--accent-strong); color: white; font: 600 12px var(--font-sans);
+  border: 2px solid white; box-shadow: 0 6px 16px rgb(0 0 0 / 0.35);
+}
+.nira-pin.price { width: auto; height: 28px; padding: 0 10px; background: var(--bg-elev); color: var(--fg); border-color: var(--line-strong); }
+.nira-pin.home { background: var(--warm); }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .card { box-shadow: none; border-color: #ddd; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
