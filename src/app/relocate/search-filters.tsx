@@ -56,17 +56,17 @@ export function SearchFilters({ initial, budget, total }: { initial: Flat; budge
             </button>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <Select aria-label="Sort" value={initial.sort ?? "newest"} onChange={(e) => patch({ sort: e.target.value })} className="h-11 w-auto rounded-full">
+        <div className="flex min-w-0 items-center gap-2">
+          <Select aria-label="Sort" value={initial.sort ?? "newest"} onChange={(e) => patch({ sort: e.target.value })} className="h-11 min-w-0 flex-1 rounded-full md:w-auto md:flex-none">
             <option value="newest">Newest</option>
             <option value="price_asc">Price: low to high</option>
             <option value="price_desc">Price: high to low</option>
             <option value="nearest" disabled={!initial.lat}>Nearest to centre</option>
           </Select>
-          <Button variant="secondary" className="h-11 rounded-full" onClick={() => setOpen(true)}>
+          <Button variant="secondary" className="h-11 shrink-0 rounded-full" onClick={() => setOpen(true)}>
             <SlidersHorizontal className="h-4 w-4" /> Filters {activeCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent-strong px-1 text-[11px] text-white">{activeCount}</span>}
           </Button>
-          <Button variant="secondary" className="h-11 rounded-full" onClick={() => patch({ view: initial.view === "map" ? undefined : "map" })} aria-label="Toggle map view">
+          <Button variant="secondary" className="h-11 shrink-0 rounded-full" onClick={() => patch({ view: initial.view === "map" ? undefined : "map" })} aria-label="Toggle map view">
             {initial.view === "map" ? <List className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}
             <span className="hidden sm:inline">{initial.view === "map" ? "List" : "Map"}</span>
           </Button>
