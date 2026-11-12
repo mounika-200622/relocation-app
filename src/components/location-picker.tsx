@@ -32,21 +32,21 @@ export function LocationPicker({
   layout?: "grid" | "stack";
   labels?: { country?: string; region?: string; city?: string };
 }) {
+  type CityOpt = Option & { lat: number | null; lng: number | null; regionId: number | null };
   const [countries, setCountries] = useState<Country[]>([]);
-  const [regions, setRegions] = useState<Option[]>([]);
-  const [cities, setCities] = useState<(Option & { lat: number | null; lng: number | null; regionId: number | null })[]>([]);
+  // lists are stored with the key they were fetched for; stale lists are simply ignored
+  const [regionList, setRegionList] = useState<{ key: string; rows: Option[] } | null>(null);
+  const [cityList, setCityList] = useState<{ key: string; rows: CityOpt[] } | null>(null);
   const [state, setState] = useState<LocationValue>(value ?? { countryId: null, regionId: null, cityId: null });
-  const [loading, setLoading] = useState<{ regions?: boolean; cities?: boolean }>({});
+  const regionKey = String(state.countryId ?? "");
+  const cityKey = `${state.countryId ?? ""}:${state.regionId ?? ""}`;
+  const regions = state.countryId && regionList?.key === regionKey ? regionList.rows : [];
+  const cities = state.countryId && cityList?.key === cityKey ? cityList.rows : [];
+  const loading = { regions: Boolean(state.countryId) && regionList?.key !== regionKey, cities: Boolean(state.countryId) && cityList?.key !== cityKey };
 
   useEffect(() => {
     loadCountries().then(setCountries);
   }, []);
-
-  // keep in sync when the parent controls the value
-  useEffect(() => {
-    if (value && (value.countryId !== state.countryId || value.regionId !== state.regionId || value.cityId !== state.cityId)) setState(value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value?.countryId, value?.regionId, value?.cityId]);
 
   // resolve an initial city into its country + region
   useEffect(() => {
@@ -68,40 +68,30 @@ export function LocationPicker({
   }, [initialCityId]);
 
   useEffect(() => {
-    if (!state.countryId) {
-      setRegions([]);
-      return;
-    }
+    if (!state.countryId) return;
     let alive = true;
-    setLoading((l) => ({ ...l, regions: true }));
     fetch(`/api/locations?level=regions&countryId=${state.countryId}`)
       .then((r) => (r.ok ? r.json() : []))
-      .then((rows: { id: number; name: string }[]) => alive && setRegions(rows.map((r) => ({ value: r.id, label: r.name }))))
-      .finally(() => alive && setLoading((l) => ({ ...l, regions: false })));
+      .then((rows: { id: number; name: string }[]) => alive && setRegionList({ key: regionKey, rows: rows.map((r) => ({ value: r.id, label: r.name })) }));
     return () => {
       alive = false;
     };
-  }, [state.countryId]);
+  }, [state.countryId, regionKey]);
 
   useEffect(() => {
-    if (!state.countryId) {
-      setCities([]);
-      return;
-    }
+    if (!state.countryId) return;
     let alive = true;
-    setLoading((l) => ({ ...l, cities: true }));
     const qs = new URLSearchParams({ level: "cities", countryId: String(state.countryId) });
     if (state.regionId) qs.set("regionId", String(state.regionId));
     fetch(`/api/locations?${qs}`)
       .then((r) => (r.ok ? r.json() : []))
       .then((rows: { id: number; name: string; regionId: number | null; lat: number | null; lng: number | null }[]) =>
-        alive && setCities(rows.map((c) => ({ value: c.id, label: c.name, lat: c.lat, lng: c.lng, regionId: c.regionId }))),
-      )
-      .finally(() => alive && setLoading((l) => ({ ...l, cities: false })));
+        alive && setCityList({ key: cityKey, rows: rows.map((c) => ({ value: c.id, label: c.name, lat: c.lat, lng: c.lng, regionId: c.regionId })) }),
+      );
     return () => {
       alive = false;
     };
-  }, [state.countryId, state.regionId]);
+  }, [state.countryId, state.regionId, cityKey]);
 
   const update = (next: LocationValue) => {
     setState(next);

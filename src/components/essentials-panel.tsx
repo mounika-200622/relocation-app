@@ -29,38 +29,37 @@ export function EssentialsPanel({ lat, lng, cityId, title = "Nearby essentials",
   const [group, setGroup] = useState<Group>(initialGroup);
   const [radius, setRadius] = useState(1500);
   const [maxMeal, setMaxMeal] = useState("");
-  const [data, setData] = useState<{ items: Poi[]; stale: boolean } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [slow, setSlow] = useState(false);
+  // Every response is tagged with the request key it answers; "loading" is simply
+  // "the latest answer is for a different key" – no state resets inside the effect.
+  const key = `${lat},${lng},${radius},${group},${cityId ?? ""}`;
+  const [result, setResult] = useState<{ key: string; items: Poi[]; stale: boolean; error: string | null } | null>(null);
+  const [slowKey, setSlowKey] = useState<string | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
+  const loading = result?.key !== key;
+  const slow = loading && slowKey === key;
+  const data = result && !loading ? result : null;
+  const error = data?.error ?? null;
 
   useEffect(() => {
     const ctrl = new AbortController();
-    setLoading(true);
-    setError(null);
-    setSlow(false);
-    const slowTimer = setTimeout(() => setSlow(true), 2500);
+    const slowTimer = setTimeout(() => setSlowKey(key), 2500);
     const qs = new URLSearchParams({ lat: String(lat), lng: String(lng), radius: String(radius), group });
     if (cityId) qs.set("cityId", String(cityId));
     fetch(`/api/poi?${qs}`, { signal: ctrl.signal })
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error ?? "Couldn't load nearby places.");
-        setData(d);
+        setResult({ key, items: d.items, stale: d.stale, error: null });
       })
       .catch((e) => {
-        if ((e as Error).name !== "AbortError") setError((e as Error).message);
+        if ((e as Error).name !== "AbortError") setResult({ key, items: [], stale: false, error: (e as Error).message });
       })
-      .finally(() => {
-        clearTimeout(slowTimer);
-        setLoading(false);
-      });
+      .finally(() => clearTimeout(slowTimer));
     return () => {
       clearTimeout(slowTimer);
       ctrl.abort();
     };
-  }, [lat, lng, radius, group, cityId]);
+  }, [key, lat, lng, radius, group, cityId]);
 
   const items = useMemo(() => {
     const all = data?.items ?? [];
