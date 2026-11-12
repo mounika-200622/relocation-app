@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 
 /** Route-level error boundary: friendly message + retry, details only in the console. */
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -17,7 +17,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       {error.digest && <p className="mt-2 font-mono text-xs text-subtle">Reference: {error.digest}</p>}
       <div className="mt-8 flex gap-3">
         <Button onClick={reset}>Try again</Button>
-        <Button variant="secondary" onClick={() => (window.location.href = "/")}>Go home</Button>
+        <LinkButton href="/" variant="secondary">Go home</LinkButton>
       </div>
     </div>
   );

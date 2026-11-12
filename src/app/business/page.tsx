@@ -17,6 +17,21 @@ type Row = {
   capacityMax: number; currentOccupants: number; isShareable: number; views: bigint; views7: bigint; openRequests: bigint; inquiries: bigint;
 };
 
+/** Views per day for the last 14 days (GROUP BY on a date), with empty days filled in. */
+async function viewsLast14Days(ownerId: number) {
+  const daily = await prisma.$queryRaw<{ day: Date; n: bigint }[]>`
+    SELECT lv.viewedOn AS day, COUNT(*) AS n
+    FROM ListingView lv JOIN Listing l ON l.id = lv.listingId
+    WHERE l.ownerId = ${ownerId} AND lv.viewedOn >= CURDATE() - INTERVAL 13 DAY
+    GROUP BY lv.viewedOn ORDER BY lv.viewedOn`;
+  const counts = new Map(daily.map((x) => [x.day.toISOString().slice(0, 10), Number(x.n)]));
+  const today = Date.now();
+  return Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(today - (13 - i) * 86_400_000).toISOString().slice(0, 10);
+    return { d, n: counts.get(d) ?? 0 };
+  });
+}
+
 export default async function BusinessDashboard() {
   const user = await pageUser(["BUSINESS"]);
   // One query, aggregates via correlated sub-queries on the view (JOIN + COUNT + date filter)
@@ -30,16 +45,7 @@ export default async function BusinessDashboard() {
     WHERE v.ownerId = ${user.id}
     ORDER BY FIELD(v.status, 'ACTIVE', 'RENTED', 'ARCHIVED'), v.createdAt DESC`;
 
-  // views per day for the last 14 days (GROUP BY on a date)
-  const daily = await prisma.$queryRaw<{ day: Date; n: bigint }[]>`
-    SELECT lv.viewedOn AS day, COUNT(*) AS n
-    FROM ListingView lv JOIN Listing l ON l.id = lv.listingId
-    WHERE l.ownerId = ${user.id} AND lv.viewedOn >= CURDATE() - INTERVAL 13 DAY
-    GROUP BY lv.viewedOn ORDER BY lv.viewedOn`;
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(Date.now() - (13 - i) * 86_400_000).toISOString().slice(0, 10);
-    return { d, n: Number(daily.find((x) => x.day.toISOString().slice(0, 10) === d)?.n ?? 0) };
-  });
+  const days = await viewsLast14Days(user.id);
   const peak = Math.max(1, ...days.map((d) => d.n));
   const totals = rows.reduce((t, r) => ({ views: t.views + Number(r.views), inquiries: t.inquiries + Number(r.inquiries), requests: t.requests + Number(r.openRequests) }), { views: 0, inquiries: 0, requests: 0 });
   const profile = await prisma.businessProfile.findUnique({ where: { userId: user.id }, select: { displayName: true, isVerified: true } });

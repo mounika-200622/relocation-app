@@ -13,6 +13,10 @@ import { LinkButton } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Your move" };
 
+function daysUntil(date: Date | null) {
+  return date ? Math.ceil((date.getTime() - Date.now()) / 86_400_000) : null;
+}
+
 export default async function RelocationHome() {
   const user = await pageUser(["USER", "ADMIN"]);
   const profile = await prisma.userProfile.findUnique({
@@ -32,7 +36,7 @@ export default async function RelocationHome() {
     prisma.roommateRequest.findMany({ where: { requesterId: user.id }, orderBy: { updatedAt: "desc" }, take: 3, select: { id: true, status: true, listing: { select: { id: true, title: true } } } }),
   ]);
   const recentCards = await cardsByIds(recent.map((r) => r.listingId));
-  const daysToMove = profile?.moveInDate ? Math.ceil((profile.moveInDate.getTime() - Date.now()) / 86_400_000) : null;
+  const daysToMove = daysUntil(profile?.moveInDate ?? null);
   const pct = checklistTotal ? Math.round((checklistDone / checklistTotal) * 100) : 0;
   const budget = profile?.budgetMonthly ? { amount: num(profile.budgetMonthly)!, currency: profile.budgetCurrency ?? "" } : null;
 

@@ -100,8 +100,8 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
     }
   };
 
-  // group by day for date separators
-  let lastDay = "";
+  // date separator before the first message of each day
+  const showDayAt = messages.map((m, i) => i === 0 || messages[i - 1]!.sentAt.slice(0, 10) !== m.sentAt.slice(0, 10));
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-0 md:px-4 md:py-4">
@@ -147,9 +147,7 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
           {messages.length === 0 && convo && <p className="py-16 text-center text-sm text-subtle">Say hello 👋 — keep personal details inside Nira until you&apos;ve met.</p>}
           {messages.map((m, i) => {
             const mine = m.senderId === meId;
-            const day = m.sentAt.slice(0, 10);
-            const showDay = day !== lastDay;
-            lastDay = day;
+            const showDay = showDayAt[i];
             const nextSame = messages[i + 1]?.senderId === m.senderId;
             return (
               <div key={m.id}>
