@@ -111,7 +111,7 @@ export default async function Home() {
               {destinations.slice(0, 3).map((d) => (
                 <div key={d.id} className="overflow-hidden rounded-2xl border border-line bg-soft">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {(d.photo ?? d.cover) && <img src={(d.photo ?? d.cover)!} alt={d.name} className="aspect-[4/3] w-full object-cover" />}
+                  {d.photo || d.cover ? <img src={d.photo || d.cover || ""} alt={d.name} className="aspect-[4/3] w-full object-cover" /> : null}
                   <div className="p-2.5 text-xs"><div className="font-semibold">{d.name}</div><div className="text-subtle">from {formatMoney(Number(d.minPrice), d.currency)}</div></div>
                 </div>
               ))}
@@ -137,7 +137,7 @@ export default async function Home() {
             {destinations.map((d) => (
               <Link key={d.id} href={`/relocate?cityId=${d.id}&city=${encodeURIComponent(`${d.name}, ${d.country}`)}`} className="group relative w-[70vw] shrink-0 snap-start overflow-hidden rounded-3xl sm:w-[45vw] md:w-auto">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {(d.photo ?? d.cover) && <img src={(d.photo ?? d.cover)!} alt={d.name} className="aspect-[3/4] w-full object-cover transition duration-700 group-hover:scale-105" />}
+                {d.photo || d.cover ? <img src={d.photo || d.cover || ""} alt={d.name} className="aspect-[3/4] w-full object-cover transition duration-700 group-hover:scale-105" /> : null}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <div className="text-xs opacity-80">{d.flag} {d.country}</div>

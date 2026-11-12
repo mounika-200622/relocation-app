@@ -20,7 +20,8 @@
     "start:lan": "next start -H 0.0.0.0 -p 3000",
     "android:sync": "cap sync android",
     "android:open": "cap open android",
-    "android:apk": "cap sync android && cd android && gradlew assembleDebug"
+    "android:apk": "cap sync android && cd android && gradlew assembleDebug",
+    "android:wifi": "node scripts/android-wifi.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

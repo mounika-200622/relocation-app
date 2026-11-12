@@ -57,3 +57,6 @@ skills-lock.json
 
 # local MongoDB data (npm run mongo:local)
 /.mongo-data/
+
+# Wi-Fi debug build copied here by npm run android:wifi
+/Nira-debug.apk
