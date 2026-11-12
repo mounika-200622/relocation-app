@@ -13,10 +13,10 @@ function serial<T>(fn: () => Promise<T>): Promise<T> {
 }
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export function buildQuery(center: { lat: number; lng: number }, radiusM: number, categories: PoiCategory[], limit = 400) {
+export function buildQuery(center: { lat: number; lng: number }, radiusM: number, categories: PoiCategory[], limit = 500) {
   const around = `(around:${Math.round(radiusM)},${center.lat.toFixed(6)},${center.lng.toFixed(6)})`;
   const parts = categories.flatMap((c) => OVERPASS_SELECTORS[c]).map((sel) => `  ${sel}${around};`);
-  return `[out:json][timeout:25];\n(\n${parts.join("\n")}\n);\nout center tags ${limit};`;
+  return `[out:json][timeout:60];\n(\n${parts.join("\n")}\n);\nout center tags ${limit};`;
 }
 
 function address(tags: Record<string, string>) {
@@ -50,24 +50,32 @@ export function toRawPoi(el: Element): RawPoi | null {
 
 export class OverpassProvider implements PoiProvider {
   readonly name = "overpass";
-  constructor(private url: string) {}
+  private urls: string[];
+  constructor(urls: string) {
+    // OVERPASS_URL may list several comma-separated mirrors; they are tried in order
+    this.urls = urls.split(",").map((u) => u.trim()).filter(Boolean);
+  }
 
   search(center: { lat: number; lng: number }, radiusM: number, categories: PoiCategory[]) {
     return serial(async () => {
       const body = new URLSearchParams({ data: buildQuery(center, radiusM, categories) });
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < Math.max(3, this.urls.length); attempt++) {
+        const url = this.urls[attempt % this.urls.length]!;
         try {
-          const res = await fetch(this.url, {
+          const res = await fetch(url, {
             method: "POST",
             body,
             headers: { "User-Agent": process.env.NOMINATIM_USER_AGENT || "Nira-Student-Project/1.0", Accept: "application/json" },
-            signal: AbortSignal.timeout(30_000),
+            signal: AbortSignal.timeout(70_000),
           });
           if (res.status === 429 || res.status === 504 || res.status === 503) {
             await sleep(1500 * 2 ** attempt); // exponential backoff
             continue;
           }
-          if (!res.ok) throw new ProviderUnavailable(`Overpass ${res.status}`);
+          if (!res.ok) {
+            if (attempt < this.urls.length - 1) continue; // try the next mirror
+            throw new ProviderUnavailable(`Overpass ${res.status}`);
+          }
           const data = (await res.json()) as { elements: Element[] };
           const seen = new Set<string>();
           return data.elements.map(toRawPoi).filter((p): p is RawPoi => {
@@ -77,7 +85,7 @@ export class OverpassProvider implements PoiProvider {
           });
         } catch (err) {
           if (err instanceof ProviderUnavailable) throw err;
-          if (attempt === 2) throw new ProviderUnavailable((err as Error).message);
+          if (attempt >= Math.max(3, this.urls.length) - 1) throw new ProviderUnavailable((err as Error).message);
           await sleep(1500 * 2 ** attempt);
         }
       }

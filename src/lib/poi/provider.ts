@@ -20,6 +20,9 @@ export interface PoiProvider {
   search(center: { lat: number; lng: number }, radiusM: number, categories: PoiCategory[]): Promise<RawPoi[]>;
 }
 
+/** Public Overpass instances, tried in order. */
+export const DEFAULT_OVERPASS = "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter";
+
 export class ProviderUnavailable extends Error {}
 
 export async function getProvider(): Promise<PoiProvider> {
@@ -28,5 +31,5 @@ export async function getProvider(): Promise<PoiProvider> {
     return new GooglePlacesProvider(process.env.GOOGLE_PLACES_API_KEY);
   }
   const { OverpassProvider } = await import("@/lib/poi/overpass");
-  return new OverpassProvider(process.env.OVERPASS_URL || "https://overpass-api.de/api/interpreter");
+  return new OverpassProvider(process.env.OVERPASS_URL || DEFAULT_OVERPASS);
 }

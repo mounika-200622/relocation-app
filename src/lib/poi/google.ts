@@ -36,10 +36,11 @@ export class GooglePlacesProvider implements PoiProvider {
       if (!res.ok) throw new ProviderUnavailable(`Google Places ${res.status}`);
       const data = (await res.json()) as { places?: Place[] };
       for (const p of data.places ?? []) {
-        const priceTag = p.priceLevel ? { google_price_level: p.priceLevel } : {};
+        const tags: Record<string, string> = { source: "google" };
+        if (p.priceLevel) tags.google_price_level = p.priceLevel;
         out.push({
           osmId: `google/${p.id}`.slice(0, 64), category, name: p.displayName?.text ?? "Unnamed place", lat: p.location.latitude, lng: p.location.longitude,
-          address: p.formattedAddress ?? null, openingHours: null, cuisine: null, website: p.websiteUri ?? null, tags: { ...priceTag, source: "google" },
+          address: p.formattedAddress ?? null, openingHours: null, cuisine: null, website: p.websiteUri ?? null, tags,
         });
       }
     }
