@@ -4,7 +4,7 @@ import { json, readQuery, route } from "@/lib/api";
 import { optionalId } from "@/lib/validators/common";
 
 const query = z.object({
-  level: z.enum(["countries", "regions", "cities", "resolve"]),
+  level: z.enum(["countries", "regions", "cities", "resolve", "search"]),
   countryId: optionalId,
   regionId: optionalId,
   cityId: optionalId,
@@ -19,6 +19,7 @@ const CACHE = { "Cache-Control": "public, max-age=3600, stale-while-revalidate=8
  *   ?level=regions&countryId=
  *   ?level=cities&countryId=[&regionId=][&q=]
  *   ?level=resolve&cityId=      → the full country/region/city chain for one city
+ *   ?level=search&q=            → global city autocomplete ("Zur" → Zürich, Switzerland)
  */
 export const GET = route(async (req) => {
   const p = readQuery(req, query);
@@ -39,6 +40,17 @@ export const GET = route(async (req) => {
       select: { id: true, name: true, regionId: true, lat: true, lng: true },
       orderBy: { name: "asc" },
       take: 1000,
+    });
+    return Response.json(rows, { headers: CACHE });
+  }
+  if (p.level === "search") {
+    if (!p.q || p.q.length < 2) return json([]);
+    // cities with listings first, then alphabetical; uses the (name) part of the city indexes
+    const rows = await prisma.city.findMany({
+      where: { name: { startsWith: p.q } },
+      select: { id: true, name: true, lat: true, lng: true, region: { select: { name: true } }, country: { select: { name: true, isoCode: true, flag: true, currency: true } }, _count: { select: { listings: true } } },
+      orderBy: [{ listings: { _count: "desc" } }, { name: "asc" }],
+      take: 8,
     });
     return Response.json(rows, { headers: CACHE });
   }

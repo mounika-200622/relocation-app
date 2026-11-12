@@ -379,6 +379,8 @@ model City {
   @@unique([countryId, regionId, name])
   @@index([regionId, name])
   @@index([countryId, name])
+  /// global autocomplete: WHERE name LIKE 'Zur%'
+  @@index([name])
 }
 
 // ───────────────────────────── Listings ─────────────────────────────
