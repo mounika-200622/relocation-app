@@ -50,6 +50,9 @@ const USERS: SeedUser[] = [
   { email: "yuki@nira.app", name: "Yuki Tanaka", gender: "FEMALE", occupation: "PROFESSIONAL", org: "WHO", city: ["CH", "Genève"], budget: 1600, currency: "CHF", moveIn: 15, social: "QUIET", langs: ["ja", "en", "fr"], bio: "Public-health consultant on a two-year contract.", home: "JP" },
   { email: "ethan@nira.app", name: "Ethan Chen", gender: "MALE", occupation: "STUDENT", org: "Graduate Institute Geneva", city: ["CH", "Genève"], budget: 1100, currency: "CHF", moveIn: 32, langs: ["zh", "en"], bio: "International relations student, amateur photographer.", home: "CN" },
   { email: "noah@nira.app", name: "Noah Weber", gender: "MALE", occupation: "OTHER", city: ["CH", "Basel"], budget: 1000, currency: "CHF", moveIn: 50, smoking: "SMOKER", social: "SOCIAL", langs: ["de", "en"], bio: "Musician and part-time barista.", home: "DE" },
+  // Bengaluru demo: people moving *to* India, so the location panel shows EUR→INR, Indian SIMs and rides
+  { email: "anna@nira.app", name: "Anna Becker", gender: "FEMALE", occupation: "PROFESSIONAL", org: "SAP Labs India", city: ["IN", "Bengaluru"], budget: 30000, currency: "INR", moveIn: 21, social: "BALANCED", sleep: "EARLY_BIRD", langs: ["de", "en"], bio: "Product manager on a two-year posting from Walldorf. Yoga, filter coffee, weekend trips to Coorg.", home: "DE" },
+  { email: "lucas@nira.app", name: "Lucas Martin", gender: "MALE", occupation: "STUDENT", org: "IISc Bengaluru", city: ["IN", "Bengaluru"], budget: 22000, currency: "INR", moveIn: 30, social: "SOCIAL", langs: ["fr", "en"], bio: "Exchange semester in aerospace. Cricket newbie, keen to learn Kannada basics.", home: "FR" },
   { email: "mia@nira.app", name: "Mia Schmidt", gender: "NON_BINARY", occupation: "STUDENT", org: "TU Berlin", city: ["DE", "Berlin"], budget: 700, currency: "EUR", moveIn: 20, langs: ["de", "en"], bio: "Urban planning student looking for a calm WG.", home: "AT" },
 ];
 
@@ -219,6 +222,28 @@ export async function seedDemo(prisma: PrismaClient) {
         data: { listingId: l.id, requesterId, message: notes[(li + si) % notes.length]!, moveInDate: dateOnly(days(25 + si * 4)), budgetShare: Math.round(l.price / Math.max(2, l.capacityMax)) },
       });
       reqCount++;
+    }
+  }
+  // Bengaluru demo: Lucas and Anna both want to share the same place, so each shows up as a match for the other
+  const blrShared = listingIds.filter((l) => l.city === "Bengaluru" && l.shareable);
+  const blrSeekers: [string, string][] = [
+    ["lucas@nira.app", "Exchange student at IISc for a semester – easy-going, early to bed during exams, happy to split groceries."],
+    ["anna@nira.app", "Two-year posting at SAP Labs. Tidy, quiet on weeknights, love cooking South Indian food on weekends."],
+  ];
+  if (blrShared[0]) {
+    const l = blrShared[0];
+    for (const [si, [email, message]] of blrSeekers.entries()) {
+      const requesterId = userIds.get(email)!;
+      const exists = await prisma.roommateRequest.findFirst({ where: { listingId: l.id, requesterId }, select: { id: true } });
+      if (exists) continue;
+      await prisma.roommateRequest.create({
+        data: { listingId: l.id, requesterId, message, moveInDate: dateOnly(days(21 + si * 7)), budgetShare: Math.round(l.price / Math.max(2, l.capacityMax)) },
+      });
+      reqCount++;
+    }
+    const anna = userIds.get("anna@nira.app")!;
+    for (const s of listingIds.filter((x) => x.city === "Bengaluru").slice(0, 2)) {
+      await prisma.savedListing.upsert({ where: { userId_listingId: { userId: anna, listingId: s.id } }, update: {}, create: { userId: anna, listingId: s.id } });
     }
   }
   console.log(`  roommate requests: +${reqCount}`);
