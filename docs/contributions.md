@@ -1,0 +1,194 @@
+# Individual contributions
+
+Generated from `git log` (172 commits, merges excluded).
+
+| Area | mounika-200622 | pramitiudupa |
+|---|---|---|
+| Android / PWA | 0 | 2 |
+| Backend (API & domain logic) | 26 | 28 |
+| Database schema & SQL objects | 6 | 1 |
+| Documentation | 8 | 7 |
+| Frontend (pages & UI) | 32 | 35 |
+| Seed data | 3 | 4 |
+| Tests | 4 | 5 |
+| Tooling & setup | 7 | 4 |
+| **Total** | **86** | **86** |
+
+## mounika-200622
+
+- Initial commit: Next.js app scaffold
+- Add Prisma schema and MySQL database setup
+- Fix Prisma setup, add landing/signup/choose-path pages
+- Add login page, session provider, fix Prisma schema
+- Add all pending changes
+- chore: add zod, location data, leaflet, toasts, icons and test tooling
+- fix(security): stop leaking owner email and password hash from browse-listings
+- feat(db): schema v2 with regions, profiles, photos, amenities, guide, trips and audit tables
+- feat(db): add CHECK constraints, views, Haversine function, rented procedure and triggers
+- feat(auth): pure role-based page access rules and safe callback URLs
+- feat: in-memory fixed-window rate limiter
+- feat(auth): protect pages by role with the Next 16 proxy
+- feat: Haversine distance, bounding box and nearest-neighbour ordering
+- feat(trip): budget split, per-unit caps and a ledger that never overspends
+- test: vitest setup with matching and budget tests
+- feat(nosql): MongoDB client with indexes, partial unread index and notification TTL
+- feat(nosql): in-app notifications collection with per-type aggregation
+- feat(seed): load all countries, regions and cities from country-state-city
+- feat(seed): complete Swiss settling-in guide content
+- feat: generate original illustrated sample photos for listings
+- feat(seed): idempotent seed entry point with timed steps
+- feat(ui): button, form fields, segmented control, chips and switch
+- feat(ui): light/dark theme toggle without flash
+- feat(nav): app-style bottom tab bar on phones and real page metadata
+- feat(validation): profile, roommate, chat, report and trip schemas
+- feat(location): cascading location lookup API
+- feat(search): listing search on v_listing_summary with FULLTEXT, distance and window functions
+- feat(geo): Nominatim geocoding with 1 req/s throttle and cache
+- feat(listings): edit, delete and photo upload/reorder/cover endpoints
+- feat: one-time script moving base64 photos into ListingPhoto
+- feat: notifications, block and report endpoints
+- feat(roommates): request, accept, decline and withdraw endpoints
+- feat(poi): OSM category selectors, classifier and essentials groups
+- feat(costs): city/country cost estimate lookups with USD fallback
+- feat(poi): nearby essentials API with radius and budget filter
+- test: transit duration parsing and Overpass query building
+- feat(trip): pure planner with budget ledger, clustering and time slots
+- feat(trip): generator loading places, short-stay listings and converted prices
+- feat(trip): trips API with regenerate, duplicate, share, swap and add/remove
+- test: update Overpass query test for the 60 s server timeout
+- feat(profile): profile API for relocation and business profiles plus onboarding
+- feat(auth): forgot/reset password with hashed one-time tokens
+- feat(db): index City(name) for global city autocomplete
+- feat(map): Leaflet + OpenStreetMap map with price pins and draggable pin
+- feat(ui): new landing page with product collage, bento features and destinations
+- feat(auth): forgot and reset password pages
+- feat(ui): choose-path screen for relocate vs trip mode
+- feat(poi): nearby essentials panel with tabs, radius, meal budget and map
+- feat(listing): detail page with price insight, rules, map and sticky action card
+- chore: stop next dev from writing AGENTS.md and CLAUDE.md into the repo
+- feat(saved): favourites page with compare shortcut
+- feat(profile): profile page for people and businesses
+- feat(chat): inbox with unread counts, listing context and badges
+- feat(business): dashboard with SQL aggregates, 14-day views chart and listing table
+- feat(listings): photo manager with upload, reorder, cover and captions
+- feat(roommates): owner view of requests with transactional accept
+- feat(guide): safe Markdown renderer for guide articles
+- feat(guide): country guide with costs, SIM plans, transport, banks and groceries
+- feat(guide): article page with source and last-updated date
+- feat(trip): my trips list with planned-vs-budget bars
+- feat(trip): itinerary view with budget meter, day timeline, map, swap, add and remove
+- feat(admin): registry of editable guide and cost tables with zod schemas
+- feat(admin): user moderation and report resolution APIs
+- feat(admin): overview with SQL rankings, Mongo message stats, audit log and cache
+- feat(admin): listing moderation with reports-first ordering
+- feat(admin): generic guide and cost content editor
+- feat(ui): friendly 404, error boundary and global loading skeleton
+- feat(pwa): web manifest, generated PNG icons, service worker and offline page
+- refactor(theme): read the theme with useSyncExternalStore instead of an effect
+- refactor(ui): remount forms with keys instead of syncing props into state
+- fix(lint): pure render for chat day separators, dashboards and error page
+- style(search): keep sort, filters and map buttons on one line on phones
+- feat(pwa): adaptive-icon foreground and splash renders for Android
+- fix(auth): rely on AUTH_TRUST_HOST so redirects work from phones on the LAN
+- docs: full MySQL DDL dumped from the migrated database
+- docs: 27 annotated queries with real sample output
+- docs: normalization, intentional denormalization and ON DELETE rules
+- docs: trip planner algorithm and the never-over-budget ledger
+- test: keep the documented matching example correct
+- feat(poi): POI_OFFLINE switch to plan from the cache only
+- style(listing): photo mosaic fills the grid when a place has few photos
+- docs: real-app screenshots for desktop and phone
+- docs: manual QA script with demo accounts
+- docs: complete README with setup, demo accounts, DB highlights and phone guide
+- chore(lint): ignore the Android project and local Mongo data
+- refactor(auth): use the router after sign-out instead of a hard reload
+
+## pramitiudupa
+
+- chore: remove agent skill folders and tighten .gitignore
+- chore: add .env.example and docker-compose for MySQL and MongoDB
+- fix(auth): validate signup with zod and block self-assigned roles
+- feat(db): migration v2 that keeps legacy photos and backfills country ISO codes
+- refactor(db): single Prisma client with log levels per environment
+- feat(auth): carry id, role and onboarding state in the JWT session
+- feat(api): shared route wrapper with typed errors, zod parsing and role guards
+- feat: money, date and label formatting helpers
+- feat(roommates): compatibility score mirroring the SQL view
+- feat(poi): derive price tiers from OSM tags
+- test: price tier, Haversine and authorization tests
+- feat(chat): message store in MongoDB with after-cursor paging and unread aggregation
+- chore: run a persistent local MongoDB without Docker
+- feat(seed): amenities, languages and per-country emergency numbers
+- feat(seed): cost estimates for 10 Swiss cities and 12 countries
+- feat(seed): demo admins, businesses, users, listings, requests and chats
+- style: design tokens for dark and light themes, skeletons and print styles
+- feat(ui): badges, avatars, empty states, stats, progress and modal
+- feat(nav): role-aware navbar with mode switch, unread badge and notifications
+- feat(validation): shared zod primitives and listing create/search schemas
+- test: zod schema tests for signup, listings, chat and trips
+- feat(ui): searchable combobox and cascading LocationPicker
+- feat(storage): Cloudinary or local photo storage with magic-byte validation
+- feat(listings): search and create endpoints with role and ownership checks
+- feat(listings): status changes using sp_mark_listing_rented and favourites
+- feat(chat): conversation service with block checks and either-side start
+- feat(roommates): transactional accept with row lock and top matches from SQL view
+- test: accept-request rules including the occupancy race
+- feat(poi): swappable provider interface with Overpass and Google Places
+- feat(poi): 7-day MySQL cache with bulk upsert, stale fallback and tier prices
+- feat(transit): TransitProvider interface with live Swiss connections
+- feat(fx): exchange rates cached in MySQL for 24 hours
+- test: trip planner never exceeds the budget and flags infeasible budgets
+- fix(poi): retry Overpass mirrors with longer timeouts and per-group queries
+- chore: script to pre-warm the place cache for demo cities
+- feat(auth): rate-limited signup that creates the matching profile
+- feat(account): change password and delete account with Mongo cleanup
+- feat(guide): checklist progress and unique daily listing views
+- feat(ui): client fetch helper, optimistic save button and listing card
+- feat(ui): global city search and Airbnb-style hero search pill
+- feat(auth): split-screen login and signup with role cards and strength meter
+- feat(profile): shared relocation profile form and server loader
+- feat(onboarding): three-step skippable onboarding wizard
+- feat(search): URL-driven search page with filters, budget chip, map view and pagination
+- feat(listing): photo mosaic with keyboard lightbox and score ring
+- feat(listing): contact, share, report, view tracking and roommate section
+- fix(auth): hydrate the client session from the server to avoid a logged-out flash
+- feat(relocate): relocation hub with budget, move-in, checklist progress and matches
+- feat(roommates): seekers in your destination with filters and SQL top matches
+- feat(essentials): explore essentials around any city or your location
+- feat(settings): theme, change password and delete account
+- feat(chat): thread with 3 s after-cursor polling, read ticks, block and report
+- feat(business): row actions to archive, mark rented, reactivate and delete
+- feat(listings): listing form with location picker, geocoding and draggable pin
+- feat(business): new and edit listing pages
+- refactor: redirect v1 my-listings and list-a-place URLs
+- feat(guide): guide index with FULLTEXT search and country list
+- feat(guide): first-week checklist with saved progress
+- feat(transit): live Swiss connection search in the guide
+- feat(trip): itinerary loader with budget meter summary
+- feat(trip): new trip form with cascading location, budget split sliders and interests
+- feat(trip): public read-only share page
+- feat(admin): generic content CRUD API for guide and cost tables
+- test: admin content schema generation
+- feat(admin): users table with search, verify, roles and deactivate
+- feat(admin): reports queue
+- feat(compare): compare up to three places including neighbourhood counts
+- feat(pwa): Nira app icon replacing the Next.js defaults
+- chore(lint): allow underscore-prefixed unused vars and rest siblings
+- refactor(ui): derive loading state from request keys in essentials and location picker
+- refactor(nav): derive the current mode from the URL
+- fix(chat): scroll only the message pane so the header stays visible on phones
+- fix(poi): lighter trip queries – smaller radii and sights split into two groups
+- chore(android): add Capacitor with a server-URL config and fallback page
+- feat(trip): fall back to labelled stay estimates when no hotels are cached
+- docs: data dictionary generated from information_schema
+- docs: Mermaid ER diagrams for every table and Mongo collection
+- docs: MongoDB data model, indexes, aggregations and retrieval strategy
+- docs: roommate compatibility scoring in TypeScript and SQL
+- docs: running Nira on Android and as an installable web app
+- feat(seed): sample itineraries generated by the real planner
+- feat(android): Capacitor Android project with Nira icon, splash and location permission
+- docs: project report covering every item of the course requirements
+- chore: generate per-member contribution summary from git history
+- feat(listing): show the rent converted to the viewer's currency
+- fix(auth): sign out with a relative redirect so it works on phones over the LAN
+
