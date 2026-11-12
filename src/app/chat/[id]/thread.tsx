@@ -25,7 +25,7 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [menu, setMenu] = useState(false);
-  const bottom = useRef<HTMLDivElement>(null);
+  const pane = useRef<HTMLDivElement>(null);
   const lastId = useRef<string | undefined>(undefined);
 
   // first load
@@ -65,7 +65,9 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
   }, [poll]);
 
   useLayoutEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: messages.length > 30 ? "auto" : "smooth" });
+    // scroll only the message pane (scrollIntoView would also scroll the page under the navbar)
+    const el = pane.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: messages.length > 30 ? "auto" : "smooth" });
   }, [messages.length]);
 
   const send = async () => {
@@ -143,7 +145,7 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
         )}
 
         {/* messages */}
-        <div className="flex-1 space-y-1.5 overflow-y-auto px-4 py-5" aria-live="polite">
+        <div ref={pane} className="flex-1 space-y-1.5 overflow-y-auto px-4 py-5" aria-live="polite">
           {messages.length === 0 && convo && <p className="py-16 text-center text-sm text-subtle">Say hello 👋 — keep personal details inside Nira until you&apos;ve met.</p>}
           {messages.map((m, i) => {
             const mine = m.senderId === meId;
@@ -164,7 +166,6 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
               </div>
             );
           })}
-          <div ref={bottom} />
         </div>
 
         {/* composer */}
