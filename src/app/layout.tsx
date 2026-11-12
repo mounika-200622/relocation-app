@@ -7,6 +7,7 @@ import { Navbar } from "@/components/nav/navbar";
 import { MobileTabBar } from "@/components/nav/mobile-tab-bar";
 import { auth } from "@/lib/auth";
 import { ServiceWorkerRegister } from "@/components/sw-register";
+import { NativeBackButton } from "@/components/native-back-button";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["600", "700"], style: ["italic", "normal"], variable: "--font-playfair", display: "swap" });
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </main>
           <MobileTabBar />
           <ServiceWorkerRegister />
+          <NativeBackButton />
         </Providers>
       </body>
     </html>
