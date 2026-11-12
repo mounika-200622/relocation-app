@@ -35,22 +35,22 @@ type SeedUser = {
   email: string; name: string; gender: "FEMALE" | "MALE" | "NON_BINARY"; occupation: "STUDENT" | "PROFESSIONAL" | "OTHER"; org?: string;
   city: [string, string]; budget: number; currency: string; moveIn: number; smoking?: "NON_SMOKER" | "OUTSIDE_ONLY" | "SMOKER";
   hasPets?: boolean; okWithPets?: boolean; social?: "QUIET" | "BALANCED" | "SOCIAL"; sleep?: "EARLY_BIRD" | "FLEXIBLE" | "NIGHT_OWL";
-  roommateGender?: Preference; langs: string[]; bio: string;
+  roommateGender?: Preference; langs: string[]; bio: string; home: string;
 };
 
 const USERS: SeedUser[] = [
-  { email: "aarav@nira.app", name: "Aarav Sharma", gender: "MALE", occupation: "STUDENT", org: "ETH Zürich", city: ["CH", "Zürich"], budget: 1000, currency: "CHF", moveIn: 30, social: "BALANCED", sleep: "NIGHT_OWL", langs: ["en", "hi"], bio: "MSc Computer Science starting this autumn. I cook a lot of dal and I'm happy to share." },
-  { email: "priya@nira.app", name: "Priya Nair", gender: "FEMALE", occupation: "STUDENT", org: "University of Zurich", city: ["CH", "Zürich"], budget: 950, currency: "CHF", moveIn: 35, social: "QUIET", sleep: "EARLY_BIRD", roommateGender: "FEMALE_ONLY", langs: ["en", "ta", "hi"], bio: "PhD in neuroscience. Early riser, tidy, love hiking on weekends." },
-  { email: "lena@nira.app", name: "Lena Müller", gender: "FEMALE", occupation: "PROFESSIONAL", org: "Google Zürich", city: ["CH", "Zürich"], budget: 1400, currency: "CHF", moveIn: 20, social: "SOCIAL", langs: ["de", "en"], bio: "Software engineer relocating from Munich. Climbing, board games, good coffee." },
-  { email: "mateo@nira.app", name: "Mateo García", gender: "MALE", occupation: "STUDENT", org: "ETH Zürich", city: ["CH", "Zürich"], budget: 900, currency: "CHF", moveIn: 40, smoking: "OUTSIDE_ONLY", social: "SOCIAL", sleep: "NIGHT_OWL", langs: ["es", "en"], bio: "Exchange semester in mechanical engineering. Football and paella." },
-  { email: "amara@nira.app", name: "Amara Okafor", gender: "FEMALE", occupation: "STUDENT", org: "ZHAW", city: ["CH", "Zürich"], budget: 1050, currency: "CHF", moveIn: 28, hasPets: true, social: "BALANCED", langs: ["en", "fr"], bio: "Design student with a very calm cat named Miso." },
-  { email: "rohan@nira.app", name: "Rohan Iyer", gender: "MALE", occupation: "PROFESSIONAL", org: "Roche", city: ["CH", "Zürich"], budget: 1200, currency: "CHF", moveIn: 45, social: "QUIET", sleep: "EARLY_BIRD", langs: ["en", "kn", "hi"], bio: "Data scientist moving from Bengaluru. Vegetarian, quiet, runs every morning." },
-  { email: "sofia@nira.app", name: "Sofia Rossi", gender: "FEMALE", occupation: "STUDENT", org: "EPFL", city: ["CH", "Lausanne"], budget: 900, currency: "CHF", moveIn: 25, langs: ["it", "en", "fr"], bio: "Architecture master's student. Plants everywhere." },
-  { email: "chloe@nira.app", name: "Chloé Dubois", gender: "FEMALE", occupation: "STUDENT", org: "UNIL", city: ["CH", "Lausanne"], budget: 850, currency: "CHF", moveIn: 30, social: "SOCIAL", langs: ["fr", "en"], bio: "Law student who loves the lake and late-night crêpes." },
-  { email: "yuki@nira.app", name: "Yuki Tanaka", gender: "FEMALE", occupation: "PROFESSIONAL", org: "WHO", city: ["CH", "Genève"], budget: 1600, currency: "CHF", moveIn: 15, social: "QUIET", langs: ["ja", "en", "fr"], bio: "Public-health consultant on a two-year contract." },
-  { email: "ethan@nira.app", name: "Ethan Chen", gender: "MALE", occupation: "STUDENT", org: "Graduate Institute Geneva", city: ["CH", "Genève"], budget: 1100, currency: "CHF", moveIn: 32, langs: ["zh", "en"], bio: "International relations student, amateur photographer." },
-  { email: "noah@nira.app", name: "Noah Weber", gender: "MALE", occupation: "OTHER", city: ["CH", "Basel"], budget: 1000, currency: "CHF", moveIn: 50, smoking: "SMOKER", social: "SOCIAL", langs: ["de", "en"], bio: "Musician and part-time barista." },
-  { email: "mia@nira.app", name: "Mia Schmidt", gender: "NON_BINARY", occupation: "STUDENT", org: "TU Berlin", city: ["DE", "Berlin"], budget: 700, currency: "EUR", moveIn: 20, langs: ["de", "en"], bio: "Urban planning student looking for a calm WG." },
+  { email: "aarav@nira.app", name: "Aarav Sharma", gender: "MALE", occupation: "STUDENT", org: "ETH Zürich", city: ["CH", "Zürich"], budget: 1000, currency: "CHF", moveIn: 30, social: "BALANCED", sleep: "NIGHT_OWL", langs: ["en", "hi"], bio: "MSc Computer Science starting this autumn. I cook a lot of dal and I'm happy to share.", home: "IN" },
+  { email: "priya@nira.app", name: "Priya Nair", gender: "FEMALE", occupation: "STUDENT", org: "University of Zurich", city: ["CH", "Zürich"], budget: 950, currency: "CHF", moveIn: 35, social: "QUIET", sleep: "EARLY_BIRD", roommateGender: "FEMALE_ONLY", langs: ["en", "ta", "hi"], bio: "PhD in neuroscience. Early riser, tidy, love hiking on weekends.", home: "IN" },
+  { email: "lena@nira.app", name: "Lena Müller", gender: "FEMALE", occupation: "PROFESSIONAL", org: "Google Zürich", city: ["CH", "Zürich"], budget: 1400, currency: "CHF", moveIn: 20, social: "SOCIAL", langs: ["de", "en"], bio: "Software engineer relocating from Munich. Climbing, board games, good coffee.", home: "DE" },
+  { email: "mateo@nira.app", name: "Mateo García", gender: "MALE", occupation: "STUDENT", org: "ETH Zürich", city: ["CH", "Zürich"], budget: 900, currency: "CHF", moveIn: 40, smoking: "OUTSIDE_ONLY", social: "SOCIAL", sleep: "NIGHT_OWL", langs: ["es", "en"], bio: "Exchange semester in mechanical engineering. Football and paella.", home: "ES" },
+  { email: "amara@nira.app", name: "Amara Okafor", gender: "FEMALE", occupation: "STUDENT", org: "ZHAW", city: ["CH", "Zürich"], budget: 1050, currency: "CHF", moveIn: 28, hasPets: true, social: "BALANCED", langs: ["en", "fr"], bio: "Design student with a very calm cat named Miso.", home: "NG" },
+  { email: "rohan@nira.app", name: "Rohan Iyer", gender: "MALE", occupation: "PROFESSIONAL", org: "Roche", city: ["CH", "Zürich"], budget: 1200, currency: "CHF", moveIn: 45, social: "QUIET", sleep: "EARLY_BIRD", langs: ["en", "kn", "hi"], bio: "Data scientist moving from Bengaluru. Vegetarian, quiet, runs every morning.", home: "IN" },
+  { email: "sofia@nira.app", name: "Sofia Rossi", gender: "FEMALE", occupation: "STUDENT", org: "EPFL", city: ["CH", "Lausanne"], budget: 900, currency: "CHF", moveIn: 25, langs: ["it", "en", "fr"], bio: "Architecture master's student. Plants everywhere.", home: "IT" },
+  { email: "chloe@nira.app", name: "Chloé Dubois", gender: "FEMALE", occupation: "STUDENT", org: "UNIL", city: ["CH", "Lausanne"], budget: 850, currency: "CHF", moveIn: 30, social: "SOCIAL", langs: ["fr", "en"], bio: "Law student who loves the lake and late-night crêpes.", home: "FR" },
+  { email: "yuki@nira.app", name: "Yuki Tanaka", gender: "FEMALE", occupation: "PROFESSIONAL", org: "WHO", city: ["CH", "Genève"], budget: 1600, currency: "CHF", moveIn: 15, social: "QUIET", langs: ["ja", "en", "fr"], bio: "Public-health consultant on a two-year contract.", home: "JP" },
+  { email: "ethan@nira.app", name: "Ethan Chen", gender: "MALE", occupation: "STUDENT", org: "Graduate Institute Geneva", city: ["CH", "Genève"], budget: 1100, currency: "CHF", moveIn: 32, langs: ["zh", "en"], bio: "International relations student, amateur photographer.", home: "CN" },
+  { email: "noah@nira.app", name: "Noah Weber", gender: "MALE", occupation: "OTHER", city: ["CH", "Basel"], budget: 1000, currency: "CHF", moveIn: 50, smoking: "SMOKER", social: "SOCIAL", langs: ["de", "en"], bio: "Musician and part-time barista.", home: "DE" },
+  { email: "mia@nira.app", name: "Mia Schmidt", gender: "NON_BINARY", occupation: "STUDENT", org: "TU Berlin", city: ["DE", "Berlin"], budget: 700, currency: "EUR", moveIn: 20, langs: ["de", "en"], bio: "Urban planning student looking for a calm WG.", home: "AT" },
 ];
 
 type CitySpec = { iso: string; name: string; currency: string; base: number; streets: string[]; owner: number; count: number; center?: [number, number] };
@@ -122,6 +122,7 @@ export async function seedDemo(prisma: PrismaClient) {
   const userIds = new Map<string, number>();
   for (const s of USERS) {
     const city = await findCity(prisma, s.city[0], s.city[1]);
+    const homeCountry = await prisma.country.findUnique({ where: { isoCode: s.home }, select: { id: true } });
     const u = await prisma.user.upsert({
       where: { email: s.email },
       update: {},
@@ -129,7 +130,7 @@ export async function seedDemo(prisma: PrismaClient) {
       select: { id: true },
     });
     const profile = {
-      occupation: s.occupation, organization: s.org ?? null, destinationCityId: city.id, budgetMonthly: s.budget, budgetCurrency: s.currency,
+      occupation: s.occupation, organization: s.org ?? null, homeCountryId: homeCountry?.id ?? null, destinationCityId: city.id, budgetMonthly: s.budget, budgetCurrency: s.currency,
       moveInDate: dateOnly(days(s.moveIn)), bio: s.bio, gender: s.gender, smoking: s.smoking ?? "NON_SMOKER", hasPets: s.hasPets ?? false,
       okWithPets: s.okWithPets ?? true, socialStyle: s.social ?? "BALANCED", sleepSchedule: s.sleep ?? "FLEXIBLE", roommateGender: s.roommateGender ?? "ANYONE",
     } as const;
