@@ -5,15 +5,14 @@ import { getRate } from "@/lib/fx";
 import { costRanges } from "@/lib/costs";
 import { haversineKm } from "@/lib/geo";
 import { midpoint } from "@/lib/poi/price-tier";
-import { TRIP_FOOD, TRIP_SIGHTS, TRIP_STAY } from "@/lib/poi/categories";
+import { TRIP_FOOD, TRIP_RADIUS, TRIP_SIGHTS, TRIP_SIGHTS_CULTURE, TRIP_SIGHTS_OUTDOOR, TRIP_STAY } from "@/lib/poi/categories";
 import { ensureCached, nearbyFromCache, withPrices } from "@/lib/poi/service";
 import { normalizeSplit, DEFAULT_SPLIT, type Split } from "@/lib/budget";
 import { num } from "@/lib/format";
 import { plan, type Candidate, type PlanResult } from "@/lib/trip/planner";
 import type { TripCreateInput } from "@/lib/validators/trip";
 
-export const TRIP_RADIUS_M = 3000;
-export const FOOD_RADIUS_M = 1500;
+export const TRIP_RADIUS_M = TRIP_RADIUS.stay;
 
 const INTEREST_CATEGORIES: Record<Interest, PoiCategory[]> = {
   CULTURE: ["MUSEUM", "GALLERY", "HISTORIC", "ATTRACTION"],
@@ -47,9 +46,10 @@ export async function buildPlan(p: TripParams): Promise<PlanResult & { localCurr
   // One Overpass query per group, each with its own radius, so dense restaurant areas can't
   // crowd sights and stays out of the result limit.
   const groups: { categories: PoiCategory[]; radius: number }[] = [
-    { categories: STAY_FOR[p.stayPreference]!, radius: TRIP_RADIUS_M },
-    { categories: TRIP_FOOD, radius: FOOD_RADIUS_M },
-    { categories: TRIP_SIGHTS, radius: TRIP_RADIUS_M },
+    { categories: STAY_FOR[p.stayPreference]!, radius: TRIP_RADIUS.stay },
+    { categories: TRIP_FOOD, radius: TRIP_RADIUS.food },
+    { categories: TRIP_SIGHTS_CULTURE, radius: TRIP_RADIUS.sights },
+    { categories: TRIP_SIGHTS_OUTDOOR, radius: TRIP_RADIUS.sights },
   ];
   let stale = false;
   const raw: Awaited<ReturnType<typeof nearbyFromCache>> = [];

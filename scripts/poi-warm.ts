@@ -7,15 +7,16 @@
  */
 import { PrismaClient, type PoiCategory } from "@prisma/client";
 import { ensureCached } from "../src/lib/poi/service";
-import { ESSENTIAL_GROUPS, TRIP_FOOD, TRIP_SIGHTS, TRIP_STAY } from "../src/lib/poi/categories";
+import { ESSENTIAL_GROUPS, TRIP_FOOD, TRIP_RADIUS, TRIP_SIGHTS_CULTURE, TRIP_SIGHTS_OUTDOOR, TRIP_STAY } from "../src/lib/poi/categories";
 
 const prisma = new PrismaClient();
 const DEFAULT = ["Zürich:CH", "Genève:CH", "Lausanne:CH", "Basel:CH", "Bern:CH", "Luzern:CH", "Lugano:CH", "Sankt Gallen:CH", "Fribourg:CH", "Zug:CH"];
 
 const JOBS: { label: string; categories: PoiCategory[]; radius: number }[] = [
-  { label: "stays", categories: TRIP_STAY, radius: 3000 },
-  { label: "sights", categories: TRIP_SIGHTS, radius: 3000 },
-  { label: "food", categories: TRIP_FOOD, radius: 1500 },
+  { label: "stays", categories: TRIP_STAY, radius: TRIP_RADIUS.stay },
+  { label: "culture", categories: TRIP_SIGHTS_CULTURE, radius: TRIP_RADIUS.sights },
+  { label: "outdoor", categories: TRIP_SIGHTS_OUTDOOR, radius: TRIP_RADIUS.sights },
+  { label: "food", categories: TRIP_FOOD, radius: TRIP_RADIUS.food },
   ...Object.entries(ESSENTIAL_GROUPS)
     .filter(([k]) => k !== "food")
     .map(([k, g]) => ({ label: k, categories: [...g.categories] as PoiCategory[], radius: 1500 })),

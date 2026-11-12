@@ -97,4 +97,10 @@ export type EssentialGroup = keyof typeof ESSENTIAL_GROUPS;
 /** Categories the trip planner draws from. */
 export const TRIP_STAY: PoiCategory[] = ["HOSTEL", "GUEST_HOUSE", "HOTEL", "CAMP_SITE"];
 export const TRIP_FOOD: PoiCategory[] = ["RESTAURANT", "CAFE", "FAST_FOOD"];
-export const TRIP_SIGHTS: PoiCategory[] = ["ATTRACTION", "MUSEUM", "VIEWPOINT", "GALLERY", "HISTORIC", "PARK", "NIGHTLIFE", "SHOPPING"];
+/** Sights are fetched in two lighter Overpass queries (public servers time out on one big one). */
+export const TRIP_SIGHTS_CULTURE: PoiCategory[] = ["ATTRACTION", "MUSEUM", "GALLERY", "HISTORIC"];
+export const TRIP_SIGHTS_OUTDOOR: PoiCategory[] = ["VIEWPOINT", "PARK", "NIGHTLIFE", "SHOPPING"];
+export const TRIP_SIGHTS: PoiCategory[] = [...TRIP_SIGHTS_CULTURE, ...TRIP_SIGHTS_OUTDOOR];
+
+/** Radii (metres) used by the trip planner; the cache is keyed by area + radius. */
+export const TRIP_RADIUS = { stay: 2500, food: 1500, sights: 2000 } as const;
