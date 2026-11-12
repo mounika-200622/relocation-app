@@ -1,0 +1,16 @@
+-- Home country on the profile (currency converter) and currency-exchange offices
+-- as a place category.
+-- AlterTable
+ALTER TABLE `POI` MODIFY `category` ENUM('RESTAURANT', 'CAFE', 'FAST_FOOD', 'SUPERMARKET', 'CONVENIENCE', 'HOSPITAL', 'CLINIC', 'PHARMACY', 'DOCTOR', 'BANK', 'ATM', 'CURRENCY_EXCHANGE', 'TRANSIT', 'MOBILE_SHOP', 'LAUNDRY', 'GYM', 'UNIVERSITY', 'POST_OFFICE', 'POLICE', 'HOTEL', 'HOSTEL', 'GUEST_HOUSE', 'CAMP_SITE', 'ATTRACTION', 'MUSEUM', 'VIEWPOINT', 'GALLERY', 'HISTORIC', 'PARK', 'NIGHTLIFE', 'SHOPPING') NOT NULL;
+
+-- AlterTable
+ALTER TABLE `PoiQueryCache` MODIFY `category` ENUM('RESTAURANT', 'CAFE', 'FAST_FOOD', 'SUPERMARKET', 'CONVENIENCE', 'HOSPITAL', 'CLINIC', 'PHARMACY', 'DOCTOR', 'BANK', 'ATM', 'CURRENCY_EXCHANGE', 'TRANSIT', 'MOBILE_SHOP', 'LAUNDRY', 'GYM', 'UNIVERSITY', 'POST_OFFICE', 'POLICE', 'HOTEL', 'HOSTEL', 'GUEST_HOUSE', 'CAMP_SITE', 'ATTRACTION', 'MUSEUM', 'VIEWPOINT', 'GALLERY', 'HISTORIC', 'PARK', 'NIGHTLIFE', 'SHOPPING') NOT NULL;
+
+-- AlterTable
+ALTER TABLE `UserProfile` ADD COLUMN `homeCountryId` INTEGER NULL;
+
+-- CreateIndex
+CREATE INDEX `UserProfile_homeCountryId_idx` ON `UserProfile`(`homeCountryId`);
+
+-- AddForeignKey
+ALTER TABLE `UserProfile` ADD CONSTRAINT `UserProfile_homeCountryId_fkey` FOREIGN KEY (`homeCountryId`) REFERENCES `Country`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

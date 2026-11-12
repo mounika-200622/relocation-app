@@ -103,6 +103,7 @@ enum PoiCategory {
   DOCTOR
   BANK
   ATM
+  CURRENCY_EXCHANGE
   TRANSIT
   MOBILE_SHOP
   LAUNDRY
@@ -266,6 +267,9 @@ model UserProfile {
   user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   occupation        OccupationType @default(OTHER)
   organization      String?        @db.VarChar(120)
+  /// where the person comes from – drives the home ↔ local currency converter
+  homeCountryId     Int?
+  homeCountry       Country?       @relation("HomeCountry", fields: [homeCountryId], references: [id], onDelete: SetNull)
   destinationCityId Int?
   destinationCity   City?          @relation(fields: [destinationCityId], references: [id], onDelete: SetNull)
   budgetMonthly     Decimal?       @db.Decimal(10, 2)
@@ -282,6 +286,7 @@ model UserProfile {
   updatedAt         DateTime       @default(now()) @updatedAt
 
   @@index([destinationCityId])
+  @@index([homeCountryId])
 }
 
 model Language {
@@ -348,6 +353,7 @@ model Country {
   supermarkets     SupermarketChain[]
   banks            Bank[]
   rideServices     RideService[]
+  homeOf           UserProfile[]       @relation("HomeCountry")
 }
 
 /// State / canton / province.
