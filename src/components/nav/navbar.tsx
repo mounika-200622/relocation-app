@@ -131,7 +131,7 @@ export function Navbar() {
                       </MenuLink>
                     )}
                     <MenuLink href="/settings" icon={<Settings className="h-4 w-4" />} onClick={() => setMenuOpen(false)}>Settings</MenuLink>
-                    <button role="menuitem" onClick={() => signOut({ callbackUrl: "/" })} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger hover:bg-soft">
+                    <button role="menuitem" onClick={() => signOut({ redirect: false }).then(() => window.location.assign("/"))} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-danger hover:bg-soft">
                       <LogOut className="h-4 w-4" /> Log out
                     </button>
                   </div>

@@ -66,7 +66,8 @@ export default function SettingsPage() {
           onClick={async () => {
             try {
               await api("/api/account", { method: "DELETE", json: { password: confirm } });
-              await signOut({ callbackUrl: "/" });
+              await signOut({ redirect: false });
+              window.location.assign("/");
             } catch (err) {
               toast.error((err as Error).message);
             }
