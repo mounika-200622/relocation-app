@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { ThemeToggle } from "@/components/theme";
 import { api } from "@/lib/client";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [pw, setPw] = useState({ currentPassword: "", newPassword: "" });
   const [busy, setBusy] = useState(false);
   const [del, setDel] = useState(false);
@@ -67,7 +69,8 @@ export default function SettingsPage() {
             try {
               await api("/api/account", { method: "DELETE", json: { password: confirm } });
               await signOut({ redirect: false });
-              window.location.assign("/");
+              router.push("/");
+              router.refresh();
             } catch (err) {
               toast.error((err as Error).message);
             }
