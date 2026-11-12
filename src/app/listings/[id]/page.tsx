@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { LISTING_TYPE_LABEL, PREFERENCE_LABEL, formatDate, formatMoney, num } from "@/lib/format";
 import { priceRankInCity } from "@/lib/listings";
+import { getRate } from "@/lib/fx";
 import { requestsForListing } from "@/lib/roommates";
 import { Gallery } from "@/components/gallery";
 import { SaveButton } from "@/components/save-button";
@@ -53,6 +54,9 @@ export default async function ListingPage({ params }: Props) {
     l.isShareable ? requestsForListing(l.id, viewer?.id ?? null) : Promise.resolve([]),
   ]);
   const price = num(l.price)!;
+  // show the rent in the viewer's own currency too (rates cached 24 h in ExchangeRate)
+  const homeCurrency = viewer ? (await prisma.userProfile.findUnique({ where: { userId: viewer.id }, select: { budgetCurrency: true } }))?.budgetCurrency ?? null : null;
+  const rate = homeCurrency && homeCurrency !== l.currency ? await getRate(l.currency, homeCurrency).catch(() => null) : null;
   const spotsLeft = Math.max(0, l.capacityMax - l.currentOccupants);
   const ownerName = l.owner.businessProfile?.displayName ?? l.owner.name;
   const location = [l.city.name, l.city.region?.name, l.city.country.name].filter(Boolean).join(", ");
@@ -172,6 +176,7 @@ export default async function ListingPage({ params }: Props) {
               <span className="text-3xl font-semibold tracking-tight">{formatMoney(price, l.currency)}</span>
               <span className="text-muted">/ month</span>
             </div>
+            {rate && homeCurrency && <p className="mt-1 text-sm text-subtle">≈ {formatMoney(price * rate, homeCurrency)} in your currency</p>}
             <dl className="mt-5 divide-y divide-line rounded-2xl border border-line text-sm">
               <Row label="Deposit" value={formatMoney(num(l.deposit), l.currency)} />
               <Row label="Bills" value={l.utilitiesIncluded ? "Included" : l.billsEstimate ? `~${formatMoney(num(l.billsEstimate), l.currency)}/mo` : "Ask the owner"} />
