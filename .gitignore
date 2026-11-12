@@ -54,3 +54,6 @@ skills-lock.json
 
 # env files: only the example is committed
 !.env.example
+
+# local MongoDB data (npm run mongo:local)
+/.mongo-data/
