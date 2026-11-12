@@ -37,7 +37,13 @@ export function Gallery({ photos, title }: { photos: Photo[]; title: string }) {
           <img src={photos[0]!.url} alt={photos[0]!.caption ?? title} className="h-full w-full object-cover transition hover:brightness-90" />
         </button>
         {rest.map((p, i) => (
-          <button key={p.id} onClick={() => setIndex(i + 1)} className="relative hidden md:block" aria-label={`Open photo ${i + 2}`}>
+          <button
+            key={p.id}
+            onClick={() => setIndex(i + 1)}
+            // with fewer than 4 small photos, stretch them so the mosaic has no empty cells
+            className={`relative hidden md:block ${rest.length === 1 ? "md:col-span-2 md:row-span-2" : rest.length === 2 ? "md:row-span-2" : rest.length === 3 && i === 2 ? "md:col-span-2" : ""}`}
+            aria-label={`Open photo ${i + 2}`}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.url} alt={p.caption ?? `${title} photo ${i + 2}`} className="h-full w-full object-cover transition hover:brightness-90" />
           </button>
