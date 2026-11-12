@@ -1,18 +1,18 @@
 # Individual contributions
 
-Generated from `git log` (172 commits, merges excluded).
+Generated from `git log` (206 commits, merges excluded).
 
 | Area | mounika-200622 | pramitiudupa |
 |---|---|---|
-| Android / PWA | 0 | 2 |
-| Backend (API & domain logic) | 26 | 28 |
-| Database schema & SQL objects | 6 | 1 |
-| Documentation | 8 | 7 |
-| Frontend (pages & UI) | 32 | 35 |
-| Seed data | 3 | 4 |
-| Tests | 4 | 5 |
+| Android / PWA | 0 | 3 |
+| Backend (API & domain logic) | 28 | 32 |
+| Database schema & SQL objects | 6 | 4 |
+| Documentation | 10 | 9 |
+| Frontend (pages & UI) | 40 | 38 |
+| Seed data | 8 | 7 |
+| Tests | 4 | 6 |
 | Tooling & setup | 7 | 4 |
-| **Total** | **86** | **86** |
+| **Total** | **103** | **103** |
 
 ## mounika-200622
 
@@ -102,6 +102,23 @@ Generated from `git log` (172 commits, merges excluded).
 - docs: complete README with setup, demo accounts, DB highlights and phone guide
 - chore(lint): ignore the Android project and local Mongo data
 - refactor(auth): use the router after sign-out instead of a hard reload
+- fix(android): keep content below the status bar on edge-to-edge phones
+- feat(seed): taxis, ride-hailing and bike share for 12 countries
+- feat(location): native GPS helper for the Android app with browser fallback
+- feat(rides): open Uber or Lyft to a listing and show ride apps in the guide
+- feat(money): live exchange-rate API and two-way currency converter
+- feat(money): converter and nearby exchange offices in the local briefing and guide
+- style: pink ombré theme across tokens, buttons, icons, splash and Android
+- feat(seed): SIM operators, public transport and ride apps for 29 countries
+- feat: fetch freely licensed real photos from Wikimedia Commons with credits
+- feat(seed): real room photos for demo listings and real city/country covers
+- feat: public photo credits page linked from the footer
+- feat(android): one-command Wi-Fi APK build that detects the laptop IP
+- fix(android): hardware Back goes to the previous page instead of closing the app
+- feat(photos): real landmark photos for the remaining 20 guide countries
+- style: finish the pink ombre theme (rose warm accent, pink avatars) and hide tab bar while typing
+- docs: ER diagram, DDL, data dictionary and queries now cover ride services, home country and photos
+- docs: image credits page generated from the photo manifest
 
 ## pramitiudupa
 
@@ -191,4 +208,21 @@ Generated from `git log` (172 commits, merges excluded).
 - chore: generate per-member contribution summary from git history
 - feat(listing): show the rent converted to the viewer's currency
 - fix(auth): sign out with a relative redirect so it works on phones over the LAN
+- docs: per-member contribution breakdown generated from git history
+- feat(db): RideService table and City(lat, lng) index for GPS lookups
+- feat(location): nearest city from GPS and a local briefing API
+- feat(location): You're-here panel with SIM, rides, emergency, homes and essentials
+- feat(db): home country on profiles and currency-exchange place category
+- feat(profile): ask where people are from
+- feat(seed): home countries for demo users
+- feat(seed): complete India guide with Bengaluru metro, buses, SIMs and checklist
+- feat(poi): Nominatim fallback with a circuit breaker when Overpass is down
+- feat(db): cover photos for cities and countries and credits for listing photos
+- feat(ui): real photos with attribution on landing, listings, guide, trips and login
+- fix(poi): serialisable cache rows, local-currency prices near me, fail-fast Overpass
+- fix(search): visitors can search homes; the hero search and Explore tab no longer bounce to login
+- feat(android): friendly can't-connect screen with retry; Wi-Fi build finds gradlew on Windows
+- feat(location): pick a city when GPS is off; unclipped city list; converter fits phone width
+- feat(seed): Bengaluru demo users moving from Germany and France, with roommate matches
+- docs: README, report, Android guide and QA checklist for location, money, Bengaluru demo and the Wi-Fi app
 
