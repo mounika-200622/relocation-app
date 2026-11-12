@@ -84,7 +84,9 @@ export async function ensureCached(center: { lat: number; lng: number }, radiusM
 export async function nearbyFromCache(center: { lat: number; lng: number }, radiusM: number, categories: PoiCategory[], limitPerCategory = 40) {
   const box = boundingBox(center, radiusM / 1000);
   const rows = await prisma.$queryRaw<(Omit<PoiResult, "free" | "price"> & { tags: unknown })[]>`
-    SELECT * FROM (
+    SELECT ranked.id, ranked.osmId, ranked.name, ranked.category, ranked.lat, ranked.lng, ranked.address, ranked.openingHours,
+           ranked.cuisine, ranked.website, ranked.priceTier, ranked.tags, ranked.distanceKm
+    FROM (
       SELECT p.id, p.osmId, p.name, p.category, p.lat, p.lng, p.address, p.openingHours, p.cuisine, p.website, p.priceTier, p.tags,
              fn_distance_km(${center.lat}, ${center.lng}, p.lat, p.lng) AS distanceKm,
              ROW_NUMBER() OVER (PARTITION BY p.category ORDER BY fn_distance_km(${center.lat}, ${center.lng}, p.lat, p.lng)) AS rn
@@ -95,7 +97,8 @@ export async function nearbyFromCache(center: { lat: number; lng: number }, radi
     ) ranked
     WHERE ranked.distanceKm <= ${radiusM / 1000} AND ranked.rn <= ${limitPerCategory}
     ORDER BY ranked.distanceKm`;
-  return rows.map((r) => ({ ...r, distanceKm: Number(r.distanceKm), tags: (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags ?? {}) as Record<string, string> }));
+  // DECIMAL columns arrive as Decimal objects from raw SQL; the client expects plain numbers
+  return rows.map((r) => ({ ...r, lat: Number(r.lat), lng: Number(r.lng), distanceKm: Number(r.distanceKm), tags: (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags ?? {}) as Record<string, string> }));
 }
 
 const PRICED: Partial<Record<PoiCategory, "MEAL" | "STAY_NIGHT" | "ATTRACTION_ENTRY">> = {

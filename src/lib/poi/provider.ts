@@ -21,7 +21,7 @@ export interface PoiProvider {
 }
 
 /** Public Overpass instances, tried in order. */
-export const DEFAULT_OVERPASS = "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter";
+export const DEFAULT_OVERPASS = "https://overpass-api.de/api/interpreter";
 
 export class ProviderUnavailable extends Error {}
 

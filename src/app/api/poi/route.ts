@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { enforceRateLimit, json, optionalUser, readQuery, route } from "@/lib/api";
 import { ESSENTIAL_GROUPS, type EssentialGroup } from "@/lib/poi/categories";
 import { nearby } from "@/lib/poi/service";
+import { nearestCity } from "@/lib/locate";
 import { lat, lng, optionalId } from "@/lib/validators/common";
 
 const query = z.object({
@@ -21,7 +22,10 @@ export const GET = route(async (req) => {
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
   enforceRateLimit(`poi:${user?.id ?? ip}`, 60, 60_000);
   const q = readQuery(req, query);
-  const city = q.cityId ? await prisma.city.findUnique({ where: { id: q.cityId }, select: { id: true, countryId: true } }) : null;
+  // No city given (e.g. "near me" on the phone): use the nearest known city so prices come out in local currency
+  const city = q.cityId
+    ? await prisma.city.findUnique({ where: { id: q.cityId }, select: { id: true, countryId: true } })
+    : await nearestCity(q.lat, q.lng).then((c) => (c ? { id: c.id, countryId: c.countryId } : null)).catch(() => null);
 
   const result = await nearby({
     center: { lat: q.lat, lng: q.lng },
