@@ -51,6 +51,12 @@ export const ENTITIES: EntityDef[] = [
       { name: "audience", label: "Audience", type: "select", options: ["EVERYONE", "YOUTH", "STUDENT", "TOURIST", "SENIOR"], required: true }, { name: "url", label: "URL", type: "text", max: 300 }],
   },
   {
+    key: "rides", label: "Taxis & ride-hailing", model: "rideService", titleField: "name", orderBy: [{ countryId: "asc" }, { position: "asc" }],
+    fields: [country, { name: "name", label: "Name", type: "text", required: true, max: 80 }, { name: "kind", label: "Kind", type: "select", options: ["RIDE_HAILING", "TAXI", "BIKE_SHARE", "SCOOTER"], required: true },
+      { name: "website", label: "Website", type: "text", max: 200 }, { name: "deepLink", label: "App link template ({lat} {lng} {name})", type: "text", max: 400 },
+      { name: "phone", label: "Phone", type: "text", max: 30 }, { name: "notes", label: "Notes", type: "text", max: 300 }, { name: "position", label: "Order", type: "number" }],
+  },
+  {
     key: "emergency", label: "Emergency numbers", model: "emergencyNumber", titleField: "service", orderBy: [{ countryId: "asc" }],
     fields: [country, { name: "service", label: "Service", type: "text", required: true, max: 60 }, { name: "number", label: "Number", type: "text", required: true, max: 20 }, { name: "notes", label: "Notes", type: "text", max: 200 }],
   },
