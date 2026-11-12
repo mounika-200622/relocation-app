@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { CitySearch } from "@/components/city-search";
-import { EssentialsPanel } from "@/components/essentials-panel";
+import { EssentialsPanel, isGroup } from "@/components/essentials-panel";
 import { getPosition } from "@/lib/position";
 import { toast } from "sonner";
 
-export function EssentialsExplorer({ lat, lng, cityId, label }: { lat: number; lng: number; cityId: number | null; label: string }) {
+export function EssentialsExplorer({ lat, lng, cityId, label, group }: { lat: number; lng: number; cityId: number | null; label: string; group?: string }) {
   const [pt, setPt] = useState({ lat, lng, cityId, label });
   return (
     <div className="space-y-8">
@@ -26,7 +26,7 @@ export function EssentialsExplorer({ lat, lng, cityId, label }: { lat: number; l
           Use my location
         </button>
       </div>
-      <EssentialsPanel key={`${pt.lat},${pt.lng}`} lat={pt.lat} lng={pt.lng} cityId={pt.cityId} title={`Around ${pt.label}`} />
+      <EssentialsPanel key={`${pt.lat},${pt.lng}`} lat={pt.lat} lng={pt.lng} cityId={pt.cityId} title={`Around ${pt.label}`} initialGroup={isGroup(group) ? group : undefined} />
     </div>
   );
 }

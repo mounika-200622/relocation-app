@@ -9,6 +9,7 @@ import { formatDate, formatMoney, formatRange, num, titleCase } from "@/lib/form
 import { Badge, SectionTitle } from "@/components/ui/misc";
 import { Checklist } from "./checklist";
 import { ConnectionSearch } from "./connections";
+import { CurrencyConverter } from "@/components/currency-converter";
 
 type Props = { params: Promise<{ country: string }>; searchParams: Promise<{ city?: string }> };
 
@@ -33,7 +34,7 @@ export default async function CountryGuide({ params, searchParams }: Props) {
   if (!country) notFound();
   const { city: cityParam } = await searchParams;
   const session = await auth();
-  const profile = session?.user ? await prisma.userProfile.findUnique({ where: { userId: session.user.id }, select: { destinationCityId: true, destinationCity: { select: { countryId: true } } } }) : null;
+  const profile = session?.user ? await prisma.userProfile.findUnique({ where: { userId: session.user.id }, select: { destinationCityId: true, destinationCity: { select: { countryId: true } }, homeCountry: { select: { currency: true, name: true } } } }) : null;
   const cityId = cityParam ? Number(cityParam) : profile?.destinationCity?.countryId === country.id ? profile.destinationCityId : null;
 
   const [articles, checklist, done, sims, modes, passes, emergency, markets, banks, costs, city, rides] = await Promise.all([
@@ -221,6 +222,7 @@ export default async function CountryGuide({ params, searchParams }: Props) {
           {banks.length > 0 && (
             <section id="money" className="scroll-mt-24">
               <SectionTitle>Money & banking · {country.currency}</SectionTitle>
+              {profile?.homeCountry && profile.homeCountry.currency !== country.currency && <CurrencyConverter home={profile.homeCountry.currency} local={country.currency} className="mb-4 max-w-xl" />}
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {banks.map((b) => (
                   <div key={b.id} className="card p-5">

@@ -6,7 +6,7 @@ import { EssentialsExplorer } from "./explorer";
 
 export const metadata: Metadata = { title: "Nearby essentials" };
 
-export default async function EssentialsPage({ searchParams }: { searchParams: Promise<{ lat?: string; lng?: string; cityId?: string; label?: string }> }) {
+export default async function EssentialsPage({ searchParams }: { searchParams: Promise<{ lat?: string; lng?: string; cityId?: string; label?: string; group?: string }> }) {
   const user = await pageUser();
   const sp = await searchParams;
   const profile = await prisma.userProfile.findUnique({ where: { userId: user.id }, select: { destinationCity: { select: { id: true, name: true, lat: true, lng: true, country: { select: { name: true } } } } } });
@@ -17,7 +17,7 @@ export default async function EssentialsPage({ searchParams }: { searchParams: P
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 md:px-6">
       <PageHeader eyebrow="Nearby essentials" title="Everything you need, within walking distance" description="Supermarkets, pharmacies, hospitals, SIM shops, banks and stops around any point — live from OpenStreetMap." />
-      <EssentialsExplorer lat={lat} lng={lng} cityId={sp.cityId ? Number(sp.cityId) : city?.id ?? null} label={label} />
+      <EssentialsExplorer lat={lat} lng={lng} cityId={sp.cityId ? Number(sp.cityId) : city?.id ?? null} label={label} group={sp.group} />
     </div>
   );
 }

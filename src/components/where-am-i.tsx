@@ -6,6 +6,7 @@ import { ArrowRight, BookOpen, Car, Compass, Home, Loader2, LocateFixed, Lock, M
 import { getPosition, hasLocationConsent, rememberLocationConsent, PositionError } from "@/lib/position";
 import { formatMoney } from "@/lib/format";
 import type { LocalBriefing } from "@/lib/locate";
+import { CurrencyConverter } from "@/components/currency-converter";
 import { cn } from "@/lib/cn";
 
 const UBER_HERE = "https://m.uber.com/ul/?action=setPickup&pickup=my_location";
@@ -116,6 +117,21 @@ export function WhereAmI({ className, compact }: { className?: string; compact?:
         <Tile href={`/relocate?all=1&${near}&sort=nearest`} icon={<Home />} title="Places to stay nearby" text={b.listingsNearby ? `${b.listingsNearby} homes within 15 km, nearest first` : "Search homes anywhere in the country"} />
         <Tile href={`/essentials?${near}&cityId=${b.city.id}&label=${encodeURIComponent(b.city.name)}`} icon={<Compass />} title="Essentials around you" text="Supermarkets, pharmacies, hospitals, ATMs, SIM shops and stops – live map" />
         <Tile href={`/trip/new?cityId=${b.city.id}`} icon={<Plane />} title={`Plan a trip in ${b.city.name}`} text={b.costs.cheapMeal ? `Budget meals from ≈ ${formatMoney(b.costs.cheapMeal.mid, b.costs.cheapMeal.currency)}` : "Day-by-day plan that fits your budget"} />
+      </div>
+      <div className="grid gap-4 border-t border-line p-5 sm:grid-cols-[1.4fr_1fr] sm:items-center">
+        {b.home && b.home.currency !== b.country.currency ? (
+          <CurrencyConverter home={b.home.currency} local={b.country.currency} compact />
+        ) : b.home ? (
+          <p className="text-sm text-muted">You&apos;re in your home currency ({b.country.currency}).</p>
+        ) : (
+          <p className="text-sm text-muted">
+            <Link href="/profile" className="font-medium text-accent hover:underline">Tell us where you&apos;re from</Link> to see live {b.country.currency} exchange rates in your home currency.
+          </p>
+        )}
+        <Link href={`/essentials?group=money&${near}&label=${encodeURIComponent(b.city.name)}`} className="flex items-center justify-between gap-3 rounded-2xl border border-line p-4 text-sm hover:bg-soft">
+          <span><span className="block font-semibold">Exchange money nearby</span><span className="text-muted">Exchange offices, banks and ATMs on a live map</span></span>
+          <ArrowRight className="h-4 w-4 shrink-0" />
+        </Link>
       </div>
       <p className="flex items-center gap-1.5 px-6 py-3 text-[11px] text-subtle"><Lock className="h-3 w-3" /> Your position is only used to find the nearest city and is never stored.</p>
     </section>

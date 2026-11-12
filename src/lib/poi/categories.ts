@@ -13,6 +13,7 @@ export const OVERPASS_SELECTORS: Record<PoiCategory, string[]> = {
   DOCTOR: ['nwr["amenity"="doctors"]'],
   BANK: ['nwr["amenity"="bank"]'],
   ATM: ['node["amenity"="atm"]'],
+  CURRENCY_EXCHANGE: ['nwr["amenity"="bureau_de_change"]'],
   TRANSIT: ['node["railway"~"^(station|halt|tram_stop)$"]["name"]', 'node["highway"="bus_stop"]["name"]', 'node["station"="subway"]["name"]', 'node["amenity"="ferry_terminal"]["name"]'],
   MOBILE_SHOP: ['nwr["shop"~"^(mobile_phone|telecommunication)$"]'],
   LAUNDRY: ['nwr["shop"~"^(laundry|dry_cleaning)$"]'],
@@ -48,6 +49,7 @@ export function classify(tags: Record<string, string>): PoiCategory | null {
   if (a === "clinic") return "CLINIC";
   if (a === "pharmacy") return "PHARMACY";
   if (a === "doctors") return "DOCTOR";
+  if (a === "bureau_de_change") return "CURRENCY_EXCHANGE";
   if (a === "bank") return "BANK";
   if (a === "atm") return "ATM";
   if (tags.railway === "station" || tags.railway === "halt" || tags.railway === "tram_stop" || tags.highway === "bus_stop" || tags.station === "subway" || a === "ferry_terminal") return "TRANSIT";
@@ -74,7 +76,7 @@ export function classify(tags: Record<string, string>): PoiCategory | null {
 
 export const CATEGORY_LABEL: Record<PoiCategory, string> = {
   RESTAURANT: "Restaurant", CAFE: "Café", FAST_FOOD: "Fast food", SUPERMARKET: "Supermarket", CONVENIENCE: "Convenience store",
-  HOSPITAL: "Hospital", CLINIC: "Clinic", PHARMACY: "Pharmacy", DOCTOR: "Doctor", BANK: "Bank", ATM: "ATM", TRANSIT: "Transit stop",
+  HOSPITAL: "Hospital", CLINIC: "Clinic", PHARMACY: "Pharmacy", DOCTOR: "Doctor", BANK: "Bank", ATM: "ATM", CURRENCY_EXCHANGE: "Currency exchange", TRANSIT: "Transit stop",
   MOBILE_SHOP: "Phone & SIM shop", LAUNDRY: "Laundry", GYM: "Gym", UNIVERSITY: "University", POST_OFFICE: "Post office", POLICE: "Police",
   HOTEL: "Hotel", HOSTEL: "Hostel", GUEST_HOUSE: "Guest house", CAMP_SITE: "Campsite", ATTRACTION: "Attraction", MUSEUM: "Museum",
   VIEWPOINT: "Viewpoint", GALLERY: "Gallery", HISTORIC: "Historic site", PARK: "Park", NIGHTLIFE: "Bar / nightlife", SHOPPING: "Shopping",
@@ -86,7 +88,7 @@ export const ESSENTIAL_GROUPS = {
   groceries: { label: "Groceries", categories: ["SUPERMARKET", "CONVENIENCE"] },
   health: { label: "Health", categories: ["HOSPITAL", "CLINIC", "PHARMACY", "DOCTOR"] },
   transit: { label: "Transit", categories: ["TRANSIT"] },
-  money: { label: "Banks & ATMs", categories: ["BANK", "ATM"] },
+  money: { label: "Money & exchange", categories: ["CURRENCY_EXCHANGE", "BANK", "ATM"] },
   phone: { label: "SIM & phone", categories: ["MOBILE_SHOP"] },
   daily: { label: "Daily life", categories: ["LAUNDRY", "POST_OFFICE", "GYM", "POLICE"] },
   study: { label: "Study", categories: ["UNIVERSITY"] },

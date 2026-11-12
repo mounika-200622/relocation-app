@@ -9,9 +9,10 @@ import { formatKm, formatRange } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 const GROUPS = [
-  ["food", "Food"], ["groceries", "Groceries"], ["health", "Health"], ["transit", "Transit"], ["money", "Banks & ATMs"], ["phone", "SIM & phone"], ["daily", "Daily life"], ["study", "Study"],
+  ["food", "Food"], ["groceries", "Groceries"], ["health", "Health"], ["transit", "Transit"], ["money", "Money & exchange"], ["phone", "SIM & phone"], ["daily", "Daily life"], ["study", "Study"],
 ] as const;
-type Group = (typeof GROUPS)[number][0];
+export type Group = (typeof GROUPS)[number][0];
+export const isGroup = (g: string | undefined): g is Group => GROUPS.some(([k]) => k === g);
 
 type Poi = {
   id: number; osmId: string; name: string; category: string; lat: number; lng: number; distanceKm: number; address: string | null;
@@ -20,7 +21,7 @@ type Poi = {
 
 const LABEL: Record<string, string> = {
   RESTAURANT: "Restaurant", CAFE: "Café", FAST_FOOD: "Fast food", SUPERMARKET: "Supermarket", CONVENIENCE: "Convenience", HOSPITAL: "Hospital", CLINIC: "Clinic",
-  PHARMACY: "Pharmacy", DOCTOR: "Doctor", BANK: "Bank", ATM: "ATM", TRANSIT: "Stop", MOBILE_SHOP: "Phone shop", LAUNDRY: "Laundry", GYM: "Gym",
+  PHARMACY: "Pharmacy", DOCTOR: "Doctor", BANK: "Bank", ATM: "ATM", CURRENCY_EXCHANGE: "Exchange office", TRANSIT: "Stop", MOBILE_SHOP: "Phone shop", LAUNDRY: "Laundry", GYM: "Gym",
   UNIVERSITY: "University", POST_OFFICE: "Post office", POLICE: "Police",
 };
 

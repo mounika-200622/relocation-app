@@ -31,13 +31,13 @@ export async function nearestCity(lat: number, lng: number) {
 }
 
 /** Everything a newcomer needs right where they are: guide, SIMs, rides, emergency, costs, homes. */
-export async function localBriefing(lat: number, lng: number) {
+export async function localBriefing(lat: number, lng: number, homeCountryId: number | null = null) {
   const city = await nearestCity(lat, lng);
   if (!city) return null;
   const country = await prisma.country.findUniqueOrThrow({ where: { id: city.countryId }, select: { id: true, name: true, isoCode: true, flag: true, currency: true } });
   const box = boundingBox({ lat, lng }, 15);
 
-  const [articles, checklist, emergency, sims, rides, listings, meal, transportDay] = await Promise.all([
+  const [articles, checklist, emergency, sims, rides, listings, meal, transportDay, home] = await Promise.all([
     prisma.guideArticle.count({ where: { countryId: country.id } }),
     prisma.checklistTemplate.count({ where: { countryId: country.id } }),
     prisma.emergencyNumber.findMany({ where: { countryId: country.id }, select: { service: true, number: true }, take: 4 }),
@@ -51,12 +51,14 @@ export async function localBriefing(lat: number, lng: number) {
     prisma.listing.count({ where: { status: "ACTIVE", lat: { gte: box.minLat, lte: box.maxLat }, lng: { gte: box.minLng, lte: box.maxLng } } }),
     costRanges(city.id, country.id, "MEAL"),
     costRanges(city.id, country.id, "TRANSPORT_DAY"),
+    homeCountryId ? prisma.country.findUnique({ where: { id: homeCountryId }, select: { name: true, flag: true, currency: true } }) : null,
   ]);
 
   return {
     position: { lat, lng },
     city: { id: city.id, name: city.name, region: city.regionName, lat: city.lat, lng: city.lng, distanceKm: Math.round(city.km * 10) / 10 },
     country,
+    home,
     guide: { articles, checklist },
     emergency,
     sims: sims.map((s) => ({ name: s.name, isMvno: s.isMvno, whereToBuy: s.whereToBuy, cheapest: s.plans[0] ? { name: s.plans[0].name, price: num(s.plans[0].priceMonthly), currency: s.plans[0].currency, kind: s.plans[0].kind } : null })),
