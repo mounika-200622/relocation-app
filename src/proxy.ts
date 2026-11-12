@@ -37,5 +37,5 @@ export default auth((req) => {
 
 export const config = {
   // Skip API routes (they authorize themselves), static files and Next internals.
-  matcher: ["/((?!api|_next/static|_next/image|uploads|samples|icons|favicon.ico|manifest.webmanifest|sw.js|.*\\.(?:png|jpg|jpeg|webp|svg|ico)$).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|uploads|samples|icons|favicon.ico|manifest.webmanifest|sw.js|offline.html|icon.svg|.*\\.(?:png|jpg|jpeg|webp|svg|ico)$).*)"],
 };

@@ -6,6 +6,7 @@ import { themeScript } from "@/components/theme";
 import { Navbar } from "@/components/nav/navbar";
 import { MobileTabBar } from "@/components/nav/mobile-tab-bar";
 import { auth } from "@/lib/auth";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["600", "700"], style: ["italic", "normal"], variable: "--font-playfair", display: "swap" });
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   applicationName: "Nira",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Nira", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icons/icon.svg", apple: "/icons/icon-192.png" },
+  icons: { icon: "/icons/icon.svg", apple: "/icons/192" },
   openGraph: { title: "Nira", description: "Wherever you're headed, Nira gets you settled.", type: "website" },
 };
 
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {children}
           </main>
           <MobileTabBar />
+          <ServiceWorkerRegister />
         </Providers>
       </body>
     </html>
