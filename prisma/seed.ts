@@ -17,6 +17,7 @@ import { seedTrips } from "./seed/trips";
 import { seedRides } from "./seed/rides";
 import { seedIndiaGuide } from "./seed/guide-in";
 import { seedWorld } from "./seed/world";
+import { seedPhotos } from "./seed/photos";
 
 const prisma = new PrismaClient();
 
@@ -36,6 +37,7 @@ async function main() {
   await step("taxis & ride-hailing", () => seedRides(prisma));
   await step("cost estimates", () => seedCosts(prisma));
   await step("demo data", () => seedDemo(prisma));
+  await step("real photos (Wikimedia Commons)", () => seedPhotos(prisma));
   await step("sample trips", () => seedTrips(prisma));
 }
 

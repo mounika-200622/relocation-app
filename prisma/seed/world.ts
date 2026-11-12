@@ -18,7 +18,6 @@ const UBER = "https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff
 const uber = (cc: string, notes?: string) => ({ name: "Uber", kind: "RIDE_HAILING" as const, website: `https://www.uber.com/${cc}/en/`, deepLink: UBER, notes });
 const grab = (notes?: string) => ({ name: "Grab", kind: "RIDE_HAILING" as const, website: "https://www.grab.com/", notes: notes ?? "The main ride and food app in South-East Asia; cars, bikes and taxis." });
 const bolt = { name: "Bolt", kind: "RIDE_HAILING" as const, website: "https://bolt.eu/" };
-const PASSPORT = "Passport (and visa/residence permit for monthly contracts)";
 
 export const WORLD: Record<string, Country> = {
   US: { sims: ["AT&T", "Verizon", "T-Mobile"], mvno: ["Mint Mobile"], simDocs: "Passport for prepaid; postpaid may need an SSN or deposit", simWhere: "Carrier stores, Best Buy, Target, online eSIM",
