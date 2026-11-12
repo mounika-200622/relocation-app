@@ -14,7 +14,7 @@ describe("parseDuration", () => {
 describe("overpass helpers", () => {
   it("builds one query with an around filter per selector", () => {
     const q = buildQuery({ lat: 47.37, lng: 8.54 }, 1500, ["PHARMACY", "TRANSIT"]);
-    expect(q).toContain("[out:json][timeout:25]");
+    expect(q).toContain("[out:json][timeout:60]");
     expect(q).toContain('nwr["amenity"="pharmacy"](around:1500,47.370000,8.540000);');
     expect(q.match(/around:1500/g)?.length).toBe(5);
   });
