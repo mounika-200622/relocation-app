@@ -100,6 +100,14 @@ export async function buildPlan(p: TripParams): Promise<PlanResult & { localCurr
     costRanges(city.id, city.countryId, "STAY_NIGHT"),
     costRanges(city.id, city.countryId, "MEAL"),
   ]);
+  // No stays in the map cache (or the map service is down): plan with clearly-labelled
+  // price estimates per tier instead of leaving the trip without a place to sleep.
+  if (!stays.length && stayRanges.length) {
+    const label: Record<number, string> = { 1: "Hostel or budget room", 2: "Guest house / simple hotel", 3: "Mid-range hotel", 4: "Comfort hotel" };
+    for (const r of stayRanges) {
+      stays.push({ key: `estimate:${r.tier}`, title: `${label[r.tier] ?? "Accommodation"} in ${city.name} (price estimate)`, category: "ESTIMATE", lat: center.lat, lng: center.lng, tier: r.tier, unitPrice: conv(midpoint(r)) });
+    }
+  }
   const transportPerPersonDay = transportDay[0] ? conv(midpoint(transportDay[0])) : null;
   const cheapestStay = Math.min(...stays.map((s) => s.unitPrice), stayRanges[0] ? conv(stayRanges[0].min) : Infinity);
   const cheapest = {
