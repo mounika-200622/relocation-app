@@ -9,6 +9,7 @@ import { HeroSearch } from "@/components/landing/hero-search";
 import { ProductCollage } from "@/components/landing/product-collage";
 import { LinkButton } from "@/components/ui/button";
 import { Footer } from "@/components/footer";
+import { WhereAmI } from "@/components/where-am-i";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,11 @@ export default async function Home() {
           </div>
         </div>
         <ProductCollage />
+      </section>
+
+      {/* ───────── where am I ───────── */}
+      <section className="mx-auto mt-16 max-w-7xl px-4 md:px-6">
+        <WhereAmI />
       </section>
 
       {/* ───────── two journeys ───────── */}

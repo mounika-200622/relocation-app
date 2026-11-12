@@ -7,6 +7,7 @@ import { cardsByIds } from "@/lib/listings";
 import { topMatches } from "@/lib/roommates";
 import { formatDate, formatMoney, num } from "@/lib/format";
 import { ListingCard } from "@/components/listing-card";
+import { WhereAmI } from "@/components/where-am-i";
 import { ScoreRing } from "@/components/score-ring";
 import { EmptyState, Progress, SectionTitle } from "@/components/ui/misc";
 import { LinkButton } from "@/components/ui/button";
@@ -55,6 +56,8 @@ export default async function RelocationHome() {
           <LinkButton href="/profile">Complete profile</LinkButton>
         </div>
       )}
+
+      <WhereAmI className="mt-8" />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Tile icon={<Wallet />} label="Monthly budget" value={budget ? formatMoney(budget.amount, budget.currency) : "Not set"} href="/profile" />

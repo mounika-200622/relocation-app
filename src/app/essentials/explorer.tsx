@@ -4,6 +4,8 @@ import { useState } from "react";
 import { MapPin } from "lucide-react";
 import { CitySearch } from "@/components/city-search";
 import { EssentialsPanel } from "@/components/essentials-panel";
+import { getPosition } from "@/lib/position";
+import { toast } from "sonner";
 
 export function EssentialsExplorer({ lat, lng, cityId, label }: { lat: number; lng: number; cityId: number | null; label: string }) {
   const [pt, setPt] = useState({ lat, lng, cityId, label });
@@ -19,7 +21,7 @@ export function EssentialsExplorer({ lat, lng, cityId, label }: { lat: number; l
         />
         <button
           className="text-sm font-medium text-accent hover:underline"
-          onClick={() => navigator.geolocation?.getCurrentPosition((p) => setPt({ lat: p.coords.latitude, lng: p.coords.longitude, cityId: null, label: "My location" }))}
+          onClick={() => getPosition().then((p) => setPt({ lat: p.lat, lng: p.lng, cityId: null, label: "My location" })).catch((e: Error) => toast.error(e.message))}
         >
           Use my location
         </button>

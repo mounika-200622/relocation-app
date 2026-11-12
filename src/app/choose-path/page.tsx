@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Compass, Plane } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { WhereAmI } from "@/components/where-am-i";
 
 export const metadata: Metadata = { title: "Where to?" };
 
@@ -13,7 +14,8 @@ export default async function ChoosePathPage() {
       <p className="text-sm text-accent animate-fade-up">Welcome, {first}</p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight md:text-6xl animate-fade-up">What brings you to Nira <span className="font-display italic">today?</span></h1>
       <p className="mt-4 text-muted animate-fade-up">You can switch between the two any time from the top bar.</p>
-      <div className="mt-10 grid gap-5 md:grid-cols-2">
+      <WhereAmI className="mt-8" />
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
         <PathCard href="/relocate/home" icon={<Compass className="h-6 w-6" />} title="I'm moving to a new country" text="Housing, roommates, nearby essentials and a step-by-step settling-in guide." img="/samples/home-02.svg" />
         <PathCard href="/trip" icon={<Plane className="h-6 w-6" />} title="I'm planning a trip" text="A day-by-day itinerary — stay, food, sights and transport — that fits your budget." img="/samples/home-09.svg" />
       </div>

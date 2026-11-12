@@ -6,6 +6,7 @@ import { pageUser } from "@/lib/session";
 import { formatDate, formatMoney, num } from "@/lib/format";
 import { EmptyState, PageHeader, Progress } from "@/components/ui/misc";
 import { LinkButton } from "@/components/ui/button";
+import { WhereAmI } from "@/components/where-am-i";
 
 export const metadata: Metadata = { title: "My trips" };
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default async function TripsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 md:px-6">
       <PageHeader eyebrow="Trip planner" title="My trips" description="Day-by-day plans that never go over budget." actions={<LinkButton href="/trip/new"><Plus className="h-4 w-4" /> Plan a trip</LinkButton>} />
+      <WhereAmI className="mb-8" compact />
       {trips.length === 0 ? (
         <EmptyState icon={<Plane className="h-6 w-6" />} title="No trips yet" action={<LinkButton href="/trip/new">Plan your first trip</LinkButton>}>Pick a city, a budget and what you like — we&apos;ll build the days.</EmptyState>
       ) : (
