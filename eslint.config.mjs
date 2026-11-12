@@ -17,6 +17,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // generated / native code that is not ours to lint
+    "android/**",
+    "mobile/**",
+    ".mongo-data/**",
   ]),
 ]);
 
