@@ -15,6 +15,8 @@ import { seedCosts } from "./seed/costs";
 import { seedDemo } from "./seed/demo";
 import { seedTrips } from "./seed/trips";
 import { seedRides } from "./seed/rides";
+import { seedIndiaGuide } from "./seed/guide-in";
+import { seedWorld } from "./seed/world";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +31,8 @@ async function main() {
   await step("locations", () => seedLocations(prisma));
   await step("reference data", () => seedReference(prisma));
   await step("Swiss guide", () => seedSwissGuide(prisma));
+  await step("India guide", () => seedIndiaGuide(prisma));
+  await step("world basics (SIM, transport, rides)", () => seedWorld(prisma));
   await step("taxis & ride-hailing", () => seedRides(prisma));
   await step("cost estimates", () => seedCosts(prisma));
   await step("demo data", () => seedDemo(prisma));

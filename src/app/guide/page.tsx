@@ -20,7 +20,9 @@ export default async function GuideIndex({ searchParams }: { searchParams: Promi
            (SELECT COUNT(*) FROM GuideArticle a WHERE a.countryId = c.id) AS articles,
            (SELECT COUNT(*) FROM ChecklistTemplate t WHERE t.countryId = c.id) AS checklist
     FROM Country c
-    WHERE EXISTS (SELECT 1 FROM GuideArticle a WHERE a.countryId = c.id) OR EXISTS (SELECT 1 FROM EmergencyNumber e WHERE e.countryId = c.id)
+    WHERE EXISTS (SELECT 1 FROM GuideArticle a WHERE a.countryId = c.id)
+       OR EXISTS (SELECT 1 FROM EmergencyNumber e WHERE e.countryId = c.id)
+       OR EXISTS (SELECT 1 FROM SimProvider s WHERE s.countryId = c.id)
     ORDER BY articles DESC, c.name`;
 
   let hits: Hit[] = [];
@@ -79,7 +81,7 @@ export default async function GuideIndex({ searchParams }: { searchParams: Promi
             <span className="text-3xl">{c.flag}</span>
             <span className="flex-1">
               <span className="block font-semibold">{c.name}</span>
-              <span className="text-xs text-subtle">{Number(c.articles) ? `${Number(c.articles)} articles · ${Number(c.checklist)} checklist steps` : "Emergency numbers & costs"}</span>
+              <span className="text-xs text-subtle">{Number(c.articles) ? `${Number(c.articles)} articles · ${Number(c.checklist)} checklist steps` : "SIM cards, transport, ride apps & emergency numbers"}</span>
             </span>
             {Number(c.articles) > 0 && <BookOpen className="h-4 w-4 text-accent" />}
           </Link>
