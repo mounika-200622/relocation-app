@@ -6,7 +6,7 @@ import { SaveButton } from "@/components/save-button";
 import { cn } from "@/lib/cn";
 
 /** Photo-first result card: large rounded image, heart, then 3 tight lines of facts. */
-export function ListingCard({ l, budget, showSave = true, className, priority }: { l: ListingCardData; budget?: { amount: number; currency: string } | null; showSave?: boolean; className?: string; priority?: boolean }) {
+export function ListingCard({ l, budget, showSave = true, className, priority, distanceFrom }: { l: ListingCardData; budget?: { amount: number; currency: string } | null; showSave?: boolean; className?: string; priority?: boolean; /** e.g. "UCD" → "1.2 km from UCD" */ distanceFrom?: string }) {
   const withinBudget = budget && budget.currency === l.currency && l.price <= budget.amount;
   return (
     <Link href={`/listings/${l.id}`} className={cn("group block animate-fade-up", className)}>
@@ -43,7 +43,7 @@ export function ListingCard({ l, budget, showSave = true, className, priority }:
         <span className="inline-flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" />{l.bedrooms} bd</span>
         {l.isShareable && <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />Shareable</span>}
         {l.ownerVerified && <span className="inline-flex items-center gap-1 text-accent"><BadgeCheck className="h-3.5 w-3.5" />Verified</span>}
-        {l.distanceKm !== null && <span>{formatKm(l.distanceKm)}</span>}
+        {l.distanceKm !== null && <span className={distanceFrom ? "font-medium text-accent" : undefined}>{formatKm(l.distanceKm)}{distanceFrom ? ` from ${distanceFrom}` : ""}</span>}
       </div>
       <p className="mt-1.5 text-[15px]">
         <span className="font-semibold">{formatMoney(l.price, l.currency)}</span>

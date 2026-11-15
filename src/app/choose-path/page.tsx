@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Compass, Plane } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { WhereAmI } from "@/components/where-am-i";
 
 export const metadata: Metadata = { title: "Where to?" };
@@ -9,6 +10,10 @@ export const metadata: Metadata = { title: "Where to?" };
 export default async function ChoosePathPage() {
   const session = await auth();
   const first = session?.user?.name?.split(" ")[0] ?? "there";
+  const profile = session?.user?.id
+    ? await prisma.userProfile.findUnique({ where: { userId: session.user.id }, select: { organization: true, destinationCity: { select: { name: true, photoUrl: true, country: { select: { flag: true, currency: true, photoUrl: true } } } } } })
+    : null;
+  const dest = profile?.destinationCity ?? null;
   return (
     <div className="mx-auto flex min-h-[80vh] max-w-5xl flex-col justify-center px-4 py-12 md:px-6">
       <p className="text-sm text-accent animate-fade-up">Welcome, {first}</p>
@@ -16,7 +21,17 @@ export default async function ChoosePathPage() {
       <p className="mt-4 text-muted animate-fade-up">You can switch between the two any time from the top bar.</p>
       <WhereAmI className="mt-8" />
       <div className="mt-6 grid gap-5 md:grid-cols-2">
-        <PathCard href="/relocate/home" icon={<Compass className="h-6 w-6" />} title="I'm moving to a new country" text="Housing, roommates, nearby essentials and a step-by-step settling-in guide." img="/photos/homes/home-24.jpg" />
+        {dest ? (
+          <PathCard
+            href="/relocate/home"
+            icon={<Compass className="h-6 w-6" />}
+            title={`My move to ${dest.name} ${dest.country.flag ?? ""}`}
+            text={`Everything about ${dest.name}: ${dest.country.currency} exchange rate, SIM cards, transport, first-week checklist and homes nearest ${profile?.organization || "the centre"}.`}
+            img={dest.photoUrl ?? dest.country.photoUrl ?? "/photos/homes/home-24.jpg"}
+          />
+        ) : (
+          <PathCard href="/relocate/home" icon={<Compass className="h-6 w-6" />} title="I'm moving to a new country" text="Housing, roommates, nearby essentials and a step-by-step settling-in guide." img="/photos/homes/home-24.jpg" />
+        )}
         <PathCard href="/trip" icon={<Plane className="h-6 w-6" />} title="I'm planning a trip" text="A day-by-day itinerary — stay, food, sights and transport — that fits your budget." img="/photos/places/country-ch.jpg" />
       </div>
     </div>

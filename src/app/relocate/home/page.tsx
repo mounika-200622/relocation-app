@@ -8,6 +8,8 @@ import { topMatches } from "@/lib/roommates";
 import { formatDate, formatMoney, num } from "@/lib/format";
 import { ListingCard } from "@/components/listing-card";
 import { WhereAmI } from "@/components/where-am-i";
+import { DestinationPanel } from "@/components/destination-panel";
+import { destinationBriefing } from "@/lib/destination";
 import { ScoreRing } from "@/components/score-ring";
 import { EmptyState, Progress, SectionTitle } from "@/components/ui/misc";
 import { LinkButton } from "@/components/ui/button";
@@ -27,7 +29,8 @@ export default async function RelocationHome() {
   const city = profile?.destinationCity ?? null;
   const countryId = city?.country.id;
 
-  const [checklistTotal, checklistDone, savedCount, recent, matches, myRequests] = await Promise.all([
+  const [destination, checklistTotal, checklistDone, savedCount, recent, matches, myRequests] = await Promise.all([
+    destinationBriefing(user.id),
     countryId ? prisma.checklistTemplate.count({ where: { countryId } }) : 0,
     countryId ? prisma.userChecklistProgress.count({ where: { userId: user.id, item: { countryId } } }) : 0,
     prisma.savedListing.count({ where: { userId: user.id } }),
@@ -57,7 +60,7 @@ export default async function RelocationHome() {
         </div>
       )}
 
-      <WhereAmI className="mt-8" />
+      {destination && <div className="mt-8 animate-fade-up"><DestinationPanel d={destination} checklist={{ done: checklistDone, total: checklistTotal }} /></div>}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Tile icon={<Wallet />} label="Monthly budget" value={budget ? formatMoney(budget.amount, budget.currency) : "Not set"} href="/profile" />
@@ -84,6 +87,8 @@ export default async function RelocationHome() {
           );
         })}
       </nav>
+
+      <WhereAmI className="mt-10" compact />
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[1.5fr_1fr]">
         <section>
