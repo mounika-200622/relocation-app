@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { json, notFound, readJson, requireUser, route } from "@/lib/api";
 import { entityByKey, schemaFor } from "@/lib/admin-entities";
+import { reindexGuideSoon } from "@/lib/vector/store";
 
 type Ctx = { entity: string };
 type Delegate = { findMany: (a: object) => Promise<unknown[]>; create: (a: object) => Promise<unknown> };
@@ -26,5 +27,6 @@ export const POST = route<Ctx>(async (req, { params }) => {
   if (!def) throw notFound("Unknown content type.");
   const data = await readJson(req, schemaFor(def));
   const row = await delegate(def.model).create({ data });
+  if (def.model === "guideArticle") reindexGuideSoon((row as { id: number }).id);
   return json(row, 201);
 });

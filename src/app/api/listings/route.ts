@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { badRequest, json, optionalUser, readJson, readQuery, requireUser, route } from "@/lib/api";
 import { listingCreateSchema, listingSearchSchema } from "@/lib/validators/listing";
 import { savedIdsFor, searchListings } from "@/lib/listings";
+import { reindexListingSoon } from "@/lib/vector/store";
 
 /** Public, paginated search. Anyone can browse; saved flags are added for logged-in users. */
 export const GET = route(async (req) => {
@@ -30,5 +31,6 @@ export const POST = route(async (req) => {
     },
     select: { id: true },
   });
+  reindexListingSoon(listing.id);
   return json(listing, 201);
 });

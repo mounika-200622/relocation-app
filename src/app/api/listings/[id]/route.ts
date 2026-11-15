@@ -4,6 +4,7 @@ import { listingUpdateSchema } from "@/lib/validators/listing";
 import { loadManagedListing } from "@/lib/listing-access";
 import { deletePhoto } from "@/lib/storage";
 import { num } from "@/lib/format";
+import { deleteEmbedding, reindexListingSoon } from "@/lib/vector/store";
 
 type Ctx = { id: string };
 
@@ -50,6 +51,7 @@ export const PATCH = route<Ctx>(async (req, { params }) => {
       if (amenityIds.length) await tx.listingAmenity.createMany({ data: amenityIds.map((amenityId) => ({ listingId: id, amenityId })) });
     }
   });
+  reindexListingSoon(id);
   return json({ ok: true });
 });
 
@@ -62,5 +64,6 @@ export const DELETE = route<Ctx>(async (_req, { params }) => {
   // kept (listingId SET NULL) so people can still finish their chat.
   await prisma.listing.delete({ where: { id } });
   await Promise.all(photos.map((p) => deletePhoto(p.storageKey)));
+  await deleteEmbedding("listing", id);
   return json({ ok: true });
 });
