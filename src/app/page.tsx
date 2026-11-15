@@ -143,7 +143,7 @@ export default async function Home() {
                   <div className="text-xs opacity-80">{d.flag} {d.country}</div>
                   <div className="text-2xl font-semibold">{d.name}</div>
                   <div className="mt-1 text-sm opacity-85">{Number(d.listings)} places · from {formatMoney(Number(d.minPrice), d.currency)}</div>
-                  {d.photo && <PhotoCredit credit={d.credit} light className="mt-2 block truncate" />}
+                  {d.photo && <PhotoCredit credit={d.credit} light noLink className="mt-2 block truncate" />}
                 </div>
               </Link>
             ))}
