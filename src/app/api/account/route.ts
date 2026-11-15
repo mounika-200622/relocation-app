@@ -6,6 +6,7 @@ import { changePasswordSchema } from "@/lib/validators/auth";
 import { deleteMessagesOf } from "@/lib/mongo/chat";
 import { deleteNotificationsOf } from "@/lib/mongo/notifications";
 import { deletePhoto } from "@/lib/storage";
+import { deleteEmbeddings } from "@/lib/vector/store";
 
 /** Change password (current password required). */
 export const PATCH = route(async (req) => {
@@ -34,13 +35,15 @@ export const DELETE = route(async (req) => {
   if (row.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN", isActive: true } })) <= 1) {
     throw badRequest("You are the last administrator. Promote someone else first.");
   }
-  const [convos, photos] = await Promise.all([
+  const [convos, photos, listings] = await Promise.all([
     prisma.conversation.findMany({ where: { OR: [{ userAId: user.id }, { userBId: user.id }] }, select: { id: true } }),
     prisma.listingPhoto.findMany({ where: { listing: { ownerId: user.id } }, select: { storageKey: true } }),
+    prisma.listing.findMany({ where: { ownerId: user.id }, select: { id: true } }),
   ]);
   await prisma.user.delete({ where: { id: user.id } });
   await Promise.all([
     deleteMessagesOf(convos.map((c) => c.id)).catch(() => 0),
+    deleteEmbeddings("listing", listings.map((l) => l.id)),
     deleteNotificationsOf(user.id).catch(() => undefined),
     ...photos.map((p) => deletePhoto(p.storageKey)),
   ]);

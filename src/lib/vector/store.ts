@@ -159,8 +159,14 @@ export function reindexGuideSoon(articleId: number) {
 }
 
 export async function deleteEmbedding(kind: VectorKind, refId: number) {
+  await deleteEmbeddings(kind, [refId]);
+}
+
+/** Removes the vectors of rows deleted in MySQL (e.g. every listing of a deleted account). */
+export async function deleteEmbeddings(kind: VectorKind, refIds: number[]) {
+  if (!refIds.length) return;
   try {
-    await (await col()).deleteOne({ _id: `${kind}:${refId}` });
+    await (await col()).deleteMany({ kind, refId: { $in: refIds } });
   } catch (err) {
     console.warn("[vectors] delete skipped:", (err as Error).message);
   }
