@@ -36,6 +36,21 @@ const SWISS_CITIES: { name: string; index: number }[] = [
   { name: "Fribourg", index: 0.76 },
 ];
 
+// Dublin in EUR (rents are far above the Irish average)
+const DUBLIN: Table = {
+  RENT_SHARED_ROOM: [650, 1000],
+  RENT_STUDIO: [1500, 2100],
+  RENT_ONE_BEDROOM: [1900, 2600],
+  GROCERIES_MONTH: [250, 400],
+  TRANSPORT_MONTH: [60, 110],
+  TRANSPORT_DAY: [4, 8],
+  PHONE_MONTH: [13, 25],
+  COFFEE: [3.5, 4.5],
+  MEAL: { 1: [10, 16], 2: [18, 30], 3: [35, 60], 4: [70, 140] },
+  STAY_NIGHT: { 1: [45, 95], 2: [110, 170], 3: [180, 280], 4: [300, 600] },
+  ATTRACTION_ENTRY: { 1: [0, 10], 2: [10, 20], 3: [20, 35], 4: [35, 70] },
+};
+
 // USD base for a mid-priced western city
 const USD_BASE: Table = {
   RENT_SHARED_ROOM: [600, 950],
@@ -59,6 +74,7 @@ const COUNTRIES: { iso: string; currency: string; level: number; fx: number }[] 
   { iso: "IT", currency: "EUR", level: 0.8, fx: 0.92 },
   { iso: "ES", currency: "EUR", level: 0.72, fx: 0.92 },
   { iso: "AT", currency: "EUR", level: 0.88, fx: 0.92 },
+  { iso: "IE", currency: "EUR", level: 0.98, fx: 0.92 },
   { iso: "GB", currency: "GBP", level: 1.02, fx: 0.79 },
   { iso: "US", currency: "USD", level: 1.05, fx: 1 },
   { iso: "CA", currency: "CAD", level: 0.92, fx: 1.37 },
@@ -110,6 +126,17 @@ export async function seedCosts(prisma: PrismaClient) {
     for (const r of rows(USD_BASE, c.level * c.fx, c.currency)) {
       await upsertCost(prisma, country.id, null, r, c.currency, "Nira country-level estimate (price index × exchange rate)");
       count++;
+    }
+  }
+  const ie = await prisma.country.findUnique({ where: { isoCode: "IE" }, select: { id: true } });
+  if (ie) {
+    for (const name of ["Dublin", "Dublin City"]) {
+      const city = await findCity(prisma, "IE", name).catch(() => null);
+      if (!city) continue;
+      for (const r of rows(DUBLIN, 1, "EUR")) {
+        await upsertCost(prisma, ie.id, city.id, r, "EUR", "Nira estimate from RTB rent index, daft.ie reports, TFI fares and operator price lists (2025)");
+        count++;
+      }
     }
   }
   console.log(`  cost estimates: ${count}`);

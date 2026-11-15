@@ -50,9 +50,14 @@ export const WORLD: Record<string, Country> = {
   PT: { sims: ["MEO", "NOS", "Vodafone"], simDocs: "Passport", simWhere: "Carrier shops, airports",
     transit: [{ mode: "METRO", title: "Metro", description: "Lisbon and Porto metros.", howToBuy: "Navegante (Lisbon) or Andante (Porto) cards." }, { mode: "TRAM", title: "Trams and buses", description: "Same cards; Lisbon's historic trams are part of the network." }],
     rides: [uber("pt"), bolt] },
-  IE: { sims: ["Vodafone", "Three", "Eir"], simDocs: "No ID for prepaid", simWhere: "Carrier shops, supermarkets",
-    transit: [{ mode: "BUS", title: "Dublin Bus and TFI buses", description: "Main way around Dublin; Leap card gives cheaper fares.", howToBuy: "Leap card or the TFI Go app." }, { mode: "TRAM", title: "Luas tram and DART", description: "Trams and coastal trains in Dublin." }],
-    rides: [{ name: "FREENOW", kind: "TAXI", website: "https://www.free-now.com/ie/", notes: "Most popular taxi app in Ireland." }, uber("ie", "Books licensed taxis.")] },
+  // Ireland's SIM operators and transport are seeded in detail by guide-ie.ts
+  IE: { sims: [], simDocs: "No ID for prepaid", simWhere: "Carrier shops, supermarkets", transit: [],
+    rides: [
+      { name: "FREENOW", kind: "TAXI", website: "https://www.free-now.com/ie/", notes: "Most popular taxi app in Ireland; books licensed, metered taxis." },
+      uber("ie", "In Ireland Uber books licensed taxis."),
+      { name: "Bolt", kind: "TAXI", website: "https://bolt.eu/en-ie/", notes: "Books licensed taxis in Dublin and other cities." },
+      { name: "dublinbikes", kind: "BIKE_SHARE", website: "https://www.dublinbikes.ie/", notes: "City-centre bike share; first 30 minutes of each trip free." },
+    ] },
   AT: { sims: ["A1", "Magenta", "Drei"], simDocs: "Passport (registration required)", simWhere: "Carrier shops, supermarkets",
     transit: [{ mode: "METRO", title: "Vienna U-Bahn", description: "Plus trams and buses in all cities.", howToBuy: "WienMobil app or machines; the annual pass is great value.", apps: "WienMobil, ÖBB" }, { mode: "TRAIN", title: "ÖBB trains", description: "Between cities; KlimaTicket covers almost all public transport." }],
     rides: [uber("at"), bolt] },

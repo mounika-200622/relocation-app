@@ -16,6 +16,7 @@ import { seedDemo } from "./seed/demo";
 import { seedTrips } from "./seed/trips";
 import { seedRides } from "./seed/rides";
 import { seedIndiaGuide } from "./seed/guide-in";
+import { seedIrelandGuide } from "./seed/guide-ie";
 import { seedWorld } from "./seed/world";
 import { seedPhotos } from "./seed/photos";
 
@@ -34,6 +35,7 @@ async function main() {
   await step("Swiss guide", () => seedSwissGuide(prisma));
   await step("India guide", () => seedIndiaGuide(prisma));
   await step("world basics (SIM, transport, rides)", () => seedWorld(prisma));
+  await step("Ireland guide", () => seedIrelandGuide(prisma));
   await step("taxis & ride-hailing", () => seedRides(prisma));
   await step("cost estimates", () => seedCosts(prisma));
   await step("demo data", () => seedDemo(prisma));
