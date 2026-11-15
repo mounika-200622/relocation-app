@@ -82,6 +82,13 @@ db.notifications.aggregate([
 ])
 ```
 
+### `embeddings`
+
+Semantic-search vectors (384-d, all-MiniLM-L6-v2) for guide articles and listings, keyed
+`"<kind>:<mysqlId>"`, with `countryIso` / `cityId` metadata and a text hash. Indexes
+`{kind, countryIso}`, `{kind, cityId}`, unique `{kind, refId}`. Ranked by a cosine-similarity
+aggregation pipeline. Full design: [vector-search.md](vector-search.md).
+
 ## Retrieval strategy
 
 - **Open a thread:** `find({ conversationId }).sort({ _id: -1 }).limit(200)` then reverse

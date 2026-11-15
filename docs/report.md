@@ -93,6 +93,7 @@ used for the currency converter).
 |---|---|---|
 | Accounts, profiles, listings, locations, requests, guide, prices, trips, audit | **MySQL** | Strongly related data with integrity needs (FKs, UNIQUE, CHECK), multi-row transactions (accept request, mark rented, save itinerary), ad-hoc relational queries (joins, aggregates, windows), full-text search. |
 | Chat message bodies, notifications | **MongoDB** | Append-only, high-volume, schema-flexible documents read by a single key in time order; TTL expiry; aggregation pipelines for counters. Details: [nosql-design.md](nosql-design.md). |
+| Text embeddings of guide articles and listings (384 floats + metadata) | **MongoDB** (`embeddings`) | A vector is a fixed-length float array with loose metadata, which suits a document. MySQL 8 has no vector type. Similarity is computed by an aggregation pipeline, and MySQL remains the source of truth (the vectors are derived and rebuildable). Details: [vector-search.md](vector-search.md). |
 
 The conversation **header** stays in MySQL so uniqueness, blocks and cascades are enforced
 relationally; only the bodies go to MongoDB.
@@ -124,7 +125,9 @@ demos, transactions with row locks, upsert, cascading delete, DDL demo, EXPLAIN)
 
 **Advanced concepts demonstrated (≥ 4 required):** transactions, views, stored procedure and
 functions, triggers, indexing (117 indexes incl. composite and FULLTEXT), full-text search,
-NoSQL aggregation, window functions, CHECK constraints.
+NoSQL aggregation, **vector similarity search** (embeddings in MongoDB, cosine similarity in an
+aggregation pipeline, hybrid with SQL filters, see [vector-search.md](vector-search.md)), window
+functions, CHECK constraints.
 
 ### Transactions in the application
 | Operation | Where | Technique |
@@ -210,11 +213,17 @@ Real screenshots of the running app (seeded demo data) are in [`docs/screenshots
 
 ## 10. Testing
 
-- **Unit tests (Vitest, `npm test`) — 79 passing:** matching score (and the documented
+- **Unit tests (Vitest, `npm test`): 87 passing:** matching score (and the documented
   example), budget split/allocation/ledger (never exceeds), trip planner over 18 budget × style
   combinations, price-tier derivation, Haversine/bounding box/nearest-neighbour, authorization
   rules incl. open-redirect protection, all zod schemas, accept-request rules incl. the race,
-  Overpass query building and parsing, Swiss duration parsing, admin schema generation.
+  Overpass query building and parsing, Swiss duration parsing, admin schema generation, the
+  vector-similarity pipeline (its dot product equals cosine for normalised vectors) and the
+  IPv4 loopback rewrite of database URLs.
+- **Semantic search checks:** real queries with no keyword in common with the answer return
+  the right article or listing first (table in [vector-search.md](vector-search.md#examples-real-output)).
+- **Reliability fix found by testing:** connections to `localhost` failed at random on Windows
+  (IPv6 `::1` vs IPv4 MySQL). All database URLs now use `127.0.0.1`.
 - **Database tests:** every query in `docs/queries.sql` is executed by
   `scripts/docs/queries.ts`; trigger/CHECK/unique-rule violations are shown being rejected by
   MySQL; migrations were verified on an empty database and on a v1 database containing data;
@@ -236,7 +245,7 @@ full-text search and window functions) and a document store for append-only data
 together behind one web and mobile application, with the database itself enforcing the
 important rules (occupancy, uniqueness, budgets, audit trail).
 
-**Future work:** booking rides and SIMs inside the app through partner APIs; WebSockets/SSE instead of polling; semantic search over the guide with vector
-embeddings; translated guide content; verified identity and digital lease signing; price
+**Future work:** booking rides and SIMs inside the app through partner APIs; WebSockets/SSE instead of polling; an approximate-nearest-neighbour vector index (Atlas
+`$vectorSearch` or pgvector HNSW) once the vector store grows beyond a few thousand rows; translated guide content; verified identity and digital lease signing; price
 history charts from the audit log; deployment on a managed MySQL + MongoDB Atlas with
 background jobs refreshing the place cache; offline reading of the guide in the app.

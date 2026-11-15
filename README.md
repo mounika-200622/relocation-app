@@ -39,12 +39,12 @@ login a user picks **Relocate** or **Trip** mode and can switch any time.
 | **Money** | Users set their **home country**; Nira shows today's rate and a converter from the home currency to the local one (open.er-api.com, cached in MySQL) and links to the nearest **exchange offices, banks and ATMs** on a live map. |
 | **31 country guides** | SIM operators, bus/metro/rail and taxi & ride-hailing apps for 29+ countries (India: Jio, Airtel, Vi, BSNL · Namma Metro, BMTC · Uber, Ola, Rapido, Namma Yatri; Vietnam: Viettel · Grab, Be, Xanh SM; and many more), each with a real landmark photo. |
 | **Real photos** | Every country, demo city and listing uses freely licensed photos from Wikimedia Commons, credited on the photo and on the public [/credits](src/app/credits/page.tsx) page (`scripts/fetch-photos.ts`). |
-| **Housing search** | Country → region → city cascade, type, price, open spots, gender rule, move-in date, bedrooms, amenities, furnished, keywords (FULLTEXT); sort by newest, price or distance; 12 per page; filters live in the URL; "within budget" badges from your profile; map view with price pins. |
+| **Housing search** | Country → region → city cascade, type, price, open spots, gender rule, move-in date, bedrooms, amenities, furnished, keywords (FULLTEXT) or **Smart match** by meaning ("quiet furnished room, pets ok" – vector search); sort by newest, price or distance; 12 per page; filters live in the URL; "within budget" badges from your profile; map view with price pins. |
 | **Listing pages** | Photo mosaic + lightbox, facts, amenities, house rules, price insight ("cheaper than 72 % of places in Zürich" – window function), map, owner card, message owner, save, people looking to share, nearby essentials, report. |
 | **Roommates** | Post a request on any shareable place (one open request per person, enforced by the DB); compatibility score 0–100 (TypeScript + SQL view); top matches; owners accept in a locking transaction that fills the place and closes the rest. |
 | **Chat** | Either side can start; one conversation per pair and place; unread badges; 3-second polling that only fetches new messages and pauses in background tabs; read receipts; block and report. No phone numbers or emails are ever shown. |
 | **Nearby essentials** | Supermarkets, pharmacies, hospitals, doctors, transit stops, SIM shops, banks, ATMs, laundry, gyms, universities, post, police — live from OpenStreetMap, cached in MySQL for 7 days, with estimated prices for food. |
-| **Settling-in guide** | Database-driven articles, a first-week checklist that remembers your progress, SIM plans, transport modes and passes, **live Swiss connections**, healthcare, banking, groceries, emergency numbers, cost of living, full-text search, admin editor. |
+| **Settling-in guide** | Database-driven articles, a first-week checklist that remembers your progress, SIM plans, transport modes and passes, **live Swiss connections**, healthcare, banking, groceries, emergency numbers, cost of living, **Ask in your own words** (semantic vector search: "I just landed and need mobile internet" finds the SIM guide) plus exact full-text search, admin editor. |
 | **Trip planner** | City, days, people, budget, style, pace, interests and a budget split → day-by-day plan (stay, meals, sights, transport) clustered by distance, with a live budget meter, swap/add/remove, regenerate, duplicate, print and a read-only share link. |
 | **Business dashboard** | Listings, views (14-day chart), inquiries, open requests; create/edit with geocoding and a draggable pin; photo upload, reorder, cover, captions; archive, mark rented (stored procedure). |
 | **Admin** | Users (search, deactivate, verify, roles), listing moderation, reports queue, guide and cost content CRUD, audit log, Mongo message stats. |
@@ -58,11 +58,12 @@ login a user picks **Relocate** or **Trip** mode and can switch any time.
 | UI | Tailwind CSS 4, lucide icons, sonner toasts, Leaflet + OpenStreetMap tiles |
 | Auth | NextAuth v5 (credentials, JWT with id + role), bcryptjs |
 | Relational DB | **MySQL 8** via Prisma 6 + raw SQL migrations (views, function, procedure, triggers, CHECKs, FULLTEXT) |
-| Document DB | **MongoDB 7** (official driver): chat messages and notifications |
+| Document DB | **MongoDB 7** (official driver): chat messages, notifications and the **vector store** for semantic search |
+| Embeddings | all-MiniLM-L6-v2 (384-d) run locally with transformers.js – no API key ([docs/vector-search.md](docs/vector-search.md)) |
 | Validation | zod on every API input + database constraints |
 | External data | OSM Overpass (places), Nominatim (geocoding), transport.opendata.ch (Swiss timetable), open.er-api.com (exchange rates), Cloudinary (optional photo storage) |
 | Mobile | PWA (manifest, service worker) + Capacitor Android project |
-| Tests | Vitest (81 tests) |
+| Tests | Vitest (87 tests) |
 
 ## Architecture
 
@@ -120,6 +121,10 @@ npm run db:seed
 ```
 
 ```bash
+npm run vectors:index
+```
+
+```bash
 npm run dev
 ```
 
@@ -134,6 +139,8 @@ Open http://localhost:3000.
 - **Nearby places & trips** use live OpenStreetMap data. The public Overpass server can be slow;
   pre-fill the cache for the demo cities with `npx tsx scripts/poi-warm.ts`, or set `POI_OFFLINE=1`
   to work only from the cache.
+- `vectors:index` builds the semantic-search vectors (first run downloads a ~23 MB model into
+  `.cache/models`). Without it the app still works; "Ask" and "Smart match" fall back to keywords.
 - Upgrading a v1 database (photos stored as base64)? Run `npx prisma migrate deploy` then
   `npm run photos:migrate`.
 
@@ -190,6 +197,8 @@ Password for every seeded person and business: **`NiraDemo#2026`**
 - **Transactions** with `SELECT … FOR UPDATE` for the roommate accept race condition
 - **Window functions** (RANK, PERCENT_RANK, DENSE_RANK, ROW_NUMBER, COUNT OVER) in app queries
 - **MongoDB** aggregation pipelines, a partial index for unread messages and a TTL index
+- **Vector similarity search**: 384-d embeddings in MongoDB, cosine similarity computed by an
+  aggregation pipeline, ids joined back to MySQL with all filters ([docs/vector-search.md](docs/vector-search.md))
 - 27 annotated queries with real output: [docs/queries.sql](docs/queries.sql)
 
 ## Run on a phone / Android
@@ -227,6 +236,7 @@ prints it – so no rebuild is needed. To use the app anywhere, deploy the serve
 | `npm run db:seed` | Idempotent seed (safe to re-run) |
 | `npm run db:reset` | Drop, re-migrate and re-seed the database (asks Prisma for confirmation) |
 | `npm run mongo:local` | Local MongoDB without Docker |
+| `npm run vectors:index` | Build / refresh the semantic-search vectors (only changed rows) |
 | `npm run photos:migrate` | Move v1 base64 photos into `ListingPhoto` |
 | `npm run address` | Print the address phones use to reach this laptop |
 | `npm run android:wifi` | Build the Wi-Fi APK for this laptop's current IP (`-- --install` to install) |
@@ -241,9 +251,9 @@ prints it – so no rebuild is needed. To use the app anywhere, deploy the serve
 npm test
 ```
 
-81 unit tests cover the roommate score, budget allocation and the never-over-budget ledger,
+87 unit tests cover the roommate score, budget allocation and the never-over-budget ledger,
 the trip planner, price tiers, Haversine, authorization rules (incl. open redirects), every
-zod schema, the accept-request race rules, Overpass parsing and admin schemas. Database
+zod schema, the accept-request race rules, Overpass parsing, admin schemas, the vector-similarity pipeline and the database URL fix. Database
 behaviour (triggers, CHECKs, procedure, transactions) is exercised by `scripts/docs/queries.ts`.
 Manual walkthrough: [docs/qa-checklist.md](docs/qa-checklist.md).
 
@@ -277,6 +287,17 @@ android/, capacitor.config.ts, mobile/   Android app
 Both members contributed to the database and the application; commits alternate between the
 two. Breakdown by area: [docs/contributions.md](docs/contributions.md).
 
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| Random `Can't reach database server at localhost:3306` (works, then fails) | On Windows `localhost` resolves to IPv6 `::1` first, while MySQL listens on IPv4. Use `127.0.0.1` in `DATABASE_URL` (the app also rewrites `localhost` itself since this fix). |
+| Everything slow, dev server or MySQL/MongoDB crashing | Check free disk space. MySQL, MongoDB and the Next.js cache all need room, so keep at least a few GB free. |
+| "The map data service is busy" for nearby places or trips | The public Overpass server is overloaded. List several mirrors in `OVERPASS_URL` (see `.env.example`) and run `npx tsx scripts/poi-warm.ts` before a demo. |
+| Pages take 20–40 s the first time | That's dev-mode compilation. For a demo, use `npm run build` then `npm start`. |
+| Chat or notifications empty | MongoDB isn't running. Start `npm run mongo:local` (or Docker) and keep it open. |
+| "Smart search isn't available right now" | Run `npm run vectors:index` once, with MongoDB running. |
+
 ## Known limitations
 
 - Chat uses 3-second polling, not WebSockets.
@@ -297,7 +318,7 @@ two. Breakdown by area: [docs/contributions.md](docs/contributions.md).
 [Project report](docs/report.md) · [ER diagram](docs/er-diagram.md) · [DDL](docs/schema.sql) ·
 [Data dictionary](docs/data-dictionary.md) · [Normalization](docs/normalization.md) ·
 [Queries](docs/queries.sql) · [NoSQL design](docs/nosql-design.md) ·
-[Trip algorithm](docs/trip-algorithm.md) · [Matching algorithm](docs/matching-algorithm.md) ·
+[Vector search](docs/vector-search.md) · [Trip algorithm](docs/trip-algorithm.md) · [Matching algorithm](docs/matching-algorithm.md) ·
 [Android](docs/android.md) · [QA checklist](docs/qa-checklist.md) · [Contributions](docs/contributions.md)
 
 Map data © OpenStreetMap contributors (ODbL). Timetable data: transport.opendata.ch. Exchange
