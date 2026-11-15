@@ -28,6 +28,9 @@ const config: CapacitorConfig = {
     cleartext: serverUrl.startsWith("http://"), // allow plain HTTP only for local development
     androidScheme: "https",
     errorPath: "offline.html", // shown instead of a blank screen when the server can't be reached
+    // lets the "can't connect" page re-point the app at the laptop's new address after a network
+    // change (private home / hotspot ranges only) without rebuilding the APK
+    allowNavigation: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
   },
   plugins: {
     // light status-bar icons on the dark theme; insets reach CSS as env(safe-area-inset-*)
@@ -35,7 +38,8 @@ const config: CapacitorConfig = {
   },
   android: {
     backgroundColor: "#0e0810",
-    allowMixedContent: false,
+    // the bundled "can't connect" page (https://localhost) must be able to probe the plain-HTTP dev server
+    allowMixedContent: serverUrl.startsWith("http://"),
   },
 };
 

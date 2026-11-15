@@ -14,6 +14,10 @@
     ol { text-align: left; color: #d8b4c8; line-height: 1.7; padding-left: 20px; }
     code { color: #fdf2f8; background: #ffffff14; padding: 1px 6px; border-radius: 6px; word-break: break-all; }
     button:disabled { opacity: .7; }
+    form { margin-top: 14px; display: grid; gap: 8px; text-align: left; }
+    label { font-size: 13px; color: #d8b4c8; }
+    input { height: 46px; border-radius: 14px; border: 1px solid #ffffff2e; background: #ffffff10; color: #fdf2f8; padding: 0 14px; font-size: 16px; }
+    #msg { min-height: 1.6em; font-size: 14px; color: #fda4af; }
     button { margin-top: 18px; border: 0; border-radius: 999px; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #f472b6, #ec4899 50%, #a21caf); }
   </style>
 </head>
@@ -22,33 +26,78 @@
     <h1>Nira<span>.</span></h1>
     <p>Can't reach the Nira server<span id="where"></span>.</p>
     <ol>
-      <li>Turn on <b>Wi-Fi</b> on this phone and join the <b>same network</b> as the laptop.</li>
+      <li>Connect this phone and the laptop to the <b>same Wi-Fi</b> (or connect the laptop to this phone's <b>hotspot</b>).</li>
       <li>On the laptop, run <code>npm run start:lan</code>.</li>
-      <li>If the laptop changed networks, rebuild with <code>npm run android:wifi</code>.</li>
+      <li>If the laptop's address changed, type the new one below. The laptop shows it when you run <code>npm run address</code>.</li>
     </ol>
-    <button id="retry" type="button">Try again</button>
+    <form id="form">
+      <label for="addr">Laptop address</label>
+      <input id="addr" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="192.168.1.20:3000" />
+      <button id="retry" type="submit">Connect</button>
+    </form>
+    <p id="msg" role="status"></p>
   </main>
   <script>
     // __NIRA_SERVER__ is replaced with the app's server URL by capacitor.config.ts at sync time
-    var url = "__NIRA_SERVER__";
-    if (url) document.getElementById("where").textContent = " at " + url;
+    var built = "__NIRA_SERVER__";
+    var KEY = "nira.server";
+    var saved = null;
+    try { saved = localStorage.getItem(KEY); } catch (e) { saved = null; }
+    var addr = document.getElementById("addr");
     var retry = document.getElementById("retry");
-    retry.addEventListener("click", function () {
-      if (!url) return window.location.reload();
-      // Check the server answers before leaving this page, so an unreachable network never
-      // turns into a blank screen again.
-      retry.disabled = true;
-      retry.textContent = "Checking…";
+    var msg = document.getElementById("msg");
+    addr.value = (saved || built).replace(/^https?:\/\//, "");
+    document.getElementById("where").textContent = " at " + (saved || built);
+
+    // Only private (home / hotspot) addresses or the built-in one are accepted.
+    function toUrl(text) {
+      var t = String(text || "").trim().replace(/\/+$/, "");
+      if (!t) return null;
+      if (!/^https?:\/\//i.test(t)) t = "http://" + t;
+      var m = /^(https?):\/\/([a-z0-9.-]+)(?::(\d{2,5}))?$/i.exec(t);
+      if (!m) return null;
+      var host = m[2].toLowerCase();
+      var isPrivate = /^(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/.test(host);
+      var url = m[1].toLowerCase() + "://" + host + ":" + (m[3] || "3000");
+      if (!isPrivate && url !== built.replace(/\/+$/, "") && t !== built) return null;
+      return url;
+    }
+
+    // Check the server answers before leaving this page, so an unreachable address never
+    // turns into a blank screen again.
+    function probe(url) {
       var ctrl = new AbortController();
       var timer = setTimeout(function () { ctrl.abort(); }, 6000);
-      fetch(url, { mode: "no-cors", cache: "no-store", signal: ctrl.signal })
-        .then(function () { window.location.href = url; })
-        .catch(function () {
-          retry.disabled = false;
-          retry.textContent = "Still can't reach it – try again";
-        })
-        .finally(function () { clearTimeout(timer); });
+      return fetch(url + "/manifest.webmanifest", { mode: "no-cors", cache: "no-store", signal: ctrl.signal })
+        .then(function () { return true; }, function () { return false; })
+        .then(function (ok) { clearTimeout(timer); return ok; });
+    }
+
+    function connect(url, quiet) {
+      retry.disabled = true;
+      retry.textContent = "Checking…";
+      return probe(url).then(function (ok) {
+        if (ok) {
+          try { localStorage.setItem(KEY, url); } catch (e) { /* private mode: just go */ }
+          window.location.href = url;
+          return;
+        }
+        retry.disabled = false;
+        retry.textContent = "Connect";
+        if (!quiet) msg.textContent = "No answer from " + url + ". Check the Wi-Fi and that the server is running.";
+      });
+    }
+
+    document.getElementById("form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var url = toUrl(addr.value);
+      if (!url) { msg.textContent = "Type the laptop's address, for example 192.168.1.20:3000"; return; }
+      msg.textContent = "";
+      connect(url, false);
     });
+
+    // An address saved earlier (after a network change) is tried automatically.
+    if (saved && saved !== built) connect(saved, true);
   </script>
 </body>
 </html>
