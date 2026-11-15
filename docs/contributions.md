@@ -1,18 +1,18 @@
 # Individual contributions
 
-Generated from `git log` (206 commits, merges excluded).
+Generated from `git log` (220 commits, merges excluded).
 
 | Area | mounika-200622 | pramitiudupa |
 |---|---|---|
-| Android / PWA | 0 | 3 |
-| Backend (API & domain logic) | 28 | 32 |
-| Database schema & SQL objects | 6 | 4 |
-| Documentation | 10 | 9 |
-| Frontend (pages & UI) | 40 | 38 |
-| Seed data | 8 | 7 |
-| Tests | 4 | 6 |
+| Android / PWA | 1 | 3 |
+| Backend (API & domain logic) | 29 | 32 |
+| Database schema & SQL objects | 7 | 4 |
+| Documentation | 12 | 11 |
+| Frontend (pages & UI) | 41 | 41 |
+| Seed data | 8 | 9 |
+| Tests | 5 | 6 |
 | Tooling & setup | 7 | 4 |
-| **Total** | **103** | **103** |
+| **Total** | **110** | **110** |
 
 ## mounika-200622
 
@@ -119,6 +119,13 @@ Generated from `git log` (206 commits, merges excluded).
 - style: finish the pink ombre theme (rose warm accent, pink avatars) and hide tab bar while typing
 - docs: ER diagram, DDL, data dictionary and queries now cover ride services, home country and photos
 - docs: image credits page generated from the photo manifest
+- fix(android): show the can't-connect page after 15 s instead of a blank screen on mobile data
+- feat(db): store where the university or employer is on the profile (campus coordinates + CHECK)
+- feat(destination): briefing for the city on the profile and homes nearest the campus
+- fix(profile): finishing the profile opens the destination; country picker ranks exact matches first
+- fix(location): GPS in a suburb reports the main city Nira has data for (Donnybrook -> Dublin)
+- feat(android): can't-connect screen accepts the laptop's new address after a network change
+- docs: README, report, Android guide and QA steps for the destination dashboard and Bengaluru-to-Dublin demo
 
 ## pramitiudupa
 
@@ -225,4 +232,11 @@ Generated from `git log` (206 commits, merges excluded).
 - feat(location): pick a city when GPS is off; unclipped city list; converter fits phone width
 - feat(seed): Bengaluru demo users moving from Germany and France, with roommate matches
 - docs: README, report, Android guide and QA checklist for location, money, Bengaluru demo and the Wi-Fi app
+- docs: refresh contributions breakdown
+- feat(guide): full Ireland guide - IRP, PPS, SIM plans, Leap Card, banks, Dublin costs, taxi apps
+- feat(seed): Dublin homes near UCD, Bengaluru-to-Dublin demo students, roommate matches, sensible views
+- feat(dashboard): 'Your destination' panel - money, SIMs, transport, first steps, homes by distance from campus
+- fix: search sorts by distance from campus with a country fallback; trip prefilled; readable FX rate; nav no-wrap
+- fix(mobile): pages no longer scroll sideways; converter amount fits on phones
+- docs: schema, data dictionary, ER diagram, queries and image credits for campus coordinates and Dublin
 
