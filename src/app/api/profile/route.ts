@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { json, readJson, requireUser, route } from "@/lib/api";
 import { businessProfileSchema, userProfileSchema } from "@/lib/validators/profile";
 import { num } from "@/lib/format";
+import { locateOrganization } from "@/lib/destination";
 
 export const GET = route(async () => {
   const user = await requireUser();
@@ -34,6 +35,7 @@ export const PUT = route(async (req) => {
 
   const { name, languages, moveInDate, ...p } = await readJson(req, userProfileSchema);
   const data = { ...p, organization: p.organization || null, bio: p.bio || null, moveInDate: moveInDate ? new Date(moveInDate) : null };
+  const before = await prisma.userProfile.findUnique({ where: { userId: user.id }, select: { organization: true, destinationCityId: true, organizationLat: true } });
   const valid = await prisma.language.findMany({ where: { code: { in: languages } }, select: { code: true } });
   await prisma.$transaction([
     ...(name ? [prisma.user.update({ where: { id: user.id }, data: { name } })] : []),
@@ -42,5 +44,14 @@ export const PUT = route(async (req) => {
     prisma.userLanguage.createMany({ data: valid.map((l) => ({ userId: user.id, languageCode: l.code })) }),
     prisma.user.update({ where: { id: user.id }, data: { onboardedAt: new Date() } }),
   ]);
+
+  // Find the university / employer on the map (once, and again when it or the city changes), so the
+  // dashboard can show homes and essentials nearest to it. Best effort: a miss leaves it empty.
+  const cityId = data.destinationCityId ?? null;
+  const changed = data.organization !== (before?.organization ?? null) || cityId !== (before?.destinationCityId ?? null) || before?.organizationLat == null;
+  if (changed) {
+    const point = data.organization && cityId ? await locateOrganization(data.organization, cityId).catch(() => null) : null;
+    await prisma.userProfile.update({ where: { userId: user.id }, data: { organizationLat: point?.lat ?? null, organizationLng: point?.lng ?? null } });
+  }
   return json({ ok: true });
 });

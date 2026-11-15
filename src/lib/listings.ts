@@ -120,6 +120,20 @@ export async function cardsByIds(ids: number[]) {
   return ids.map((id) => byId.get(id)).filter((x): x is ListingCardData => Boolean(x));
 }
 
+/** Active listings closest to a point (a campus, an office, a city centre), nearest first. */
+export async function nearestCards(center: { lat: number; lng: number }, limit = 6, radiusKm = 40) {
+  const rows = await prisma.$queryRaw<Row[]>`
+    SELECT near.* FROM (
+      SELECT v.*, fn_distance_km(${center.lat}, ${center.lng}, v.lat, v.lng) AS distanceKm
+      FROM v_listing_summary v
+      WHERE v.status = 'ACTIVE' AND v.lat IS NOT NULL AND v.lng IS NOT NULL
+    ) near
+    WHERE near.distanceKm <= ${radiusKm}
+    ORDER BY near.distanceKm
+    LIMIT ${limit}`;
+  return rows.map(mapRow);
+}
+
 export async function savedIdsFor(userId: number | null | undefined, ids: number[]) {
   if (!userId || !ids.length) return new Set<number>();
   const rows = await prisma.savedListing.findMany({ where: { userId, listingId: { in: ids } }, select: { listingId: true } });

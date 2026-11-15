@@ -81,3 +81,12 @@ export function titleCase(s: string) {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
+
+/** "University College Dublin" → "UCD"; short names stay as they are. */
+export function shortName(name: string) {
+  const trimmed = name.trim();
+  const words = trimmed.split(/\s+/).filter((w) => !/^(of|the|and|for|at|in|de|la|du)$/i.test(w));
+  // only long, multi-word names are abbreviated; "Trinity College" or "Google" read fine as they are
+  if (trimmed.length <= 18 || words.length < 3) return trimmed;
+  return words.map((w) => w[0]!.toUpperCase()).join("");
+}
