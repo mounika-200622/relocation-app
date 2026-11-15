@@ -292,7 +292,8 @@ two. Breakdown by area: [docs/contributions.md](docs/contributions.md).
 | Symptom | Cause and fix |
 |---|---|
 | Random `Can't reach database server at localhost:3306` (works, then fails) | On Windows `localhost` resolves to IPv6 `::1` first, while MySQL listens on IPv4. Use `127.0.0.1` in `DATABASE_URL` (the app also rewrites `localhost` itself since this fix). |
-| Everything slow, dev server or MySQL/MongoDB crashing | Check free disk space. MySQL, MongoDB and the Next.js cache all need room, so keep at least a few GB free. |
+| Everything slow, dev server or MySQL/MongoDB crashing | Check free **disk space** and **RAM**. On an 8 GB laptop, MySQL + MongoDB + the Next.js dev server + Chrome can use all the memory, and Windows starts swapping. Close other apps and browser tabs, and for demos run `npm run build` then `npm start`: the production server uses far less memory than `npm run dev`. |
+| `Can't reach database server` while the laptop is busy | Prisma gave up while the computer was overloaded. The app now waits up to 30 s (`connect_timeout=30&pool_timeout=30`, added automatically and in `.env.example`). |
 | "The map data service is busy" for nearby places or trips | The public Overpass server is overloaded. List several mirrors in `OVERPASS_URL` (see `.env.example`) and run `npx tsx scripts/poi-warm.ts` before a demo. |
 | Pages take 20–40 s the first time | That's dev-mode compilation. For a demo, use `npm run build` then `npm start`. |
 | Chat or notifications empty | MongoDB isn't running. Start `npm run mongo:local` (or Docker) and keep it open. |

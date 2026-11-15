@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cleanForEmbedding, cosine } from "@/lib/vector/embed";
 import { similarityPipeline } from "@/lib/vector/store";
-import { ipv4Loopback } from "@/lib/db-url";
+import { ipv4Loopback, mysqlUrl } from "@/lib/db-url";
 
 /** Evaluates the $reduce/$zip dot product the same way MongoDB does, for one document. */
 function runScore(pipeline: ReturnType<typeof similarityPipeline>, embedding: number[]) {
@@ -55,5 +55,17 @@ describe("ipv4Loopback", () => {
     expect(ipv4Loopback("mysql://u:p@db.example.com:3306/nira")).toBe("mysql://u:p@db.example.com:3306/nira");
     expect(ipv4Loopback("mysql://u:p@localhost.example.com/nira")).toBe("mysql://u:p@localhost.example.com/nira");
     expect(ipv4Loopback(undefined)).toBeUndefined();
+  });
+});
+
+describe("mysqlUrl", () => {
+  it("adds longer connect and pool timeouts unless the URL sets them", () => {
+    expect(mysqlUrl("mysql://u:p@localhost:3306/nira")).toBe("mysql://u:p@127.0.0.1:3306/nira?connect_timeout=30&pool_timeout=30");
+    expect(mysqlUrl("mysql://u:p@db:3306/nira?connect_timeout=5")).toBe("mysql://u:p@db:3306/nira?connect_timeout=5&pool_timeout=30");
+  });
+
+  it("leaves non-MySQL and missing URLs alone", () => {
+    expect(mysqlUrl("mongodb://localhost:27017")).toBe("mongodb://127.0.0.1:27017");
+    expect(mysqlUrl(undefined)).toBeUndefined();
   });
 });
