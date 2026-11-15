@@ -20,7 +20,7 @@ export default async function CreditsPage() {
   ];
   return (
     <div className="mx-auto max-w-5xl px-4 pb-16 pt-8">
-      <PageHeader title="Photo credits" description="Demo photos are real photographs from Wikimedia Commons, used under their free licences (CC0, public domain, CC BY, CC BY-SA, FAL). Photos uploaded by owners belong to them." />
+      <PageHeader title="Photo credits" description="Demo photos are real photographs from Wikimedia Commons, used under their free licences (CC0, public domain, CC BY, CC BY-SA, FAL). Photos uploaded by owners belong to them. Country flags: Twemoji by Twitter, CC BY 4.0, via the Twemoji Country Flags font (MIT)." />
       <ul className="grid gap-3 sm:grid-cols-2">
         {rows.map((r) => {
           const c = parseCredit(r.credit);
