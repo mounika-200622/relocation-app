@@ -1,4 +1,5 @@
 import { MongoClient, type Db } from "mongodb";
+import { ipv4Loopback } from "@/lib/db-url";
 
 /**
  * MongoDB holds the document-shaped, append-heavy data:
@@ -9,7 +10,7 @@ import { MongoClient, type Db } from "mongodb";
 const globalForMongo = globalThis as unknown as { niraMongo?: Promise<Db> };
 
 async function connect(): Promise<Db> {
-  const uri = process.env.MONGODB_URI;
+  const uri = ipv4Loopback(process.env.MONGODB_URI);
   if (!uri) throw new Error("MONGODB_URI is not set. Start MongoDB (docker compose up -d, or npm run mongo:local).");
   const client = new MongoClient(uri, { serverSelectionTimeoutMS: 4000, appName: "nira" });
   await client.connect();
