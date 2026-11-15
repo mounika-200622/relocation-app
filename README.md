@@ -231,6 +231,8 @@ prints it – so no rebuild is needed. To use the app anywhere, deploy the serve
 | `npm run dev` / `dev:lan` | Dev server (LAN version listens on all interfaces) |
 | `npm run build` / `start` / `start:lan` | Production build and server |
 | `npm test` | Vitest unit tests |
+| `npm run test:e2e` / `test:pages` | Browser end-to-end flows / every page per role (app must be running) |
+| `npm run docs:screenshots` | Re-take the screenshots in `docs/screenshots/` |
 | `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
 | `npm run db:migrate` | `prisma migrate deploy` |
 | `npm run db:seed` | Idempotent seed (safe to re-run) |
@@ -256,6 +258,23 @@ the trip planner, price tiers, Haversine, authorization rules (incl. open redire
 zod schema, the accept-request race rules, Overpass parsing, admin schemas, the vector-similarity pipeline and the database URL fix. Database
 behaviour (triggers, CHECKs, procedure, transactions) is exercised by `scripts/docs/queries.ts`.
 Manual walkthrough: [docs/qa-checklist.md](docs/qa-checklist.md).
+
+With the app running (`npm start` or `npm run dev`), two browser-level suites use your installed
+Chrome or Edge (set `CHROME_PATH` if it is somewhere unusual):
+
+```bash
+npm run test:e2e
+```
+
+29 checks that sign up throwaway accounts, then run listing → roommate request → chat → accept →
+RENTED trigger → audit log → account deletion with cascade. The accounts are deleted afterwards.
+
+```bash
+npm run test:pages
+```
+
+This opens every main page as a visitor, student, business and admin, and fails on errors.
+`npm run docs:screenshots` does the same and saves the report screenshots.
 
 ## Project structure
 

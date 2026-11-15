@@ -206,6 +206,24 @@ Real screenshots of the running app (seeded demo data) are in [`docs/screenshots
 | ![Guide article](screenshots/guide-article.png) | ![Listing on a phone](screenshots/listing-mobile.png) |
 | Guide article with source and date | Listing on a phone |
 
+| Student (Meera, Bengaluru → Dublin) | |
+|---|---|
+| ![Destination](screenshots/destination.png) | ![Smart match](screenshots/search-smart.png) |
+| "Your move to Dublin": live INR → EUR rate, Dublin costs vs budget, banks | Housing search with **Smart match** (vector similarity) |
+| ![Roommates](screenshots/roommates.png) | ![Trip](screenshots/trip.png) |
+| Roommate matches scored by the SQL view `v_roommate_compatibility` | Trip plan under budget with per-category meters and a map |
+| ![Essentials](screenshots/essentials.png) | ![Guide ask](screenshots/guide-ask.png) |
+| Nearby essentials from the OpenStreetMap cache | Guide **Ask (meaning)**: semantic search finds the renting guides |
+
+| Business owner and admin | |
+|---|---|
+| ![Business dashboard](screenshots/business-dashboard.png) | ![Requests](screenshots/requests.png) |
+| Business dashboard: views per day (GROUP BY date), inquiries, requests | Roommate requests with occupancy; accepting runs a locking transaction |
+| ![Listing form](screenshots/listing-form.png) | ![Admin](screenshots/admin.png) |
+| New listing: photos, address with map pin, sharing, capacity, occupants, price | Admin: window-function city ranking and MongoDB `$group` messages per day |
+
+Screenshots are produced by `npm run docs:screenshots` against the running app.
+
 | Phone (logged in as the demo user) | | | |
 |---|---|---|---|
 | ![Search](screenshots/search-mobile.jpg) | ![Hub](screenshots/relocate-home-mobile.jpg) | ![Chat](screenshots/chat-mobile.jpg) | ![Trip](screenshots/trip-mobile.jpg) |
@@ -224,6 +242,16 @@ Real screenshots of the running app (seeded demo data) are in [`docs/screenshots
   the right article or listing first (table in [vector-search.md](vector-search.md#examples-real-output)).
 - **Reliability fix found by testing:** connections to `localhost` failed at random on Windows
   (IPv6 `::1` vs IPv4 MySQL). All database URLs now use `127.0.0.1`.
+- **End-to-end tests (`npm run test:e2e`): 29/29 passing.** These run against the live app and
+  databases with throwaway accounts that are deleted afterwards. Covered: sign-up validation, the
+  UNIQUE email, role checks (a student gets 403 creating a listing), the occupancy CHECK rule,
+  `fn_spots_left`, the one-open-request rule, chat across MySQL and MongoDB with unread counts,
+  the accept transaction, the trigger that marks a full listing RENTED, the audit-log trigger,
+  vector search, password-confirmed account deletion and ON DELETE CASCADE.
+- **Page tests (`npm run test:pages`):** about 30 pages opened as visitor, student, business and
+  admin. The test fails on any server error, missing content or browser console error. It found
+  and led to fixes for: a hydration error on the landing page (a link nested inside a link), two
+  dashboard charts that rendered no bars, and country flags showing as letters on Windows.
 - **Database tests:** every query in `docs/queries.sql` is executed by
   `scripts/docs/queries.ts`; trigger/CHECK/unique-rule violations are shown being rejected by
   MySQL; migrations were verified on an empty database and on a v1 database containing data;

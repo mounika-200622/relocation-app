@@ -44,3 +44,11 @@ business: **`NiraDemo#2026`** (admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.en
 | 37 | meera@nira.app | Home tab → Food near UCD; Search tab | Cafés and restaurants on the Belfield campus with € estimates; homes sorted "nearest University College Dublin first" |
 | 38 | meera | Roommates; Trip mode → Plan a trip | Aoife and Arjun as matches; form pre-filled with Dublin, itinerary stays under budget |
 | 39 | anyone | Profile → home country: type "India", Enter | India is selected (not British Indian Ocean Territory) |
+| 40 | visitor | `/guide` → type "I just landed and need mobile internet", mode *Ask (meaning)* | SIM-card guides first with "% match", even though the words differ; *Exact keywords* switches to FULLTEXT |
+| 41 | meera | Find a place → Filters → *Smart match* on, "quiet room with a desk to study" | "Smart match for …" banner; best-fitting places first; other filters still apply |
+| 42 | business | Create a listing, then search for it with Smart match | The new listing is found within seconds (vector written in the background) |
+| 43 | any | Stop MongoDB, repeat 40 | "Smart search isn't available right now" and keyword results, no crash |
+| 44 | business | `/business` | "Views, last 14 days" shows one bar per day |
+| 45 | any (Windows) | `/relocate/home` or `/guide` | Country flags render as flags, not letters |
+
+Automated versions of most rows: `npm run test:e2e` and `npm run test:pages` (see README → Testing).
