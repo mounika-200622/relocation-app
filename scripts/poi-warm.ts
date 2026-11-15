@@ -4,6 +4,7 @@
  *
  *   npx tsx scripts/poi-warm.ts                 # the 10 seeded Swiss cities
  *   npx tsx scripts/poi-warm.ts Berlin:DE Bern:CH
+ *   npx tsx scripts/poi-warm.ts "Dublin:IE@53.3067,-6.2210"   # around a point, e.g. the UCD campus
  */
 import { PrismaClient, type PoiCategory } from "@prisma/client";
 import { ensureCached } from "../src/lib/poi/service";
@@ -25,8 +26,12 @@ const JOBS: { label: string; categories: PoiCategory[]; radius: number }[] = [
 async function main() {
   const targets = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT;
   for (const t of targets) {
-    const [name, iso] = t.split(":");
-    const city = await prisma.city.findFirst({ where: { name, country: { isoCode: iso } }, select: { id: true, lat: true, lng: true } });
+    // "Dublin:IE" warms around the city centre; "Dublin:IE@53.3067,-6.2210" around a point (e.g. a campus)
+    const [place, at] = t.split("@");
+    const [name, iso] = place!.split(":");
+    const row = await prisma.city.findFirst({ where: { name, country: { isoCode: iso } }, orderBy: { lat: "desc" }, select: { id: true, lat: true, lng: true } });
+    const [atLat, atLng] = (at ?? "").split(",").map(Number);
+    const city = row && at && Number.isFinite(atLat) && Number.isFinite(atLng) ? { id: row.id, lat: atLat!, lng: atLng! } : row;
     if (!city?.lat || !city.lng) {
       console.log(`skip ${t}: no coordinates`);
       continue;

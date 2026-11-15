@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
-import type { ListingType, Preference, PrismaClient } from "@prisma/client";
+import { Prisma, type ListingType, type Preference, type PrismaClient } from "@prisma/client";
 import { findCity } from "./locations";
 import { AMENITIES } from "./reference";
 import { getDb } from "../../src/lib/mongo/client";
@@ -36,6 +36,8 @@ type SeedUser = {
   city: [string, string]; budget: number; currency: string; moveIn: number; smoking?: "NON_SMOKER" | "OUTSIDE_ONLY" | "SMOKER";
   hasPets?: boolean; okWithPets?: boolean; social?: "QUIET" | "BALANCED" | "SOCIAL"; sleep?: "EARLY_BIRD" | "FLEXIBLE" | "NIGHT_OWL";
   roommateGender?: Preference; langs: string[]; bio: string; home: string;
+  /** campus / office coordinates, so the dashboard can rank homes by distance to it */
+  orgAt?: [number, number];
 };
 
 const USERS: SeedUser[] = [
@@ -50,13 +52,17 @@ const USERS: SeedUser[] = [
   { email: "yuki@nira.app", name: "Yuki Tanaka", gender: "FEMALE", occupation: "PROFESSIONAL", org: "WHO", city: ["CH", "Genève"], budget: 1600, currency: "CHF", moveIn: 15, social: "QUIET", langs: ["ja", "en", "fr"], bio: "Public-health consultant on a two-year contract.", home: "JP" },
   { email: "ethan@nira.app", name: "Ethan Chen", gender: "MALE", occupation: "STUDENT", org: "Graduate Institute Geneva", city: ["CH", "Genève"], budget: 1100, currency: "CHF", moveIn: 32, langs: ["zh", "en"], bio: "International relations student, amateur photographer.", home: "CN" },
   { email: "noah@nira.app", name: "Noah Weber", gender: "MALE", occupation: "OTHER", city: ["CH", "Basel"], budget: 1000, currency: "CHF", moveIn: 50, smoking: "SMOKER", social: "SOCIAL", langs: ["de", "en"], bio: "Musician and part-time barista.", home: "DE" },
+  // Dublin demo: students moving from India to Ireland (INR → EUR, Irish SIMs, Leap Card, homes near UCD)
+  { email: "meera@nira.app", name: "Meera Rao", gender: "FEMALE", occupation: "STUDENT", org: "University College Dublin", orgAt: [53.3067, -6.221], city: ["IE", "Dublin"], budget: 900, currency: "EUR", moveIn: 28, social: "BALANCED", sleep: "EARLY_BIRD", langs: ["en", "kn", "hi"], bio: "Moving from Bengaluru for an MSc in Data Science at UCD. Vegetarian, tidy, love filter coffee and weekend hikes.", home: "IN" },
+  { email: "arjun@nira.app", name: "Arjun Menon", gender: "MALE", occupation: "STUDENT", org: "University College Dublin", orgAt: [53.3067, -6.221], city: ["IE", "Dublin"], budget: 850, currency: "EUR", moveIn: 32, social: "SOCIAL", langs: ["en", "hi", "ta"], bio: "MSc Computer Science at UCD from Chennai. Cricket on weekends, cooks a mean biryani.", home: "IN" },
+  { email: "aoife@nira.app", name: "Aoife Byrne", gender: "FEMALE", occupation: "STUDENT", org: "University College Dublin", orgAt: [53.3067, -6.221], city: ["IE", "Dublin"], budget: 950, currency: "EUR", moveIn: 25, social: "BALANCED", sleep: "EARLY_BIRD", langs: ["en"], bio: "Final-year physiotherapy student from Galway. Early runs, quiet weeknights, happy to show newcomers around.", home: "IE" },
   // Bengaluru demo: people moving *to* India, so the location panel shows EUR→INR, Indian SIMs and rides
   { email: "anna@nira.app", name: "Anna Becker", gender: "FEMALE", occupation: "PROFESSIONAL", org: "SAP Labs India", city: ["IN", "Bengaluru"], budget: 30000, currency: "INR", moveIn: 21, social: "BALANCED", sleep: "EARLY_BIRD", langs: ["de", "en"], bio: "Product manager on a two-year posting from Walldorf. Yoga, filter coffee, weekend trips to Coorg.", home: "DE" },
   { email: "lucas@nira.app", name: "Lucas Martin", gender: "MALE", occupation: "STUDENT", org: "IISc Bengaluru", city: ["IN", "Bengaluru"], budget: 22000, currency: "INR", moveIn: 30, social: "SOCIAL", langs: ["fr", "en"], bio: "Exchange semester in aerospace. Cricket newbie, keen to learn Kannada basics.", home: "FR" },
   { email: "mia@nira.app", name: "Mia Schmidt", gender: "NON_BINARY", occupation: "STUDENT", org: "TU Berlin", city: ["DE", "Berlin"], budget: 700, currency: "EUR", moveIn: 20, langs: ["de", "en"], bio: "Urban planning student looking for a calm WG.", home: "AT" },
 ];
 
-type CitySpec = { iso: string; name: string; currency: string; base: number; streets: string[]; owner: number; count: number; center?: [number, number] };
+type CitySpec = { iso: string; name: string; currency: string; base: number; streets: string[]; owner: number; count: number; center?: [number, number]; /** use the Irish wording below instead of the Swiss one */ local?: boolean };
 const CITY_SPECS: CitySpec[] = [
   { iso: "CH", name: "Zürich", currency: "CHF", base: 1.0, owner: 0, count: 12, center: [47.3769, 8.5417], streets: ["Universitätstrasse", "Langstrasse", "Seefeldstrasse", "Badenerstrasse", "Hönggerstrasse", "Winterthurerstrasse", "Josefstrasse", "Bellerivestrasse"] },
   { iso: "CH", name: "Genève", currency: "CHF", base: 1.0, owner: 1, count: 6, center: [46.2044, 6.1432], streets: ["Rue de Carouge", "Boulevard Carl-Vogt", "Rue de Lausanne", "Avenue de Champel", "Rue des Pâquis"] },
@@ -70,6 +76,8 @@ const CITY_SPECS: CitySpec[] = [
   { iso: "CH", name: "Zug", currency: "CHF", base: 1.04, owner: 1, count: 1, center: [47.1662, 8.5155], streets: ["Baarerstrasse"] },
   { iso: "DE", name: "Berlin", currency: "EUR", base: 0.62, owner: 5, count: 3, center: [52.52, 13.405], streets: ["Kastanienallee", "Sonnenallee", "Boxhagener Straße"] },
   { iso: "IN", name: "Bengaluru", currency: "INR", base: 22, owner: 5, count: 3, center: [12.9716, 77.5946], streets: ["80 Feet Road, Koramangala", "27th Main, HSR Layout", "100 Feet Road, Indiranagar"] },
+  // Dublin south side, between the city centre and the UCD Belfield campus
+  { iso: "IE", name: "Dublin", currency: "EUR", base: 0.95, owner: 5, count: 10, center: [53.3165, -6.236], local: true, streets: ["Roebuck Road, Clonskeagh", "Stillorgan Road, Donnybrook", "Ranelagh Road, Ranelagh", "Rathmines Road Lower, Rathmines", "Goatstown Road, Goatstown", "Fosters Avenue, Mount Merrion", "Dundrum Road, Windy Arbour", "Merrion Road, Ballsbridge", "Clonskeagh Road, Clonskeagh", "Belfield Downs, Belfield"] },
 ];
 
 const TYPE_BASE: Record<ListingType, number> = { DORM: 720, SHARED_ROOM: 820, PRIVATE_ROOM: 980, STUDIO: 1550, APARTMENT: 2300 };
@@ -85,6 +93,21 @@ const DESCRIPTIONS = [
   "Freshly renovated with large windows and wooden floors. The flatmates are students and young professionals who share cooking on Sundays. Internet is shared and included.",
   "Calm residential street close to the university hospital. Bike storage in the courtyard, recycling station next door. Ideal for students who want quiet evenings.",
   "Fully furnished – just bring your suitcase. Bedding, kitchenware and a desk with an ergonomic chair are included. Registration with the commune is possible from day one.",
+];
+
+// Dublin wording: house shares, Luas/bus, RTB – not "WG", trams and communes
+const DUBLIN_TITLES: Record<ListingType, string[]> = {
+  DORM: ["Student residence room near UCD", "En-suite room in student halls", "Modern student room with study lounge"],
+  SHARED_ROOM: ["Shared twin room in friendly house share", "Spacious shared room near the bus to UCD", "Shared room in a red-brick terrace"],
+  PRIVATE_ROOM: ["Sunny double room in a 4-person house share", "Quiet single room, 10 minutes' cycle to UCD", "Double room in renovated Victorian house"],
+  STUDIO: ["Furnished studio with kitchenette", "Compact studio close to the Luas", "Top-floor studio with skylight"],
+  APARTMENT: ["2-bedroom apartment for sharing", "Bright 3-bed house with garden", "2-bed apartment near the Luas Green line"],
+};
+const DUBLIN_DESCRIPTIONS = [
+  "Five minutes' walk to the bus stop for UCD and the city centre, fifteen to the Luas Green line. Lidl and Tesco nearby, washing machine and dryer in the house. Bins and broadband are included in the rent.",
+  "Freshly painted with double-glazed windows and gas central heating. The housemates are postgraduate students and young professionals who share a big kitchen. Bike storage in the back garden.",
+  "Quiet residential road a short cycle from the Belfield campus. Registered with the RTB; one month's deposit. Ideal for a student who wants calm weeknights and an easy commute.",
+  "Fully furnished – just bring your suitcase. Bedding, kitchenware and a desk with a proper chair are provided, and the landlord gives a letter you can use as proof of address for the bank.",
 ];
 
 export async function seedDemo(prisma: PrismaClient) {
@@ -133,7 +156,7 @@ export async function seedDemo(prisma: PrismaClient) {
       select: { id: true },
     });
     const profile = {
-      occupation: s.occupation, organization: s.org ?? null, homeCountryId: homeCountry?.id ?? null, destinationCityId: city.id, budgetMonthly: s.budget, budgetCurrency: s.currency,
+      occupation: s.occupation, organization: s.org ?? null, organizationLat: s.orgAt?.[0] ?? null, organizationLng: s.orgAt?.[1] ?? null, homeCountryId: homeCountry?.id ?? null, destinationCityId: city.id, budgetMonthly: s.budget, budgetCurrency: s.currency,
       moveInDate: dateOnly(days(s.moveIn)), bio: s.bio, gender: s.gender, smoking: s.smoking ?? "NON_SMOKER", hasPets: s.hasPets ?? false,
       okWithPets: s.okWithPets ?? true, socialStyle: s.social ?? "BALANCED", sleepSchedule: s.sleep ?? "FLEXIBLE", roommateGender: s.roommateGender ?? "ANYONE",
     } as const;
@@ -155,7 +178,7 @@ export async function seedDemo(prisma: PrismaClient) {
     const [clat, clng] = spec.center ?? [city.lat ?? 0, city.lng ?? 0];
     for (let i = 0; i < spec.count; i++) {
       const type = types[(i + spec.name.length) % types.length]!;
-      const title = `${TITLES[type][Math.floor(i / types.length) % 3]} · ${spec.name === "Genève" ? "Geneva" : spec.name === "Luzern" ? "Lucerne" : spec.name === "Sankt Gallen" ? "St. Gallen" : spec.name}`;
+      const title = `${(spec.local ? DUBLIN_TITLES : TITLES)[type][Math.floor(i / types.length) % 3]} · ${spec.name === "Genève" ? "Geneva" : spec.name === "Luzern" ? "Lucerne" : spec.name === "Sankt Gallen" ? "St. Gallen" : spec.name}`;
       const ownerId = owners[spec.owner]!;
       const existing = await prisma.listing.findFirst({ where: { ownerId, title }, select: { id: true, isShareable: true, capacityMax: true, price: true } });
       const shareable = type !== "STUDIO" && (type === "DORM" || type === "SHARED_ROOM" || type === "APARTMENT" || rand() > 0.5);
@@ -169,7 +192,7 @@ export async function seedDemo(prisma: PrismaClient) {
       const listing = await prisma.listing.create({
         data: {
           ownerId, cityId: city.id, type, title,
-          description: `${pick(DESCRIPTIONS)}\n\n${pick(DESCRIPTIONS)}`,
+          description: `${pick(spec.local ? DUBLIN_DESCRIPTIONS : DESCRIPTIONS)}\n\n${pick(spec.local ? DUBLIN_DESCRIPTIONS : DESCRIPTIONS)}`,
           address: `${spec.streets[i % spec.streets.length]} ${Math.floor(between(2, 140))}`,
           lat: clat + between(-0.018, 0.018), lng: clng + between(-0.025, 0.025),
           price, deposit: Math.round(price * (type === "DORM" ? 1 : 2)), currency: spec.currency,
@@ -246,6 +269,31 @@ export async function seedDemo(prisma: PrismaClient) {
       await prisma.savedListing.upsert({ where: { userId_listingId: { userId: anna, listingId: s.id } }, update: {}, create: { userId: anna, listingId: s.id } });
     }
   }
+  // Dublin demo: Arjun and Aoife want to share Dublin places, so Meera sees matches; Meera has saved homes
+  const dubShared = listingIds.filter((l) => l.city === "Dublin" && l.shareable);
+  const dubSeekers: [string, number, string][] = [
+    ["arjun@nira.app", 0, "Starting an MSc at UCD in January – looking for housemates to split a place near Belfield. Easy-going and I cook for everyone."],
+    ["aoife@nira.app", 0, "Final-year UCD student. Up early for training, quiet on weeknights, happy to help newcomers settle in."],
+    ["aoife@nira.app", 1, "Also interested in this one – closer to the Luas."],
+    ["meera@nira.app", 1, "Moving from Bengaluru for my MSc at UCD. Vegetarian, tidy, and looking for a calm house share."],
+  ];
+  for (const [si, [email, li, message]] of dubSeekers.entries()) {
+    const l = dubShared[li];
+    const requesterId = userIds.get(email);
+    if (!l || !requesterId) continue;
+    const exists = await prisma.roommateRequest.findFirst({ where: { listingId: l.id, requesterId }, select: { id: true } });
+    if (exists) continue;
+    await prisma.roommateRequest.create({
+      data: { listingId: l.id, requesterId, message, moveInDate: dateOnly(days(25 + si * 3)), budgetShare: Math.round(l.price / Math.max(2, l.capacityMax)) },
+    });
+    reqCount++;
+  }
+  const meera = userIds.get("meera@nira.app");
+  if (meera) {
+    for (const s of listingIds.filter((x) => x.city === "Dublin").slice(0, 3)) {
+      await prisma.savedListing.upsert({ where: { userId_listingId: { userId: meera, listingId: s.id } }, update: {}, create: { userId: meera, listingId: s.id } });
+    }
+  }
   console.log(`  roommate requests: +${reqCount}`);
 
   // ---------- saved listings, views, checklist progress
@@ -256,10 +304,21 @@ export async function seedDemo(prisma: PrismaClient) {
 
   const viewRows: { listingId: number; viewerId: number | null; viewerKey: string; viewedOn: Date }[] = [];
   const allUsers = [...userIds.values()];
+  // people look at homes in the city they are moving to
+  const usersByCity = new Map<string, number[]>();
+  for (const s of USERS) usersByCity.set(s.city[1], [...(usersByCity.get(s.city[1]) ?? []), userIds.get(s.email)!]);
+  // earlier seeds picked viewers at random; drop demo views of homes in someone else's city
+  const mismatched = await prisma.$queryRaw<{ id: number }[]>`
+    SELECT lv.id FROM ListingView lv
+    JOIN Listing l ON l.id = lv.listingId
+    JOIN UserProfile p ON p.userId = lv.viewerId
+    WHERE lv.viewerId IN (${Prisma.join(allUsers)}) AND p.destinationCityId <> l.cityId`;
+  if (mismatched.length) await prisma.listingView.deleteMany({ where: { id: { in: mismatched.map((m) => m.id) } } });
   for (const l of listingIds) {
     const n = 3 + Math.floor(rand() * 18);
     for (let k = 0; k < n; k++) {
-      const viewer = rand() > 0.4 ? pick(allUsers) : null;
+      const locals = usersByCity.get(l.city) ?? [];
+      const viewer = locals.length && rand() > 0.4 ? pick(locals) : null;
       const day = dateOnly(days(-Math.floor(rand() * 14)));
       viewRows.push({ listingId: l.id, viewerId: viewer, viewerKey: sha(`seed:${viewer ?? `anon${k}`}:${l.id}`), viewedOn: day });
     }

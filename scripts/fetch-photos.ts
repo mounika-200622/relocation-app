@@ -90,7 +90,7 @@ async function homes(): Promise<Credit[]> {
 
 const PLACES: Record<string, string> = {
   "CH:Zürich": "Zürich", "CH:Genève": "Geneva", "CH:Lausanne": "Lausanne", "CH:Basel": "Basel", "CH:Bern": "Bern", "CH:Luzern": "Lucerne",
-  "CH:Lugano": "Lugano", "CH:Sankt Gallen": "St. Gallen", "CH:Fribourg": "Fribourg", "CH:Zug": "Zug", "DE:Berlin": "Berlin", "IN:Bengaluru": "Bangalore",
+  "CH:Lugano": "Lugano", "CH:Sankt Gallen": "St. Gallen", "CH:Fribourg": "Fribourg", "CH:Zug": "Zug", "DE:Berlin": "Berlin", "IN:Bengaluru": "Bangalore", "IE:Dublin": "Dublin",
   // countries: a well-known landscape or landmark (a country article's own page image is its flag)
   "country:CH": "Lauterbrunnen", "country:IN": "Taj Mahal", "country:DE": "Brandenburg Gate", "country:VN": "Ha Long Bay", "country:US": "Golden Gate Bridge",
   "country:GB": "Tower Bridge", "country:SG": "Gardens by the Bay", "country:JP": "Mount Fuji", "country:FR": "Eiffel Tower", "country:AE": "Burj Khalifa", "country:TH": "Wat Arun",
