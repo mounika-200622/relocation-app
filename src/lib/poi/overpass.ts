@@ -60,7 +60,8 @@ export class OverpassProvider implements PoiProvider {
     return serial(async () => {
       const body = new URLSearchParams({ data: buildQuery(center, radiusM, categories) });
       // Fail fast: a person is waiting, and the service layer falls back to Nominatim.
-      // One try per mirror (20 s each); only an explicit "busy" answer earns one quick retry.
+      // One try per mirror (15 s each); a timeout or network error moves on to the next
+      // mirror, and only an explicit "busy" answer earns one quick retry.
       const attempts = this.urls.length + 1;
       for (let attempt = 0; attempt < attempts; attempt++) {
         const url = this.urls[attempt % this.urls.length]!;
@@ -69,7 +70,7 @@ export class OverpassProvider implements PoiProvider {
             method: "POST",
             body,
             headers: { "User-Agent": process.env.NOMINATIM_USER_AGENT || "Nira-Student-Project/1.0", Accept: "application/json" },
-            signal: AbortSignal.timeout(20_000),
+            signal: AbortSignal.timeout(15_000),
           });
           if (res.status === 429 || res.status === 504 || res.status === 503) {
             if (attempt >= attempts - 1) throw new ProviderUnavailable(`Overpass busy (${res.status})`);
@@ -89,7 +90,8 @@ export class OverpassProvider implements PoiProvider {
           });
         } catch (err) {
           if (err instanceof ProviderUnavailable) throw err;
-          // a timeout means the server is overloaded: give up on this provider right away
+          // timeout / network error: this mirror is overloaded or unreachable, try the next one
+          if (attempt < this.urls.length - 1) continue;
           throw new ProviderUnavailable((err as Error).message);
         }
       }

@@ -2,7 +2,7 @@
  * Pre-fills the POI cache (MySQL) for the given cities so demos don't depend on a slow
  * public Overpass server. Queries run one at a time, with the provider's own backoff.
  *
- *   npx tsx scripts/poi-warm.ts                 # the 10 seeded Swiss cities
+ *   npx tsx scripts/poi-warm.ts                 # the 10 Swiss demo cities + Dublin + Bengaluru
  *   npx tsx scripts/poi-warm.ts Berlin:DE Bern:CH
  *   npx tsx scripts/poi-warm.ts "Dublin:IE@53.3067,-6.2210"   # around a point, e.g. the UCD campus
  */
@@ -10,8 +10,13 @@ import { PrismaClient, type PoiCategory } from "@prisma/client";
 import { ensureCached } from "../src/lib/poi/service";
 import { ESSENTIAL_GROUPS, TRIP_FOOD, TRIP_RADIUS, TRIP_SIGHTS_CULTURE, TRIP_SIGHTS_OUTDOOR, TRIP_STAY } from "../src/lib/poi/categories";
 
+try {
+  process.loadEnvFile(".env"); // OVERPASS_URL mirrors etc.
+} catch {
+  /* no .env */
+}
 const prisma = new PrismaClient();
-const DEFAULT = ["Zürich:CH", "Genève:CH", "Lausanne:CH", "Basel:CH", "Bern:CH", "Luzern:CH", "Lugano:CH", "Sankt Gallen:CH", "Fribourg:CH", "Zug:CH"];
+const DEFAULT = ["Zürich:CH", "Genève:CH", "Lausanne:CH", "Basel:CH", "Bern:CH", "Luzern:CH", "Lugano:CH", "Sankt Gallen:CH", "Fribourg:CH", "Zug:CH", "Dublin:IE", "Bengaluru:IN"];
 
 const JOBS: { label: string; categories: PoiCategory[]; radius: number }[] = [
   { label: "stays", categories: TRIP_STAY, radius: TRIP_RADIUS.stay },
