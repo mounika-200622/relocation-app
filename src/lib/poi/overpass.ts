@@ -70,7 +70,7 @@ export class OverpassProvider implements PoiProvider {
             method: "POST",
             body,
             headers: { "User-Agent": process.env.NOMINATIM_USER_AGENT || "Nira-Student-Project/1.0", Accept: "application/json" },
-            signal: AbortSignal.timeout(15_000),
+            signal: AbortSignal.timeout(Number(process.env.OVERPASS_TIMEOUT_MS) || 15_000),
           });
           if (res.status === 429 || res.status === 504 || res.status === 503) {
             if (attempt >= attempts - 1) throw new ProviderUnavailable(`Overpass busy (${res.status})`);

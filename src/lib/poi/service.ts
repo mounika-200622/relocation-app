@@ -8,6 +8,11 @@ import { costRanges } from "@/lib/costs";
 export const CACHE_DAYS = 7;
 const PRIMARY_COOLDOWN_MS = 10 * 60_000;
 let primaryDownUntil = 0;
+
+/** Lets batch jobs (scripts/poi-warm.ts) retry the primary provider straight away. */
+export function resetPrimaryCooldown() {
+  primaryDownUntil = 0;
+}
 const MAX_AGE_MS = CACHE_DAYS * 86_400_000;
 
 export type PoiResult = {

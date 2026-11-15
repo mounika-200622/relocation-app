@@ -7,7 +7,7 @@
  *   npx tsx scripts/poi-warm.ts "Dublin:IE@53.3067,-6.2210"   # around a point, e.g. the UCD campus
  */
 import { PrismaClient, type PoiCategory } from "@prisma/client";
-import { ensureCached } from "../src/lib/poi/service";
+import { ensureCached, resetPrimaryCooldown } from "../src/lib/poi/service";
 import { ESSENTIAL_GROUPS, TRIP_FOOD, TRIP_RADIUS, TRIP_SIGHTS_CULTURE, TRIP_SIGHTS_OUTDOOR, TRIP_STAY } from "../src/lib/poi/categories";
 
 try {
@@ -15,6 +15,8 @@ try {
 } catch {
   /* no .env */
 }
+// Unlike a page request, nobody is waiting: give each map server up to 90 s.
+process.env.OVERPASS_TIMEOUT_MS ??= "90000";
 const prisma = new PrismaClient();
 const DEFAULT = ["Zürich:CH", "Genève:CH", "Lausanne:CH", "Basel:CH", "Bern:CH", "Luzern:CH", "Lugano:CH", "Sankt Gallen:CH", "Fribourg:CH", "Zug:CH", "Dublin:IE", "Bengaluru:IN"];
 
@@ -43,7 +45,13 @@ async function main() {
     }
     for (const job of JOBS) {
       const t0 = Date.now();
-      const r = await ensureCached({ lat: city.lat, lng: city.lng }, job.radius, job.categories, city.id);
+      // A batch job can wait: retry a failed area up to 3 times, pausing in between.
+      let r = await ensureCached({ lat: city.lat, lng: city.lng }, job.radius, job.categories, city.id);
+      for (let attempt = 1; r.stale && attempt <= 3; attempt++) {
+        await new Promise((ok) => setTimeout(ok, 5000 * attempt));
+        resetPrimaryCooldown();
+        r = await ensureCached({ lat: city.lat, lng: city.lng }, job.radius, job.categories, city.id);
+      }
       console.log(`${name.padEnd(13)} ${job.label.padEnd(10)} ${r.stale ? "FAILED" : `+${r.fetched}`} (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     }
   }
