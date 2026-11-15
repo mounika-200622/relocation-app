@@ -11,6 +11,8 @@ const TRIPS = [
   { email: "aarav@nira.app", city: ["CH", "Zürich"], title: "Zürich long weekend", days: 3, people: 2, budget: 1800, currency: "CHF", style: "BALANCED", pace: "NORMAL", interests: ["CULTURE", "NATURE", "FOOD"] },
   { email: "priya@nira.app", city: ["CH", "Genève"], title: "Geneva on a student budget", days: 2, people: 1, budget: 450, currency: "CHF", style: "BUDGET", pace: "RELAXED", interests: ["NATURE", "CULTURE"] },
   { email: "lena@nira.app", city: ["CH", "Lausanne"], title: "Lausanne lake days", days: 3, people: 2, budget: 2200, currency: "CHF", style: "COMFORT", pace: "PACKED", interests: ["FOOD", "NIGHTLIFE", "NATURE"] },
+  { email: "meera@nira.app", city: ["IE", "Dublin"], title: "Dublin weekend before term", days: 2, people: 1, budget: 350, currency: "EUR", style: "BUDGET", pace: "NORMAL", interests: ["CULTURE", "FOOD"] },
+  { email: "anna@nira.app", city: ["IN", "Bengaluru"], title: "First weekend in Bengaluru", days: 2, people: 2, budget: 12000, currency: "INR", style: "BALANCED", pace: "RELAXED", interests: ["FOOD", "CULTURE", "NATURE"] },
 ] as const;
 
 export async function seedTrips(prisma: PrismaClient) {
