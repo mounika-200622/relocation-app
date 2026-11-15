@@ -25,15 +25,18 @@ export function Combobox({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return options.slice(0, 300);
-    const starts: Option[] = [];
-    const contains: Option[] = [];
+    // Rank: exact name, then names starting with the query, then a word starting with it, then
+    // anywhere. Labels may begin with a flag emoji ("🇮🇳 India"), which is ignored for matching –
+    // otherwise typing "India" + Enter picked "British Indian Ocean Territory".
+    const buckets: Option[][] = [[], [], [], []];
     for (const o of options) {
-      const l = o.label.toLowerCase();
-      if (l.startsWith(q)) starts.push(o);
-      else if (l.includes(q)) contains.push(o);
-      if (starts.length > 300) break;
+      const l = o.label.toLowerCase().replace(/^[^\p{L}\p{N}]+/u, "");
+      if (l === q) buckets[0]!.push(o);
+      else if (l.startsWith(q)) buckets[1]!.push(o);
+      else if (l.includes(` ${q}`) || l.includes(`-${q}`) || l.includes(`(${q}`)) buckets[2]!.push(o);
+      else if (l.includes(q)) buckets[3]!.push(o);
     }
-    return [...starts, ...contains].slice(0, 300);
+    return buckets.flat().slice(0, 300);
   }, [options, query]);
 
   useEffect(() => {

@@ -18,10 +18,12 @@ export function OnboardingWizard({ initial, name, next }: { initial: ProfileData
   const [data, setData] = useState(initial);
   const { update } = useSession();
 
-  const finish = async (skip = false) => {
+  const finish = async (skip = false, saved: ProfileData = data) => {
     if (skip) await fetch("/api/onboarding", { method: "POST" });
     await update({ onboarded: true }); // refresh the JWT so the proxy stops redirecting here
-    window.location.assign(safeCallbackUrl(next && next !== "/onboarding" ? next : null, "/choose-path"));
+    // with a destination on the profile, go straight to everything about that city
+    const home = !skip && saved.destinationCityId ? "/relocate/home" : "/choose-path";
+    window.location.assign(safeCallbackUrl(next && next !== "/onboarding" ? next : null, home));
   };
 
   return (
@@ -48,7 +50,7 @@ export function OnboardingWizard({ initial, name, next }: { initial: ProfileData
             onSaved={(saved) => {
               setData(saved);
               if (step < 2) setStep((s) => (s + 1) as 0 | 1 | 2);
-              else finish();
+              else finish(false, saved);
             }}
           />
         </div>

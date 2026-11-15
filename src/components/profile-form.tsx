@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Chip, Field, Input, Segmented, Select, Switch, Textarea } from "@/components/ui/field";
@@ -40,6 +41,7 @@ export function ProfileForm({ initial, onSaved, step, submitLabel = "Save profil
   const [p, setP] = useState<ProfileData>(initial);
   const [loc, setLoc] = useState<LocationValue | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
   const set = <K extends keyof ProfileData>(k: K, v: ProfileData[K]) => setP((s) => ({ ...s, [k]: v }));
   const show = (n: 0 | 1 | 2) => step === undefined || step === n;
 
@@ -58,8 +60,18 @@ export function ProfileForm({ initial, onSaved, step, submitLabel = "Save profil
           moveInDate: p.moveInDate || null,
         },
       });
-      toast.success("Profile saved");
-      onSaved?.({ ...p, destinationCityId: loc?.cityId ?? p.destinationCityId });
+      const destinationCityId = loc?.cityId ?? p.destinationCityId;
+      if (onSaved) {
+        onSaved({ ...p, destinationCityId });
+      } else if (destinationCityId) {
+        // full profile page: show what the new profile unlocks instead of staying on the form
+        toast.success("Profile saved – here's your destination");
+        router.push("/relocate/home");
+        router.refresh();
+      } else {
+        toast.success("Profile saved");
+        router.refresh();
+      }
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -79,8 +91,8 @@ export function ProfileForm({ initial, onSaved, step, submitLabel = "Save profil
             <div className="mb-1.5 text-[13px] font-medium text-muted">I am a…</div>
             <Segmented value={p.occupation} onChange={(v) => set("occupation", v)} options={[{ value: "STUDENT", label: "Student" }, { value: "PROFESSIONAL", label: "Professional" }, { value: "OTHER", label: "Other" }]} />
           </div>
-          <Field label={p.occupation === "STUDENT" ? "University" : "Employer"} optional>
-            {(a) => <Input {...a} value={p.organization} onChange={(e) => set("organization", e.target.value)} placeholder={p.occupation === "STUDENT" ? "ETH Zürich" : "Company name"} />}
+          <Field label={p.occupation === "STUDENT" ? "University" : p.occupation === "PROFESSIONAL" ? "Employer" : "University or employer"} optional hint="We find it on the map to show homes, food and transport closest to it.">
+            {(a) => <Input {...a} maxLength={120} value={p.organization} onChange={(e) => set("organization", e.target.value)} placeholder={p.occupation === "PROFESSIONAL" ? "Company name" : "e.g. UCD or University College Dublin"} />}
           </Field>
           <Field label="Short bio" optional hint="Shown to possible roommates.">
             {(a) => <Textarea {...a} maxLength={600} value={p.bio} onChange={(e) => set("bio", e.target.value)} placeholder="What should future flatmates know about you?" />}
