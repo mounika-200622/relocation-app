@@ -4,27 +4,38 @@ import { boundingBox } from "@/lib/geo";
 import { costRanges } from "@/lib/costs";
 import { midpoint } from "@/lib/poi/price-tier";
 
-type NearRow = { id: number; name: string; lat: number; lng: number; regionName: string | null; countryId: number; km: number };
+type NearRow = { id: number; name: string; lat: number; lng: number; regionName: string | null; countryId: number; km: number; known: number | bigint };
+
+/** A suburb this close to a city Nira has real data for is reported as that city. */
+const METRO_RADIUS_KM = 20;
 
 /**
  * Nearest city to a GPS position. Uses the City(lat, lng) index with a bounding box that
  * widens (25 km → 100 km → 400 km) until something is found, then ranks the candidates
  * with the stored function fn_distance_km. No external reverse-geocoding service needed.
+ *
+ * City datasets list every suburb ("Donnybrook", "Koramangala"), so standing on a campus in
+ * Dublin the literal nearest row is a suburb with no guide photo, prices or homes. A city Nira
+ * knows (it has a photo, i.e. it is a seeded destination) within METRO_RADIUS_KM wins instead.
  */
 export async function nearestCity(lat: number, lng: number) {
   for (const radiusKm of [25, 100, 400]) {
     const b = boundingBox({ lat, lng }, radiusKm);
     const rows = await prisma.$queryRaw<NearRow[]>`
-      SELECT c.id, c.name, c.lat, c.lng, r.name AS regionName, c.countryId, fn_distance_km(${lat}, ${lng}, c.lat, c.lng) AS km
+      SELECT c.id, c.name, c.lat, c.lng, r.name AS regionName, c.countryId,
+             fn_distance_km(${lat}, ${lng}, c.lat, c.lng) AS km, (c.photoUrl IS NOT NULL) AS known
       FROM City c LEFT JOIN Region r ON r.id = c.regionId
       WHERE c.lat BETWEEN ${b.minLat} AND ${b.maxLat} AND c.lng BETWEEN ${b.minLng} AND ${b.maxLng}
-      ORDER BY km
-      LIMIT 10`;
+      ORDER BY known DESC, km
+      LIMIT 12`;
     if (rows[0]) {
-      // datasets list districts like "Zürich (Kreis 1)"; prefer a plain city name within 10 km
-      const nearest = Number(rows[0].km);
-      const plain = rows.find((r) => !r.name.includes("(") && Number(r.km) <= nearest + 10) ?? rows[0];
-      return { ...plain, km: Number(plain.km) };
+      const cands = rows.map(({ known, ...r }) => ({ ...r, km: Number(r.km), known: Number(known) === 1 })).sort((x, y) => x.km - y.km);
+      const metro = cands.find((r) => r.known && r.km <= METRO_RADIUS_KM);
+      // datasets also list districts like "Zürich (Kreis 1)"; prefer a plain city name within 10 km
+      const plain = cands.find((r) => !r.name.includes("(") && r.km <= cands[0]!.km + 10) ?? cands[0]!;
+      const { known: _known, ...city } = metro ?? plain;
+      void _known;
+      return city;
     }
   }
   return null;
