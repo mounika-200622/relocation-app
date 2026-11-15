@@ -44,7 +44,7 @@ export function Checklist({ items: initial, loggedIn }: { items: Item[]; loggedI
               <div className={cn("font-medium", i.done && "text-subtle line-through")}><span className="mr-2 text-subtle">{n + 1}.</span>{i.title}</div>
               <p className="mt-0.5 text-sm text-muted">{i.description}</p>
               <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-subtle">
-                {i.dueWithinDays && <span>Within {i.dueWithinDays} days</span>}
+                {i.dueWithinDays && <span>{i.dueWithinDays === 1 ? "On day 1" : `Within ${i.dueWithinDays} days`}</span>}
                 {i.link && <a href={i.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-accent hover:underline">Official info <ExternalLink className="h-3 w-3" /></a>}
               </div>
             </div>

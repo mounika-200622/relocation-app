@@ -20,13 +20,28 @@ export default async function RelocateSearchPage({ searchParams }: { searchParam
   const sp = await searchParams;
   const flat = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
   const session = await auth();
-  const profile = session?.user ? await prisma.userProfile.findUnique({ where: { userId: session.user.id }, select: { budgetMonthly: true, budgetCurrency: true, destinationCityId: true, destinationCity: { select: { name: true, country: { select: { name: true } } } } } }) : null;
+  const profile = session?.user ? await prisma.userProfile.findUnique({ where: { userId: session.user.id }, select: { budgetMonthly: true, budgetCurrency: true, destinationCityId: true, organization: true, organizationLat: true, organizationLng: true, destinationCity: { select: { name: true, lat: true, lng: true, countryId: true, country: { select: { name: true } } } } } }) : null;
 
   // Pre-fill from the profile unless the URL says otherwise (?all=1 shows everything).
   const usingProfile = !flat.all && !flat.cityId && !flat.countryId && !flat.q && profile?.destinationCityId;
+  let nearLabel: string | null = null;
   if (usingProfile) {
-    flat.cityId = String(profile!.destinationCityId);
-    flat.city = `${profile!.destinationCity!.name}, ${profile!.destinationCity!.country.name}`;
+    const dest = profile!.destinationCity!;
+    flat.city = `${dest.name}, ${dest.country.name}`;
+    // Datasets split big cities ("Dublin" / "Dublin City"): if nothing is listed under the exact
+    // entry on the profile, search the whole country and let distance do the ranking.
+    const inCity = await prisma.listing.count({ where: { cityId: profile!.destinationCityId!, status: "ACTIVE" } });
+    if (inCity) flat.cityId = String(profile!.destinationCityId);
+    else flat.countryId = String(dest.countryId);
+    // measure from the campus / office when we know where it is, otherwise from the city centre
+    const campus = profile!.organization && profile!.organizationLat !== null && profile!.organizationLng !== null;
+    const anchor = campus ? { lat: profile!.organizationLat!, lng: profile!.organizationLng! } : dest.lat !== null && dest.lng !== null ? { lat: dest.lat, lng: dest.lng } : null;
+    if (anchor && !flat.lat && !flat.lng) {
+      flat.lat = String(anchor.lat);
+      flat.lng = String(anchor.lng);
+      if (!flat.sort) flat.sort = "nearest";
+      nearLabel = campus ? profile!.organization : `the centre of ${dest.name}`;
+    }
   }
   const budget = profile?.budgetMonthly ? { amount: num(profile.budgetMonthly)!, currency: profile.budgetCurrency ?? "" } : null;
   const filters = listingSearchSchema.parse(flat);
@@ -47,7 +62,7 @@ export default async function RelocateSearchPage({ searchParams }: { searchParam
 
       {usingProfile && (
         <p className="mt-4 text-sm text-muted">
-          Showing places in <b className="text-fg">{flat.city}</b>, your destination. <Link href="/relocate?all=1" className="text-accent hover:underline">Search everywhere</Link>
+          Showing places in <b className="text-fg">{flat.city}</b>, your destination{nearLabel && flat.sort === "nearest" ? <> – nearest <b className="text-fg">{nearLabel}</b> first</> : null}. <Link href="/relocate?all=1" className="text-accent hover:underline">Search everywhere</Link>
         </p>
       )}
 

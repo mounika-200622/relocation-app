@@ -9,7 +9,8 @@ import { cn } from "@/lib/cn";
 export function CurrencyConverter({ home, local, className, compact }: { home: string; local: string; className?: string; compact?: boolean }) {
   const [rate, setRate] = useState<{ rate: number; asOf: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [amount, setAmount] = useState("100");
+  // null = not typed yet: start from a round amount that makes sense for the pair (₹10,000, not ₹100 = €0.96)
+  const [typed, setAmount] = useState<string | null>(null);
   const [fromHome, setFromHome] = useState(true);
 
   useEffect(() => {
@@ -27,8 +28,10 @@ export function CurrencyConverter({ home, local, className, compact }: { home: s
     };
   }, [home, local]);
 
-  const n = Number(amount) || 0;
   const [src, dst] = fromHome ? [home, local] : [local, home];
+  const perUnit = rate ? (fromHome ? rate.rate : 1 / rate.rate) : 1;
+  const amount = typed ?? (perUnit < 0.02 ? "10000" : perUnit < 0.2 ? "1000" : "100");
+  const n = Number(amount) || 0;
   const result = rate ? (fromHome ? n * rate.rate : n / rate.rate) : null;
 
   return (
@@ -44,14 +47,15 @@ export function CurrencyConverter({ home, local, className, compact }: { home: s
       ) : (
         <>
           <p className={cn("mt-1 font-semibold tabular-nums", compact ? "text-base" : "text-xl")}>
-            1 {home} = {rate.rate < 0.01 ? rate.rate.toPrecision(3) : rate.rate.toFixed(rate.rate < 1 ? 4 : 2)} {local}
+            {/* quote the direction that gives a readable number: "1 EUR = 104.07 INR", not "1 INR = 0.00961 EUR" */}
+            {rate.rate >= 0.1 ? <>1 {home} = {rate.rate.toFixed(rate.rate < 1 ? 4 : 2)} {local}</> : <>1 {local} = {(1 / rate.rate).toFixed(2)} {home}</>}
           </p>
           <div className="mt-3 flex items-center gap-2">
             <label className="flex min-w-0 flex-1 items-center rounded-xl border border-line bg-elev px-3">
               <span className="text-xs font-semibold text-subtle">{src}</span>
               <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, "").slice(0, 12))} className="h-10 w-full min-w-0 bg-transparent px-2 text-right tabular-nums outline-none" aria-label={`Amount in ${src}`} />
             </label>
-            <button onClick={() => setFromHome((v) => !v)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-line bg-elev hover:bg-hover" aria-label="Swap currencies"><ArrowLeftRight className="h-4 w-4" /></button>
+            <button onClick={() => { setFromHome((v) => !v); setAmount(null); }} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-line bg-elev hover:bg-hover" aria-label="Swap currencies"><ArrowLeftRight className="h-4 w-4" /></button>
             <div className="flex h-10 min-w-0 flex-1 items-center justify-end rounded-xl border border-line bg-elev px-3 font-semibold tabular-nums"><span className="truncate">{result === null ? "—" : formatMoney(result, dst, { decimals: 2 })}</span></div>
           </div>
         </>

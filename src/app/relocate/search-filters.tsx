@@ -61,7 +61,7 @@ export function SearchFilters({ initial, budget, total }: { initial: Flat; budge
             <option value="newest">Newest</option>
             <option value="price_asc">Price: low to high</option>
             <option value="price_desc">Price: high to low</option>
-            <option value="nearest" disabled={!initial.lat}>Nearest to centre</option>
+            <option value="nearest" disabled={!initial.lat}>Nearest first</option>
           </Select>
           <Button variant="secondary" className="h-11 shrink-0 rounded-full" onClick={() => setOpen(true)}>
             <SlidersHorizontal className="h-4 w-4" /> Filters {activeCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent-strong px-1 text-[11px] text-white">{activeCount}</span>}

@@ -83,7 +83,7 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={cn("relative flex items-center gap-2 rounded-lg px-3 h-9 text-[13.5px] font-medium transition", active ? "text-fg bg-soft" : "text-muted hover:text-fg")}
+                className={cn("relative flex items-center gap-2 whitespace-nowrap rounded-lg px-2.5 lg:px-3 h-9 text-[13.5px] font-medium transition", active ? "text-fg bg-soft" : "text-muted hover:text-fg")}
               >
                 {item.label}
                 {item.badge === "messages" && counts.messages > 0 && (
