@@ -180,3 +180,9 @@ body {
     display: none;
   }
 }
+
+/* Grid items default to min-width:auto, so one long unbroken line (a truncated title, a file
+   name) makes the whole column wider than a phone screen and the page scrolls sideways. */
+.grid > * {
+  min-width: 0;
+}

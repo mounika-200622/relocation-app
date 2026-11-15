@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 export function ListingCard({ l, budget, showSave = true, className, priority, distanceFrom }: { l: ListingCardData; budget?: { amount: number; currency: string } | null; showSave?: boolean; className?: string; priority?: boolean; /** e.g. "UCD" → "1.2 km from UCD" */ distanceFrom?: string }) {
   const withinBudget = budget && budget.currency === l.currency && l.price <= budget.amount;
   return (
-    <Link href={`/listings/${l.id}`} className={cn("group block animate-fade-up", className)}>
+    <Link href={`/listings/${l.id}`} className={cn("group block min-w-0 animate-fade-up", className)}>
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-soft">
         {l.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -39,7 +39,7 @@ export function ListingCard({ l, budget, showSave = true, className, priority, d
         </div>
         <span className="mt-0.5 shrink-0 rounded-md border border-line px-2 py-0.5 text-[11px] font-medium text-muted">{LISTING_TYPE_LABEL[l.type] ?? l.type}</span>
       </div>
-      <div className="mt-1 flex items-center gap-3 text-[13px] text-subtle">
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-subtle">
         <span className="inline-flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" />{l.bedrooms} bd</span>
         {l.isShareable && <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />Shareable</span>}
         {l.ownerVerified && <span className="inline-flex items-center gap-1 text-accent"><BadgeCheck className="h-3.5 w-3.5" />Verified</span>}
