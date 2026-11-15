@@ -73,7 +73,7 @@ export default async function BusinessDashboard() {
         </div>
         <div className="mt-6 flex h-36 items-end gap-1.5" role="img" aria-label="Bar chart of daily views">
           {days.map((d) => (
-            <div key={d.d} className="group relative flex flex-1 flex-col items-center justify-end">
+            <div key={d.d} className="group relative flex h-full flex-1 flex-col items-center justify-end">
               <span className="absolute -top-6 hidden rounded bg-fg px-1.5 py-0.5 text-[10px] text-bg group-hover:block">{d.n}</span>
               <div className="w-full rounded-t-md bg-accent-strong/80 transition group-hover:bg-accent-strong" style={{ height: `${Math.max(4, (d.n / peak) * 100)}%` }} />
             </div>

@@ -9,6 +9,17 @@ import { PageHeader, SectionTitle, Stat } from "@/components/ui/misc";
 export const metadata: Metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
 
+type DayCount = { _id: string; messages: number; senders: number };
+
+/** One entry per day for the last `n` days, including days without messages. */
+function lastDays(perDay: DayCount[], n: number, now = Date.now()): DayCount[] {
+  const byDay = new Map(perDay.map((d) => [d._id, d]));
+  return Array.from({ length: n }, (_, i) => {
+    const id = new Date(now - (n - 1 - i) * 86_400_000).toISOString().slice(0, 10);
+    return byDay.get(id) ?? { _id: id, messages: 0, senders: 0 };
+  });
+}
+
 export default async function AdminOverview() {
   const [roles, listingsByStatus, openReports, cityStats, audit, msgs, perDay, cache] = await Promise.all([
     prisma.user.groupBy({ by: ["role"], _count: true }),
@@ -28,7 +39,8 @@ export default async function AdminOverview() {
     messagesPerDay(14).catch(() => []),
     prisma.poiQueryCache.groupBy({ by: ["category"], _sum: { resultCount: true }, _count: true, orderBy: { _sum: { resultCount: "desc" } }, take: 10 }),
   ]);
-  const peak = Math.max(1, ...perDay.map((d) => d.messages));
+  const chartDays = lastDays(perDay, 14);
+  const peak = Math.max(1, ...chartDays.map((d) => d.messages));
 
   return (
     <div>
@@ -59,9 +71,9 @@ export default async function AdminOverview() {
             <p className="text-sm text-muted">No messages in the last 14 days.</p>
           ) : (
             <div className="flex h-40 items-end gap-1.5">
-              {perDay.map((d) => (
-                <div key={d._id} className="group relative flex flex-1 flex-col items-center justify-end" title={`${d._id}: ${d.messages} messages from ${d.senders} people`}>
-                  <div className="w-full rounded-t-md bg-warm/80" style={{ height: `${Math.max(6, (d.messages / peak) * 100)}%` }} />
+              {chartDays.map((d) => (
+                <div key={d._id} className="group relative flex h-full flex-1 flex-col items-center justify-end" title={`${d._id}: ${d.messages} messages from ${d.senders} people`}>
+                  <div className="w-full rounded-t-md bg-warm/80" style={{ height: `${d.messages ? Math.max(6, (d.messages / peak) * 85) : 2}%` }} />
                   <span className="mt-1 text-[10px] text-subtle">{d._id.slice(8)}</span>
                 </div>
               ))}
