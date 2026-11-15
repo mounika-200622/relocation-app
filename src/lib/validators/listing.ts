@@ -53,6 +53,8 @@ export const SORTS = ["newest", "price_asc", "price_desc", "nearest"] as const;
 
 export const listingSearchSchema = z.object({
   q: z.string().trim().max(100).optional(),
+  /** true = rank by meaning (vector similarity) instead of FULLTEXT keywords */
+  smart: qBool,
   countryId: optionalId,
   regionId: optionalId,
   cityId: optionalId,

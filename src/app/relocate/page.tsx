@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { SearchX, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/format";
@@ -64,6 +64,16 @@ export default async function RelocateSearchPage({ searchParams }: { searchParam
         <p className="mt-4 text-sm text-muted">
           Showing places in <b className="text-fg">{flat.city}</b>, your destination{nearLabel && flat.sort === "nearest" ? <> – nearest <b className="text-fg">{nearLabel}</b> first</> : null}. <Link href="/relocate?all=1" className="text-accent hover:underline">Search everywhere</Link>
         </p>
+      )}
+
+      {result.matchMode === "smart" && (
+        <p className="mt-4 flex items-center gap-1.5 text-sm text-muted">
+          <Sparkles className="h-4 w-4 text-accent" aria-hidden />
+          Smart match for <b className="text-fg">“{filters.q}”</b>{filters.sort === "newest" ? " – best fit first" : ""}.
+        </p>
+      )}
+      {result.matchMode === "fallback" && (
+        <p className="mt-4 text-sm text-muted">Smart match isn&apos;t available right now, so these are keyword matches for “{filters.q}”.</p>
       )}
 
       {items.length === 0 ? (

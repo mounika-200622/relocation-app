@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/format";
 import type { ListingSearch } from "@/lib/validators/listing";
+import { semanticSearch } from "@/lib/vector/store";
 
 export const PAGE_SIZE = 12;
 
@@ -86,7 +87,25 @@ export async function searchListings(f: ListingSearch, opts: { center?: { lat: n
   if (f.amenities.length) {
     where.push(Prisma.sql`(SELECT COUNT(*) FROM ListingAmenity la WHERE la.listingId = v.id AND la.amenityId IN (${Prisma.join(f.amenities)})) = ${f.amenities.length}`);
   }
-  if (f.q) {
+  // Smart search: MongoDB ranks listing vectors by similarity to the description; MySQL then
+  // applies every other filter to those ids and keeps the similarity order.
+  let matchMode: "smart" | "keyword" | "fallback" | null = null;
+  let smartIds: number[] | null = null;
+  const similarity = new Map<number, number>();
+  if (f.q && f.smart) {
+    try {
+      const hits = await semanticSearch("listing", f.q, f.cityId ? { cityId: f.cityId } : {}, { limit: 200, minScore: 0.3 });
+      smartIds = hits.map((h) => h.refId);
+      hits.forEach((h) => similarity.set(h.refId, h.score));
+      matchMode = "smart";
+      where.push(smartIds.length ? Prisma.sql`v.id IN (${Prisma.join(smartIds)})` : Prisma.sql`FALSE`);
+    } catch (err) {
+      console.warn("[listings] smart search unavailable, using keywords:", (err as Error).message);
+      matchMode = "fallback";
+    }
+  }
+  if (f.q && matchMode !== "smart") {
+    matchMode ??= "keyword";
     const bq = toBooleanQuery(f.q);
     if (bq) where.push(Prisma.sql`v.id IN (SELECT l.id FROM Listing l WHERE MATCH(l.title, l.description) AGAINST (${bq} IN BOOLEAN MODE))`);
     else where.push(Prisma.sql`v.title LIKE ${"%" + f.q + "%"}`);
@@ -98,6 +117,7 @@ export async function searchListings(f: ListingSearch, opts: { center?: { lat: n
     f.sort === "price_asc" ? Prisma.sql`v.price ASC, v.id DESC`
     : f.sort === "price_desc" ? Prisma.sql`v.price DESC, v.id DESC`
     : f.sort === "nearest" && center ? Prisma.sql`distanceKm IS NULL, distanceKm ASC`
+    : smartIds?.length ? Prisma.sql`FIELD(v.id, ${Prisma.join(smartIds)})`
     : Prisma.sql`v.createdAt DESC, v.id DESC`;
 
   const offset = (f.page - 1) * PAGE_SIZE;
@@ -109,7 +129,8 @@ export async function searchListings(f: ListingSearch, opts: { center?: { lat: n
     LIMIT ${PAGE_SIZE} OFFSET ${offset}`;
 
   const total = rows.length ? Number(rows[0]!.totalCount) : 0;
-  return { items: rows.map(mapRow), total, page: f.page, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)), pageSize: PAGE_SIZE };
+  const items = rows.map((r) => ({ ...mapRow(r), similarity: similarity.get(r.id) ?? null }));
+  return { items, total, page: f.page, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)), pageSize: PAGE_SIZE, matchMode };
 }
 
 /** Cards for a set of ids (saved, recently viewed, owner's listings) in the given order. */

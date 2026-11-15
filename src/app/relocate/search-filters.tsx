@@ -89,7 +89,12 @@ export function SearchFilters({ initial, budget, total }: { initial: Flat; budge
 
       <Modal open={open} onClose={() => setOpen(false)} title="Filters" wide>
         <div className="space-y-7">
-          <Field label="Keywords" optional>{(a) => <Input {...a} value={draft.q ?? ""} onChange={(e) => setDraft({ ...draft, q: e.target.value })} placeholder="balcony, near ETH, garden…" />}</Field>
+          <div className="space-y-3">
+            <Field label={bool("smart") ? "Describe the place you want" : "Keywords"} optional>
+              {(a) => <Input {...a} value={draft.q ?? ""} onChange={(e) => setDraft({ ...draft, q: e.target.value })} placeholder={bool("smart") ? "quiet furnished room, pets ok, washing machine…" : "balcony, near ETH, garden…"} />}
+            </Field>
+            <Switch label="Smart match" description="Find places by meaning, not just exact words" checked={bool("smart")} onChange={() => toggle("smart")} />
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Min price / month">{(a) => <Input {...a} inputMode="numeric" value={draft.minPrice ?? ""} onChange={(e) => setDraft({ ...draft, minPrice: e.target.value.replace(/\D/g, "") })} />}</Field>
             <Field label="Max price / month">{(a) => <Input {...a} inputMode="numeric" value={draft.maxPrice ?? ""} onChange={(e) => setDraft({ ...draft, maxPrice: e.target.value.replace(/\D/g, "") })} />}</Field>
