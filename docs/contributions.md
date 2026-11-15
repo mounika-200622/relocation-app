@@ -1,18 +1,18 @@
 # Individual contributions
 
-Generated from `git log` (220 commits, merges excluded).
+Generated from `git log` (236 commits, merges excluded).
 
 | Area | mounika-200622 | pramitiudupa |
 |---|---|---|
 | Android / PWA | 1 | 3 |
-| Backend (API & domain logic) | 29 | 32 |
+| Backend (API & domain logic) | 34 | 32 |
 | Database schema & SQL objects | 7 | 4 |
-| Documentation | 12 | 11 |
-| Frontend (pages & UI) | 41 | 41 |
-| Seed data | 8 | 9 |
-| Tests | 5 | 6 |
+| Documentation | 16 | 12 |
+| Frontend (pages & UI) | 44 | 41 |
+| Seed data | 9 | 9 |
+| Tests | 7 | 6 |
 | Tooling & setup | 7 | 4 |
-| **Total** | **110** | **110** |
+| **Total** | **125** | **111** |
 
 ## mounika-200622
 
@@ -126,6 +126,21 @@ Generated from `git log` (220 commits, merges excluded).
 - fix(location): GPS in a suburb reports the main city Nira has data for (Donnybrook -> Dublin)
 - feat(android): can't-connect screen accepts the laptop's new address after a network change
 - docs: README, report, Android guide and QA steps for the destination dashboard and Bengaluru-to-Dublin demo
+- fix(db): connect to MySQL and MongoDB over 127.0.0.1 to stop random connection failures
+- fix(poi): try the next Overpass mirror on timeouts; warm Dublin and Bengaluru too
+- feat(vector): semantic search engine with local embeddings stored in MongoDB
+- feat(vector): keep listing and guide vectors in sync on create, edit and delete
+- feat(search): "Ask" mode in the guide and Smart match in housing search
+- docs: vector search design, troubleshooting guide and updated report
+- fix(db): wait up to 30 s for a MySQL connection on a busy machine
+- fix(poi): cache warm-up retries busy map servers with a longer timeout
+- feat(seed): sample trips for the Dublin and Bengaluru demo users
+- fix(ui): business views chart and admin messages chart showed no bars
+- fix(ui): show country flags on Windows
+- fix(vector): deleting an account also removes its listings' search vectors
+- fix(landing): hydration error caused by a link nested inside a link
+- test(e2e): browser end-to-end flows and per-role page checks
+- docs: new screenshots for every role, end-to-end test results and QA rows
 
 ## pramitiudupa
 
@@ -239,4 +254,5 @@ Generated from `git log` (220 commits, merges excluded).
 - fix: search sorts by distance from campus with a country fallback; trip prefilled; readable FX rate; nav no-wrap
 - fix(mobile): pages no longer scroll sideways; converter amount fits on phones
 - docs: schema, data dictionary, ER diagram, queries and image credits for campus coordinates and Dublin
+- docs: refresh contributions breakdown
 

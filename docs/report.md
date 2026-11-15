@@ -261,8 +261,10 @@ Screenshots are produced by `npm run docs:screenshots` against the running app.
 
 ## 11. Individual contribution
 
-Commits alternate between the two members and are balanced. Both members have commits in the
-database layer (schema, migrations, seed, SQL docs) and in the application (API, UI, tests).
+Both members have commits in the database layer (schema, migrations, seed, SQL docs) and in
+the application (API, UI, tests); for most of the project the commits alternate between the two.
+The final stabilisation round (crash fixes, vector search, end-to-end tests, new screenshots)
+was committed by mounika-200622.
 The per-member breakdown by area is generated from the git history:
 [contributions.md](contributions.md) (`npx tsx scripts/docs/contributions.ts`).
 
