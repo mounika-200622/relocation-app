@@ -35,13 +35,13 @@ WHERE status = 'ACTIVE' AND isShareable = TRUE AND spotsLeft > 0
 ORDER BY openRequests DESC, price
 LIMIT 5;
 -- Result:
--- | id | cityName  | type         | price | currency | spotsLeft | photoCount | openRequests | ownerVerified |
--- |----|-----------|--------------|-------|----------|-----------|------------|--------------|---------------|
--- | 5  | Zürich    | DORM         | 750   | CHF      | 1         | 5          | 3            | 1             |
--- | 1  | Zürich    | SHARED_ROOM  | 830   | CHF      | 2         | 4          | 3            | 1             |
--- | 2  | Zürich    | PRIVATE_ROOM | 900   | CHF      | 1         | 5          | 3            | 1             |
--- | 4  | Zürich    | APARTMENT    | 2360  | CHF      | 1         | 4          | 3            | 1             |
--- | 44 | Bengaluru | APARTMENT    | 48420 | INR      | 3         | 5          | 2            | 1             |
+-- | id | cityName | type         | price | currency | spotsLeft | photoCount | openRequests | ownerVerified |
+-- |----|----------|--------------|-------|----------|-----------|------------|--------------|---------------|
+-- | 5  | Zürich   | DORM         | 750   | CHF      | 1         | 5          | 3            | 1             |
+-- | 1  | Zürich   | SHARED_ROOM  | 830   | CHF      | 2         | 4          | 3            | 1             |
+-- | 2  | Zürich   | PRIVATE_ROOM | 900   | CHF      | 1         | 5          | 3            | 1             |
+-- | 4  | Zürich   | APARTMENT    | 2360  | CHF      | 1         | 4          | 3            | 1             |
+-- | 47 | Dublin   | SHARED_ROOM  | 850   | EUR      | 1         | 5          | 2            | 1             |
 
 -- ---------------------------------------------------------------------------
 -- Q3. Cities with at least 3 active listings and their price statistics
@@ -57,6 +57,7 @@ ORDER BY listings DESC;
 -- | city      | listings | avg_price | min_price | max_price |
 -- |-----------|----------|-----------|-----------|-----------|
 -- | Zürich    | 12       | 1221      | 730       | 2670      |
+-- | Dublin    | 10       | 1317      | 620       | 2480      |
 -- | Genève    | 6        | 1265      | 740       | 2630      |
 -- | Lausanne  | 5        | 1152      | 620       | 2030      |
 -- | Basel     | 4        | 923       | 640       | 1450      |
@@ -76,13 +77,13 @@ WHERE l.status = 'ACTIVE'
 ORDER BY l.price
 LIMIT 5;
 -- Result:
--- | id | title                                        | price | city_avg |
--- |----|----------------------------------------------|-------|----------|
--- | 41 | Shared twin room in friendly WG · Berlin     | 540   | 720      |
--- | 21 | Bright dorm bed near campus · Lausanne       | 620   | 1152     |
--- | 32 | Shared twin room in friendly WG · Lucerne    | 630   | 770      |
--- | 24 | Bright dorm bed near campus · Basel          | 640   | 923      |
--- | 42 | Sunny private room in a 4-person WG · Berlin | 660   | 720      |
+-- | id | title                                     | price | city_avg |
+-- |----|-------------------------------------------|-------|----------|
+-- | 41 | Shared twin room in friendly WG · Berlin  | 540   | 720      |
+-- | 21 | Bright dorm bed near campus · Lausanne    | 620   | 1152     |
+-- | 56 | En-suite room in student halls · Dublin   | 620   | 1317     |
+-- | 32 | Shared twin room in friendly WG · Lucerne | 630   | 770      |
+-- | 24 | Bright dorm bed near campus · Basel       | 640   | 923      |
 
 -- ---------------------------------------------------------------------------
 -- Q5. Rank listings by price inside each city
@@ -137,8 +138,8 @@ LIMIT 5;
 -- Result:
 -- | id | title                                      | relevance |
 -- |----|--------------------------------------------|-----------|
--- | 18 | Spacious shared room with balcony · Geneva | 1.995     |
--- | 6  | Spacious shared room with balcony · Zürich | 1.924     |
+-- | 18 | Spacious shared room with balcony · Geneva | 2.295     |
+-- | 6  | Spacious shared room with balcony · Zürich | 2.195     |
 
 -- ---------------------------------------------------------------------------
 -- Q8. Full-text search over the settling-in guide
@@ -149,14 +150,16 @@ FROM GuideArticle
 WHERE MATCH(title, summary, body) AGAINST ('insurance deductible' IN NATURAL LANGUAGE MODE)
 ORDER BY score DESC;
 -- Result:
--- | slug              | title                               | score |
--- |-------------------|-------------------------------------|-------|
--- | health-insurance  | How Swiss health insurance works    | 2.538 |
--- | first-week        | Your first week in Switzerland      | 1.541 |
--- | healthcare        | Healthcare in India                 | 0.544 |
--- | find-a-doctor     | Doctors, pharmacies and emergencies | 0.181 |
--- | renting-a-home    | Renting a flat or a room            | 0.181 |
--- | permits-and-admin | Permits, registration and admin     | 0.181 |
+-- | slug                     | title                                            | score |
+-- |--------------------------|--------------------------------------------------|-------|
+-- | health-insurance         | How Swiss health insurance works                 | 3.631 |
+-- | first-week               | Your first week in Switzerland                   | 2.183 |
+-- | healthcare               | Healthcare in India                              | 0.735 |
+-- | healthcare               | Healthcare in Ireland                            | 0.49  |
+-- | find-a-doctor            | Doctors, pharmacies and emergencies              | 0.245 |
+-- | renting-a-home           | Renting a flat or a room                         | 0.245 |
+-- | permits-and-admin        | Permits, registration and admin                  | 0.245 |
+-- | immigration-registration | Irish Residence Permit (IRP) and student permiss | 0.245 |
 
 -- ---------------------------------------------------------------------------
 -- Q9. Business dashboard: views, inquiries and open requests per owner
@@ -175,12 +178,12 @@ ORDER BY views DESC;
 -- Result:
 -- | owner                 | listings | views | inquiries | open_requests |
 -- |-----------------------|----------|-------|-----------|---------------|
--- | Alpine Student Living | 17       | 466   | 3         | 12            |
--- | Helvetia Flats        | 10       | 241   | 0         | 0             |
--- | LakeView Residences   | 7        | 183   | 0         | 0             |
--- | CityNest Global       | 6        | 156   | 0         | 2             |
--- | Campus Nest           | 4        | 100   | 0         | 0             |
--- | Ticino Homes          | 2        | 55    | 0         | 0             |
+-- | Alpine Student Living | 17       | 571   | 3         | 12            |
+-- | CityNest Global       | 16       | 319   | 1         | 7             |
+-- | Helvetia Flats        | 10       | 237   | 0         | 0             |
+-- | LakeView Residences   | 7        | 167   | 0         | 0             |
+-- | Campus Nest           | 4        | 88    | 0         | 0             |
+-- | Ticino Homes          | 2        | 46    | 0         | 0             |
 
 -- ---------------------------------------------------------------------------
 -- Q10. Top roommate matches for one person
@@ -196,11 +199,11 @@ LIMIT 5;
 -- Result:
 -- | requestId | requester    | listing                                      | score |
 -- |-----------|--------------|----------------------------------------------|-------|
--- | 5         | Amara Okafor | Sunny private room in a 4-person WG · Zürich | 79    |
--- | 6         | Lena Müller  | Sunny private room in a 4-person WG · Zürich | 74    |
--- | 2         | Mateo García | Shared twin room in friendly WG · Zürich     | 74    |
--- | 11        | Amara Okafor | Bright dorm bed near campus · Zürich         | 71    |
--- | 3         | Rohan Iyer   | Shared twin room in friendly WG · Zürich     | 71    |
+-- | 5         | Amara Okafor | Sunny private room in a 4-person WG · Zürich | 80    |
+-- | 2         | Mateo García | Shared twin room in friendly WG · Zürich     | 75    |
+-- | 6         | Lena Müller  | Sunny private room in a 4-person WG · Zürich | 75    |
+-- | 3         | Rohan Iyer   | Shared twin room in friendly WG · Zürich     | 72    |
+-- | 11        | Amara Okafor | Bright dorm bed near campus · Zürich         | 72    |
 
 -- ---------------------------------------------------------------------------
 -- Q11. People who have not saved any place yet
@@ -216,10 +219,10 @@ LIMIT 5;
 -- | id | name         |
 -- |----|--------------|
 -- | 13 | Amara Okafor |
+-- | 26 | Aoife Byrne  |
+-- | 25 | Arjun Menon  |
 -- | 16 | Chloé Dubois |
 -- | 18 | Ethan Chen   |
--- | 11 | Lena Müller  |
--- | 22 | Lucas Martin |
 
 -- ---------------------------------------------------------------------------
 -- Q12. Listings that have ALL of: Wi-Fi, washing machine, balcony
@@ -303,7 +306,7 @@ ORDER BY total_chf DESC;
 -- | Luzern   | 902  | 431       | 82        | 1450      |
 -- | Bern     | 882  | 422       | 80        | 1417      |
 -- | Lugano   | 851  | 407       | 77        | 1368      |
--- … 2 more rows
+-- … 4 more rows
 
 -- ---------------------------------------------------------------------------
 -- Q16. Planned trip spend per category

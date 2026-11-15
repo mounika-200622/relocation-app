@@ -881,13 +881,16 @@ CREATE TABLE `UserProfile` (
   `roommateGender` enum('ANYONE','FEMALE_ONLY','MALE_ONLY') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ANYONE',
   `updatedAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   `homeCountryId` int DEFAULT NULL,
+  `organizationLat` double DEFAULT NULL,
+  `organizationLng` double DEFAULT NULL,
   PRIMARY KEY (`userId`),
   KEY `UserProfile_destinationCityId_idx` (`destinationCityId`),
   KEY `UserProfile_homeCountryId_idx` (`homeCountryId`),
   CONSTRAINT `UserProfile_destinationCityId_fkey` FOREIGN KEY (`destinationCityId`) REFERENCES `City` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `UserProfile_homeCountryId_fkey` FOREIGN KEY (`homeCountryId`) REFERENCES `Country` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `UserProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `chk_profile_budget` CHECK (((`budgetMonthly` is null) or (`budgetMonthly` >= 0)))
+  CONSTRAINT `chk_profile_budget` CHECK (((`budgetMonthly` is null) or (`budgetMonthly` >= 0))),
+  CONSTRAINT `chk_profile_org_point` CHECK ((((`organizationLat` is null) and (`organizationLng` is null)) or ((`organizationLat` between -(90) and 90) and (`organizationLng` between -(180) and 180))))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `v_listing_summary`;

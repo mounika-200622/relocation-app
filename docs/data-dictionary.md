@@ -2,7 +2,7 @@
 
 Generated from `information_schema` of the migrated database (`npx tsx scripts/docs/data-dictionary.ts`).
 
-**38 tables**, 55 foreign keys, 28 CHECK constraints, 117 indexes, 2 views.
+**38 tables**, 55 foreign keys, 29 CHECK constraints, 117 indexes, 2 views.
 
 Key: **PK** primary key · **FK → T.c (rule)** foreign key with its ON DELETE rule · **UQ** part of a unique key · **IDX** indexed.
 
@@ -754,11 +754,14 @@ Relocation profile of a USER (1:1): destination, budget, lifestyle used for matc
 | roommateGender | `enum('ANYONE','FEMALE_ONLY','MALE_ONLY')` | no | ANYONE |  |
 | updatedAt | `datetime(3)` | no | CURRENT_TIMESTAMP(3) |  |
 | homeCountryId | `int` | yes |  | FK → Country.id (SET NULL) |
+| organizationLat | `double` | yes |  |  |
+| organizationLng | `double` | yes |  |  |
 
 **Indexes:** `PRIMARY` (userId) unique · `UserProfile_destinationCityId_idx` (destinationCityId) · `UserProfile_homeCountryId_idx` (homeCountryId)
 
 **CHECK constraints:**
 - `chk_profile_budget`: `((budgetMonthly is null) or (budgetMonthly >= 0))`
+- `chk_profile_org_point`: `(((organizationLat is null) and (organizationLng is null)) or ((organizationLat between -(90) and 90) and (organizationLng between -(180) and 180)))`
 
 ## Views
 

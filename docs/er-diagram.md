@@ -43,6 +43,8 @@ erDiagram
         int userId PK,FK
         enum occupation
         int destinationCityId FK
+        double organizationLat "campus / office, geocoded"
+        double organizationLng
         int homeCountryId FK "for the currency converter"
         decimal budgetMonthly
         char budgetCurrency
