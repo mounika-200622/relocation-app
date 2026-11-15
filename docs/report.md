@@ -27,7 +27,9 @@ have a smaller version of the same problem: a plan that fits a budget.
 6. Detect where the person is (GPS) and turn it into local next steps for that country: SIM
    cards, buses/metro, taxi and ride-hailing apps, emergency numbers, today's exchange rate from
    their home currency and the nearest exchange offices.
-7. Demonstrate a well-normalised relational design, advanced SQL objects and a justified
+7. Turn the profile (home country, destination city, university or employer) into a destination
+   dashboard: exchange rate, costs, SIMs, transport, first steps and homes nearest the campus.
+8. Demonstrate a well-normalised relational design, advanced SQL objects and a justified
    NoSQL component, with security and integrity enforced at the database level.
 
 ## 3. Scope
@@ -55,6 +57,7 @@ used), automatic translation, menus/real prices for restaurants (estimates are u
 | Search | Filters (location cascade, type, price, shareable, open spots, gender, date, bedrooms, amenities, furnished, keywords), sort incl. distance, 12 per page, state in URL, budget badge, map view. |
 | Roommates | One OPEN request per person per listing, compatibility score, top matches, owner accept/decline, withdraw. |
 | Chat | Either side can start, one conversation per pair+listing, unread counts, polling with `?after=`, read receipts, block/report. |
+| Destination | The profile's city and geocoded university / employer (`organizationLat/Lng`) drive a dashboard: converter, local costs vs. budget, SIM plans, transport and passes, taxi apps, banks, checklist, essentials around campus, homes ranked by `fn_distance_km` from campus. |
 | Location | GPS (native in the app) or a picked city → nearest city → briefing: emergency numbers, cheapest SIM, ride apps with deep links, transit day pass, homes nearby, essentials, guide, trip. |
 | Money | Home country on the profile; live rate + converter home → local currency; currency-exchange offices, banks and ATMs on the map. |
 | Essentials | 18 categories around a point (incl. currency exchange), 0.5–5 km radius, price tiers and estimates, list + map, OSM/Google links. |
@@ -96,13 +99,13 @@ relationally; only the bodies go to MongoDB.
 
 ## 6. SQL implementation
 
-**DDL** — 10 Prisma migrations in `prisma/migrations/` (CREATE/ALTER/DROP; the v2 migration
+**DDL** — 11 Prisma migrations in `prisma/migrations/` (CREATE/ALTER/DROP; the v2 migration
 renames v1's photo column to keep data and backfills ISO codes; it drops the unused v1 MySQL
 `Message` table). Raw-SQL migration `20261112090100_sql_objects` adds:
 
 | Object | Name | Used by |
 |---|---|---|
-| CHECK constraints (28) | `chk_listing_capacity`, `chk_listing_occupants`, `chk_itin_split`, `chk_ride_link`, … | every write |
+| CHECK constraints (29) | `chk_listing_capacity`, `chk_listing_occupants`, `chk_itin_split`, `chk_ride_link`, … | every write |
 | View | `v_listing_summary` | search, saved, dashboards, admin |
 | View | `v_roommate_compatibility` | "Top matches for you" |
 | Function | `fn_distance_km` (Haversine) | nearest sort, POI radius search, queries |

@@ -40,3 +40,7 @@ business: **`NiraDemo#2026`** (admin: `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.en
 | 33 | visitor | Footer → *Photo credits* | `/credits` lists author and licence for every photo |
 | 34 | phone app | Navigate two pages, press Back; open a text field | Back returns to the previous page (app stays open); bottom tab bar hides while the keyboard is up |
 | 35 | phone app | Turn Wi-Fi off, open the app | "Can't reach the Nira server" page with steps and *Try again* |
+| 36 | new visitor | Sign up → onboarding: Student, University "UCD", from India, Ireland → Dublin, budget 850 → Finish | Lands on "Your move to Dublin": 1 EUR = x INR converter, Dublin costs, 6 SIM operators, Leap Card and buses, FREENOW/Uber/Bolt, banks, checklist 0/10, homes with "x m from UCD" |
+| 37 | meera@nira.app | Home tab → Food near UCD; Search tab | Cafés and restaurants on the Belfield campus with € estimates; homes sorted "nearest University College Dublin first" |
+| 38 | meera | Roommates; Trip mode → Plan a trip | Aoife and Arjun as matches; form pre-filled with Dublin, itinerary stays under budget |
+| 39 | anyone | Profile → home country: type "India", Enter | India is selected (not British Indian Ocean Territory) |

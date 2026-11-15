@@ -64,8 +64,12 @@ USB/adb instead:
 npm run android:wifi -- --install
 ```
 
-No cable is needed afterwards: the phone only has to be on the same Wi-Fi as the laptop. The
-address is baked into the APK, so **re-run the command if the laptop moves to another network**.
+No cable is needed afterwards. The app has no data of its own – every page comes from the Nira
+server on the laptop – so **it only opens when the phone can reach the laptop**: the same Wi-Fi,
+or the laptop connected to the phone's hotspot. On mobile data alone it shows the "can't connect"
+screen. If the laptop's address changes (another network), run `npm run address` on the laptop and
+type the address into that screen; it is remembered. For an app that works anywhere, deploy the
+server and build with `NIRA_SERVER_URL=https://your-domain`.
 If the server can't be reached (phone on mobile data, server stopped), the app shows a "Can't
 reach the Nira server" page with the steps and a **Try again** button instead of a blank screen:
 Capacitor's `errorPath` covers connection errors, and `MainActivity` switches to it when the first
@@ -112,6 +116,7 @@ If Nira is deployed (e.g. `https://nira.example.com`), set `NIRA_SERVER_URL` to 
 | Symptom | Fix |
 |---|---|
 | App shows "Can't reach the Nira server" | Phone Wi-Fi off / on mobile data, the laptop IP changed, or the server isn't running with `:lan`. Join the same Wi-Fi, run `npm run start:lan`, and re-run `npm run android:wifi` if the IP changed. |
+| Install fails: "not enough space" | Android refuses installs when storage is nearly full. Free about 1 GB on the phone and install again. |
 | "Couldn't get your location" | Turn on Location in the phone's quick settings and allow it for Nira — or tap **or pick a city**. |
 | Gradle: "Unsupported class file major version 69" | Gradle is using Java 25 (Android Studio's bundled JBR). Point `JAVA_HOME` at JDK 21. |
 | Page loads but buttons do nothing (dev mode) | Add the laptop IP to `NIRA_DEV_ORIGINS` and restart `npm run dev:lan`. |

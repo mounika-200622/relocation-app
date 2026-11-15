@@ -8,7 +8,9 @@ the corner, follow a step-by-step settling-in guide, chat safely inside the app,
 plans that never go over budget. Open it in a new country and it **detects where you are** and
 tells you what to do first: which SIM to buy, which ride app works there (Uber in India, Grab in
 Vietnam), how the buses work, today's exchange rate from your home currency and the nearest
-exchange office. Switzerland and India (Bengaluru) are the best-covered destinations; nothing is
+exchange office. Put your university and city on your profile ("UCD", Dublin) and the dashboard
+becomes **everything about that destination**, with homes ranked by distance from campus.
+Switzerland, India (Bengaluru) and Ireland (Dublin) are the best-covered destinations; nothing is
 hard-coded — every country, region and city comes from the database.
 
 DBMS Level 3 project · Next.js 16 · TypeScript · **MySQL 8** (Prisma 6) · **MongoDB 7** · Tailwind CSS 4 · Leaflet/OpenStreetMap · Android via Capacitor
@@ -32,6 +34,7 @@ login a user picks **Relocate** or **Trip** mode and can switch any time.
 
 | | |
 |---|---|
+| **Your destination** | The city and university / employer on the profile drive the dashboard: live rate from your home currency, typical local costs against your budget, SIM operators and cheapest plans, buses/trams/trains with passes (e.g. Student Leap Card), taxi apps, banks, the first-week checklist, food / groceries / pharmacies / stops around the campus, and **homes nearest the campus** (the organisation is geocoded with Nominatim when the profile is saved; `fn_distance_km` ranks the homes). |
 | **"You're here" (location)** | One tap (native GPS in the Android app, browser location on the web, or pick a city by hand) finds the nearest city with the `fn_distance_km` function and shows a local briefing over a real photo of the city: tap-to-call emergency numbers, the cheapest SIM, ride apps with deep links (Open Uber, Ola, Rapido, Namma Yatri, Grab, Gojek, Careem …), public-transport day pass, homes nearby, essentials, the guide and a trip. |
 | **Money** | Users set their **home country**; Nira shows today's rate and a converter from the home currency to the local one (open.er-api.com, cached in MySQL) and links to the nearest **exchange offices, banks and ATMs** on a live map. |
 | **31 country guides** | SIM operators, bus/metro/rail and taxi & ride-hailing apps for 29+ countries (India: Jio, Airtel, Vi, BSNL · Namma Metro, BMTC · Uber, Ola, Rapido, Namma Yatri; Vietnam: Viettel · Grab, Be, Xanh SM; and many more), each with a real landmark photo. |
@@ -59,7 +62,7 @@ login a user picks **Relocate** or **Trip** mode and can switch any time.
 | Validation | zod on every API input + database constraints |
 | External data | OSM Overpass (places), Nominatim (geocoding), transport.opendata.ch (Swiss timetable), open.er-api.com (exchange rates), Cloudinary (optional photo storage) |
 | Mobile | PWA (manifest, service worker) + Capacitor Android project |
-| Tests | Vitest (79 tests) |
+| Tests | Vitest (81 tests) |
 
 ## Architecture
 
@@ -164,6 +167,8 @@ Password for every seeded person and business: **`NiraDemo#2026`**
 | User | `aarav@nira.app` | ETH student moving to Zürich: saved places, requests, chats, a trip |
 | User | `priya@nira.app` | PhD student, Zürich, women-only roommate preference |
 | User | `lena@nira.app`, `mateo@nira.app`, `amara@nira.app`, `rohan@nira.app` | Zürich seekers |
+| User | `meera@nira.app` | **Bengaluru → Dublin demo:** MSc at University College Dublin, INR → EUR, Irish SIMs, Leap Card, homes nearest UCD, roommate matches (Aoife, Arjun) |
+| User | `arjun@nira.app`, `aoife@nira.app` | Other UCD students looking to share Dublin homes |
 | User | `anna@nira.app` | **Bengaluru demo:** moving from Germany (EUR → INR converter), matches with Lucas, saved Bengaluru homes |
 | User | `lucas@nira.app` | IISc exchange student moving to Bengaluru from France |
 | User | `sofia@nira.app`, `chloe@nira.app` (Lausanne) · `yuki@nira.app`, `ethan@nira.app` (Geneva) · `noah@nira.app` (Basel) · `mia@nira.app` (Berlin) | |
@@ -174,7 +179,7 @@ Password for every seeded person and business: **`NiraDemo#2026`**
 
 ## Database highlights
 
-- **38 tables in 3NF**, 55 foreign keys with reasoned ON DELETE rules, **28 CHECK constraints**,
+- **38 tables in 3NF**, 55 foreign keys with reasoned ON DELETE rules, **29 CHECK constraints**,
   117 indexes incl. composite and FULLTEXT — [data dictionary](docs/data-dictionary.md) ·
   [ER diagram](docs/er-diagram.md) · [normalization](docs/normalization.md) · [DDL](docs/schema.sql)
 - **Views** `v_listing_summary` (powers search) and `v_roommate_compatibility` (powers top matches)
@@ -201,8 +206,11 @@ npm run android:wifi
 
 `android:wifi` detects the laptop's Wi-Fi address, builds the app pointing at it and copies
 **`Nira-debug.apk`** to the project folder — send it to the phone and install it (add
-`-- --install` to install over USB/adb instead). Re-run it if the laptop joins another network.
-If the server can't be reached, the app shows a "can't connect" screen with a Try again button.
+`-- --install` to install over USB/adb instead). The app loads everything from the laptop, so both
+must be on one network (the same Wi-Fi, or the laptop on the phone's hotspot). If the laptop's
+address changes, the app's "can't connect" screen lets you type the new one – `npm run address`
+prints it – so no rebuild is needed. To use the app anywhere, deploy the server and build with
+`NIRA_SERVER_URL=https://your-domain`.
 
 - **Any phone, no app:** open `http://<laptop-ip>:3000` in Chrome → ⋮ → *Add to Home screen*.
 - **Android Studio:** `npx cap open android` → Run ▶.
@@ -220,6 +228,7 @@ If the server can't be reached, the app shows a "can't connect" screen with a Tr
 | `npm run db:reset` | Drop, re-migrate and re-seed the database (asks Prisma for confirmation) |
 | `npm run mongo:local` | Local MongoDB without Docker |
 | `npm run photos:migrate` | Move v1 base64 photos into `ListingPhoto` |
+| `npm run address` | Print the address phones use to reach this laptop |
 | `npm run android:wifi` | Build the Wi-Fi APK for this laptop's current IP (`-- --install` to install) |
 | `npm run android:sync` / `android:open` / `android:apk` | Capacitor Android workflow |
 | `npx tsx scripts/fetch-photos.ts` | Download the freely licensed Commons photos + credits |
@@ -232,7 +241,7 @@ If the server can't be reached, the app shows a "can't connect" screen with a Tr
 npm test
 ```
 
-79 unit tests cover the roommate score, budget allocation and the never-over-budget ledger,
+81 unit tests cover the roommate score, budget allocation and the never-over-budget ledger,
 the trip planner, price tiers, Haversine, authorization rules (incl. open redirects), every
 zod schema, the accept-request race rules, Overpass parsing and admin schemas. Database
 behaviour (triggers, CHECKs, procedure, transactions) is exercised by `scripts/docs/queries.ts`.
