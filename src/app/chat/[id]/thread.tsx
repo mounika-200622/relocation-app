@@ -154,8 +154,9 @@ export function Thread({ conversationId, meId }: { conversationId: number; meId:
             return (
               <div key={m.id}>
                 {showDay && <div className="my-4 text-center text-[11px] font-medium uppercase tracking-wider text-subtle">{formatDate(m.sentAt, { weekday: "short", day: "numeric", month: "short" })}</div>}
-                <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                  <div className={cn("max-w-[80%] whitespace-pre-wrap break-words px-4 py-2.5 text-[15px] leading-relaxed", mine ? "rounded-2xl rounded-br-md bg-accent-strong text-white" : "rounded-2xl rounded-bl-md bg-soft", m.pending && "opacity-60", nextSame && (mine ? "rounded-br-2xl" : "rounded-bl-2xl"))}>
+                <div className={cn("flex items-end gap-2", mine ? "justify-end" : "justify-start")}>
+                  {!mine && convo && (nextSame ? <span className="w-7 shrink-0" /> : <span className="shrink-0" title={convo.other.name}><Avatar name={convo.other.name} size={28} /></span>)}
+                  <div className={cn("max-w-[75%] whitespace-pre-wrap break-words px-4 py-2.5 text-[15px] leading-relaxed", mine ? "rounded-2xl rounded-br-md bg-accent-strong text-white" : "rounded-2xl rounded-bl-md border border-line bg-soft", m.pending && "opacity-60", nextSame && (mine ? "rounded-br-2xl" : "rounded-bl-2xl"))}>
                     {m.text}
                     <div className={cn("mt-1 flex items-center justify-end gap-1 text-[10.5px]", mine ? "text-white/70" : "text-subtle")}>
                       {new Date(m.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
